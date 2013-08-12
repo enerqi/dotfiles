@@ -1,0 +1,4 @@
+# For now ignoring any file or directory that does not start with a "."
+*
+!\.*
+!\.*/**
