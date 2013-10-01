@@ -40,7 +40,7 @@ ZSH_THEME="enerqi"
 # Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
-plugins=(git colorize zsh-syntax-highlighting)
+plugins=(git git-extras colorize zsh-syntax-highlighting)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -49,12 +49,22 @@ export PATH=$PATH:/usr/lib/lightdm/lightdm:/usr/local/sbin:/usr/local/bin:/usr/s
 export PATH="$PATH:/opt/perforce/p4/bin"
 typeset -U PATH
 
+# git-extras install: (cd /tmp && git clone --depth 1 https://github.com/visionmedia/git-extras.git && cd git-extras && sudo make install)
+
 alias c=colorize_via_pygmentize
 alias hadoop='nocorrect hadoop'
+alias hl='hadoop fs -ls'
+
+# zsh-syntax-highlighting plugin - default is just "main" highlighter
+ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern cursor root)
 
 
 function cl() {
 	FILENAMES=("$@")
 
 	colorize $FILENAMES | less
+}
+
+function git_permission_reset() {
+    git diff -p -R | grep -E "^(diff|(old|new) mode)" | git apply
 }
