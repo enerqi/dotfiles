@@ -1,0 +1,3 @@
+
+SET hive.cli.print.current.db=true;
+SET hive.cli.print.header=true;
