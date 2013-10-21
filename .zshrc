@@ -47,6 +47,7 @@ source $ZSH/oh-my-zsh.sh
 # Customize to your needs...
 export PATH=$PATH:/usr/lib/lightdm/lightdm:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
 export PATH="$PATH:/opt/perforce/p4/bin"
+export PATH="$PATH:$HOME/.cabal/bin"
 typeset -U PATH
 
 # git-extras install: (cd /tmp && git clone --depth 1 https://github.com/visionmedia/git-extras.git && cd git-extras && sudo make install)
