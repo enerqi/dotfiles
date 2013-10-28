@@ -57,7 +57,7 @@ alias hadoop='nocorrect hadoop'
 alias hl='hadoop fs -ls'
 
 # zsh-syntax-highlighting plugin - default is just "main" highlighter
-ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern cursor root)
+ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern root)
 
 
 function cl() {
@@ -69,3 +69,9 @@ function cl() {
 function git_permission_reset() {
     git diff -p -R | grep -E "^(diff|(old|new) mode)" | git apply
 }
+
+
+# Local machine specific shell setup that we don't want to commit to source control
+if [[ -f ~/.rc.local ]]; then
+    source ~/.rc.local
+fi
