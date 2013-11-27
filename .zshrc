@@ -57,7 +57,7 @@ alias hadoop='nocorrect hadoop'
 alias hl='hadoop fs -ls'
 
 # zsh-syntax-highlighting plugin - default is just "main" highlighter
-ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern root)
+ZSH_HIGHLIGHT_HIGHLIGHTERS=(main) # brackets pattern root)
 
 
 function cl() {
