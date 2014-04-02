@@ -47,14 +47,19 @@ source $ZSH/oh-my-zsh.sh
 # Customize to your needs...
 export PATH=$PATH:/usr/lib/lightdm/lightdm:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
 export PATH="$PATH:/opt/perforce/p4/bin"
-export PATH="$PATH:$HOME/.cabal/bin"
+export PATH="$HOME/.cabal/bin:$PATH"
+export PATH="$PATH:$HOME/bin"
 typeset -U PATH
 
 # git-extras install: (cd /tmp && git clone --depth 1 https://github.com/visionmedia/git-extras.git && cd git-extras && sudo make install)
 
+# oh-my-zsh/lib/grep.zsh assumes grep >= 2.5.3. FreeBSD 10 = 2.5.1. gnugrep=2.18 installed to /usr/local/bin 
+[[ `uname` = FreeBSD ]] && alias grep='/usr/local/bin/grep'
+
 alias c=colorize_via_pygmentize
 alias hadoop='nocorrect hadoop'
-alias hl='hadoop fs -ls'
+alias hl='hdfs dfs -ls'
+alias xclip='xclip -selection c'
 
 # zsh-syntax-highlighting plugin - default is just "main" highlighter
 ZSH_HIGHLIGHT_HIGHLIGHTERS=(main) # brackets pattern root)
