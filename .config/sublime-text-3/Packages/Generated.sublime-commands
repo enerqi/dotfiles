@@ -1,0 +1,59 @@
+[
+    {
+        "caption": "Maven: Run install", 
+        "args": {
+            "goals": [
+                "install"
+            ], 
+            "paths": []
+        }, 
+        "command": "maven"
+    }, 
+    {
+        "caption": "Maven: Run clean install", 
+        "args": {
+            "goals": [
+                "clean", 
+                "install"
+            ], 
+            "paths": []
+        }, 
+        "command": "maven"
+    }, 
+    {
+        "caption": "Maven: Test", 
+        "args": {
+            "goals": [
+                "test"
+            ], 
+            "paths": [], 
+            "props": [
+                "-DskipTests=false", 
+                "-Dtest=$CLASS"
+            ]
+        }, 
+        "command": "maven"
+    }, 
+    {
+        "caption": "Maven: Exec:java", 
+        "args": {
+            "goals": [
+                "compile", 
+                "exec:java"
+            ], 
+            "paths": [], 
+            "props": [
+                "-Dexec.mainClass=$CLASS"
+            ]
+        }, 
+        "command": "maven"
+    }, 
+    {
+        "caption": "Maven: Run ...", 
+        "args": {
+            "goals": [], 
+            "paths": []
+        }, 
+        "command": "maven"
+    }
+]

@@ -1,0 +1,16 @@
+{
+	"folders":
+	[
+		{
+			"follow_symlinks": true,
+			"path": "/net/gaia/home/kelvinw"
+		},
+
+        {
+            "path": "/scratch/dev"  
+        },
+        {
+            "path": "/scratch/docs"  
+        }
+	]
+}

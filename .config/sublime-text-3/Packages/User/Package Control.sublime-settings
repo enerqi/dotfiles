@@ -1,0 +1,34 @@
+{
+	"auto_upgrade_last_run": null,
+	"installed_packages":
+	[
+		"AdvancedNewFile",
+		"AlignTab",
+		"Apache Hive",
+		"Apache Pig",
+		"ApacheConf.tmLanguage",
+		"CUDA C++",
+		"Elm Language Support",
+		"Expand Selection to Quotes",
+		"Expand Selection to Whitespace",
+		"GitHub Flavored Markdown Preview",
+		"GotoLastEdit",
+		"HexViewer",
+		"INI",
+		"Lambda Substitution",
+		"Maven",
+		"orgmode",
+		"Package Control",
+		"Path Tools",
+		"Protocol Buffer Syntax",
+		"Puppet",
+		"Rust",
+		"Schemr",
+		"Shrink Whitespaces",
+		"SublimeGit",
+		"SublimeHaskell",
+		"SublimeLinter",
+		"Theme - Phoenix",
+		"UnicodeMath"
+	]
+}
