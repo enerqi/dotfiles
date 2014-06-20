@@ -1,10 +1,12 @@
 {
 	"auto_complete_commit_on_tab": false,
 	"color_scheme": "Packages/Color Scheme - Default/Monokai.tmTheme",
+	"dictionary": "Packages/Dictionaries/English (British).dic",
 	"font_face": "Consolas",
 	"font_size": 13,
 	"ignored_packages":
 	[
+		"Vintage"
 	],
 	"indent_to_bracket": true,
 	"translate_tabs_to_spaces": true,
