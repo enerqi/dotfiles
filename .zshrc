@@ -7,10 +7,6 @@ ZSH=$HOME/.oh-my-zsh
 # time that oh-my-zsh is loaded.
 ZSH_THEME="enerqi"
 
-# Example aliases
-# alias zshconfig="mate ~/.zshrc"
-# alias ohmyzsh="mate ~/.oh-my-zsh"
-
 # Set to this to use case-sensitive completion
 # CASE_SENSITIVE="true"
 
@@ -53,7 +49,7 @@ typeset -U PATH
 
 # git-extras install: (cd /tmp && git clone --depth 1 https://github.com/visionmedia/git-extras.git && cd git-extras && sudo make install)
 
-# oh-my-zsh/lib/grep.zsh assumes grep >= 2.5.3. FreeBSD 10 = 2.5.1. gnugrep=2.18 installed to /usr/local/bin 
+# oh-my-zsh/lib/grep.zsh assumes grep >= 2.5.3. FreeBSD 10 = 2.5.1. gnugrep=2.18 installed to /usr/local/bin
 [[ `uname` = FreeBSD ]] && alias grep='/usr/local/bin/grep'
 
 alias c=colorize_via_pygmentize
@@ -73,6 +69,20 @@ function cl() {
 
 function git_permission_reset() {
     git diff -p -R | grep -E "^(diff|(old|new) mode)" | git apply
+}
+
+# ghc-pkg-reset
+# Removes all installed GHC/cabal packages, but not binaries, docs, etc.
+# Use this to get out of dependency hell and start over, at the cost of some rebuilding time.
+function ghc-pkg-reset() {
+    # bash: read -p 'erasing all your user ghc and cabal packages - are you sure (y/n) ? ' ans
+    read -q "ans?Erasing all your user ghc and cabal packages - are you sure (y/n) ?"
+    [[ $ans == 'y' ]] && ( \
+        echo 'erasing directories under ~/.ghc'; rm -rf `find ~/.ghc -maxdepth 1 -type d`; \
+        echo 'erasing ~/.cabal/lib'; rm -rf ~/.cabal/lib; \
+        echo 'erasing ~/.cabal/packages'; rm -rf ~/.cabal/packages; \
+        echo 'erasing ~/.cabal/share'; rm -rf ~/.cabal/share; \
+        )
 }
 
 
