@@ -62,5 +62,33 @@
           "activate_browser": true,
           "browser_name" : "all"
       }
+    },
+
+    { "keys": [":",":"], "command": "insert_snippet", "args": {"contents": "∷"}, "context":
+        [{"key": "selector", "operator": "equal", "operand": "source.haskell" }]
+    },
+    { "keys": ["-",">"], "command": "insert_snippet", "args": {"contents": "→"}, "context":
+        [{"key": "selector", "operator": "equal", "operand": "source.haskell" }]
+    },
+    { "keys": ["<","-"], "command": "insert_snippet", "args": {"contents": "←"}, "context":
+        [{"key": "selector", "operator": "equal", "operand": "source.haskell" }]
+    },
+    { "keys": ["=",">"], "command": "insert_snippet", "args": {"contents": "⇒"}, "context":
+        [{"key": "selector", "operator": "equal", "operand": "source.haskell" }]
+    },
+    { "keys": ["-","<"], "command": "insert_snippet", "args": {"contents": "↢"}, "context":
+        [{"key": "selector", "operator": "equal", "operand": "source.haskell" }]
+    },
+    { "keys": [">","-"], "command": "insert_snippet", "args": {"contents": "↣"}, "context":
+        [{"key": "selector", "operator": "equal", "operand": "source.haskell" }]
+    },
+    { "keys": ["-","<","<"], "command": "insert_snippet", "args": {"contents": "⤛"}, "context":
+        [{"key": "selector", "operator": "equal", "operand": "source.haskell" }]
+    },
+    { "keys": [">",">","-"], "command": "insert_snippet", "args": {"contents": "⤜"}, "context":
+        [{"key": "selector", "operator": "equal", "operand": "source.haskell" }]
+    },
+    { "keys": ["ctrl+shift+8"], "command": "insert_snippet", "args": {"contents": "★"}, "context":
+        [{"key": "selector", "operator": "equal", "operand": "source.haskell" }]
     }
 ]
