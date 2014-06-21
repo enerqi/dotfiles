@@ -1,8 +1,12 @@
 # For now ignoring any file or directory that does not start with a "."
+# Any dot sub-directory must be explicitly re-included
 *
 !\.*
-!\.*/**
 
+# exclude git subprojects as they have their own ignore file
+.oh-my-zsh
+
+!.config/sublime-text-3
 .config/sublime-text-3/Cache
 .config/sublime-text-3/Index
 .config/sublime-text-3/Local
@@ -10,20 +14,10 @@
 .config/sublime-text-3/Packages/SublimeHaskell/cache
 .config/sublime-text-3/Packages/User/Package Control.last-run
 
-.oh-my-zsh/.gitignore
-.oh-my-zsh/MIT-LICENSE.txt
-.oh-my-zsh/README.textile
-.oh-my-zsh/lib/
-.oh-my-zsh/log/
-.oh-my-zsh/oh-my-zsh.sh
-.oh-my-zsh/plugins/
-.oh-my-zsh/templates/
-.oh-my-zsh/themes/
-.oh-my-zsh/tools/
+!.i3
+!.lein
 
-.cache/
-.local/
-
+.bash_history
 .k_history
 .lesshst
 .rc.local
