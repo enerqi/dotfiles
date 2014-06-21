@@ -6,7 +6,8 @@
 # exclude git subprojects as they have their own ignore file
 .oh-my-zsh
 
-!.config/sublime-text-3
+!.config/sublime-text-3/
+!.config/sublime-text-3/**
 .config/sublime-text-3/Cache
 .config/sublime-text-3/Index
 .config/sublime-text-3/Local
@@ -14,10 +15,14 @@
 .config/sublime-text-3/Packages/SublimeHaskell/cache
 .config/sublime-text-3/Packages/User/Package Control.last-run
 
-!.config/terminator
+!.config/terminator/
+!.config/terminator/**
 
-!.i3
-!.lein
+!.i3/
+!.i3/**
+
+!.lein/
+!.lein/**
 
 .bash_history
 .k_history
