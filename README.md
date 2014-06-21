@@ -8,8 +8,10 @@ The configuration files for sublime text are checked out to the linux standard l
 
 ```
 git clone https://github.com/enerqi/dotfiles.git %USERPROFILE%/dotfiles
-cd dotfiles && mv .config %USERPROFILE%
-
+cd dotfiles
+```
+Move everything to %USERPROFILE% `mv * %USERPROFILE`.
+```
 cd "%USERPROFILE%/AppData/Roaming/Sublime Text 3"
 rmdir /S /Q "%USERPROFILE%/AppData/Roaming/Sublime Text 3/Packages"
 rmdir /S /Q "%USERPROFILE%/AppData/Roaming/Sublime Text 3/Installed Packages"
