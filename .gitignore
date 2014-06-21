@@ -9,3 +9,30 @@
 .config/sublime-text-3/Packages/User/Package Control.cache
 .config/sublime-text-3/Packages/SublimeHaskell/cache
 .config/sublime-text-3/Packages/User/Package Control.last-run
+
+.oh-my-zsh/.gitignore
+.oh-my-zsh/MIT-LICENSE.txt
+.oh-my-zsh/README.textile
+.oh-my-zsh/lib/
+.oh-my-zsh/log/
+.oh-my-zsh/oh-my-zsh.sh
+.oh-my-zsh/plugins/
+.oh-my-zsh/templates/
+.oh-my-zsh/themes/
+.oh-my-zsh/tools/
+
+.cache/
+.local/
+
+.k_history
+.lesshst
+.rc.local
+.recently-used
+.zcompdump*
+.zsh-update
+.zsh_history
+
+*.lock
+*.log
+*.pid
+
