@@ -23,3 +23,11 @@ mklink /J "Installed Packages" "%USERPROFILE%/.config/sublime-text-3/Installed P
 If sublime-text was installed and used earlier you may need to nuke the session file:
 
 `del %USERPROFILE%/AppData/Roaming/Sublime Text 3/Local/*.session`
+
+The keymap files are different for windows and linux but we can hard link from the windows file to the linux one:
+```
+cd "%USERPROFILE%/AppData/Roaming/Sublime Text 3/Packages/User"
+del "Default (Windows).sublime-keymap"
+mklink /H "Default (Windows).sublime-keymap" "Default (Linux).sublime-keymap"
+```
+
