@@ -4,10 +4,12 @@
 !\.*
 
 # exclude git subprojects as they have their own ignore file
+# .oh-my-zsh/custom files have to be force added to this dotfiles config repo
 .oh-my-zsh
 
 !.config/sublime-text-3/
 !.config/sublime-text-3/**
+.config/sublime-text-3/**/\.nfs*
 .config/sublime-text-3/Cache
 .config/sublime-text-3/Index
 .config/sublime-text-3/Local
@@ -15,6 +17,7 @@
 .config/sublime-text-3/Packages/User/.SublimeREPLHistory
 .config/sublime-text-3/Packages/SublimeHaskell/cache
 .config/sublime-text-3/Packages/User/Package Control.last-run
+.config/sublime-text-3/Settings
 
 !.config/terminator/
 !.config/terminator/**
@@ -25,15 +28,23 @@
 !.lein/
 !.lein/**
 
-.bash_historyq
+.bash_history
+.dmenu_cache
+.gtk*
+.install4j
 .k_history
 .lesshst
+.pgadmin_histo*
 .rc.local
 .recently-used
+.viminfo
 .zcompdump*
 .zsh-update
-.zsh_history
 
+*authority
+*cookie*
+*errors*
+*history
 *.lock
 *.log
 *.pid

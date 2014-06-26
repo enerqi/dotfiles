@@ -1,2 +1,0 @@
-
-[X] updated to 1.7.0
