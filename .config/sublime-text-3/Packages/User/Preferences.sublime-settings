@@ -4,6 +4,7 @@
 	"auto_complete_commit_on_tab": false,
 	"color_scheme": "Packages/Color Scheme - Default/Monokai.tmTheme",
 	"dictionary": "Packages/Dictionaries/English (British).dic",
+	"ensure_newline_at_eof_on_save": true,
 	"font_face": "Consolas",
 	"font_size": 13,
 	"ignored_packages":
