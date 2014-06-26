@@ -1,7 +1,4 @@
 {
-	"add_to_PATH":
-	[
-		"/home/kelvinw/.cabal/bin"
-	],
-	"enable_hdevtools": false
+	"auto_completion_popup": true,
+    "enable_hdocs": true
 }

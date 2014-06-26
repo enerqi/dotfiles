@@ -31,3 +31,12 @@ del "Default (Windows).sublime-keymap"
 mklink /H "Default (Windows).sublime-keymap" "Default (Linux).sublime-keymap"
 ```
 
+Haskell Setup to Support Sublime
+---------------------------------
+
+```
+cabal install cabal-install
+cabal install aeson haskell-src-exts ghc-mod stylish-haskell haskell-docs hdevtools hdocs [--constraint=haddock==2.13.2.1]
+```
+
+The constraint on haddock maybe needed with GHC 7.6
