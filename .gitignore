@@ -47,6 +47,7 @@
 *cookie*
 *errors*
 *history
+*_hist
 *.lock
 *.log
 *.pid
