@@ -13,6 +13,7 @@
 !.config/sublime-text-3/
 !.config/sublime-text-3/**
 .config/sublime-text-3/**/\.nfs*
+.config/sublime-text-3/Backup
 .config/sublime-text-3/Cache
 .config/sublime-text-3/Index
 .config/sublime-text-3/Local
@@ -50,6 +51,7 @@
 *cookie*
 *errors*
 *history
+*_hist
 *.lock
 *.log
 *.pid
