@@ -1,0 +1,8 @@
+#!/usr/local/bin/zsh
+
+echo current maximum
+for i in {0..5} 
+do
+echo -n "/dev/ada$i " && sudo smartctl -a /dev/ada$i  | grep Temperature_Celsius | cut -w -f 4,5 
+done
+
