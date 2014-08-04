@@ -54,6 +54,7 @@ typeset -U PATH
 
 alias c=colorize_via_pygmentize
 alias hadoop='nocorrect hadoop'
+alias hi='rlwrap --always-readline -t dumb hive'
 alias hl='hdfs dfs -ls'
 alias xclip='xclip -selection c'
 
