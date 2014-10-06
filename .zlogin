@@ -6,4 +6,4 @@ fi
 
 # All linux machines regardless of host - ensure fixed annoying <Super+P> key combo setting projector mode
 # which interferes with the i3 WM shortcuts
-[[ `uname` = Linux ]] && dconf write /org/gnome/settings-daemon/plugins/media-keys/active false
+[[ `uname` = Linux ]] && which dconf > /dev/null && dconf write /org/gnome/settings-daemon/plugins/media-keys/active false
