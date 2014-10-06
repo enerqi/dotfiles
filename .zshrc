@@ -63,9 +63,9 @@ ZSH_HIGHLIGHT_HIGHLIGHTERS=(main) # brackets pattern root)
 
 
 function cl() {
-	FILENAMES=("$@")
+    FILENAMES=("$@")
 
-	colorize $FILENAMES | less
+    colorize $FILENAMES | less
 }
 
 function git_permission_reset() {
