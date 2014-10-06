@@ -1,4 +1,5 @@
 {
-	"auto_completion_popup": true,
-	"enable_hdocs": true
+    "auto_completion_popup": true,
+    "enable_hdevtools": true,
+    "enable_hdocs": true
 }
