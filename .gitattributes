@@ -1,3 +1,6 @@
 # default behaviour, in case people don't have core.autocrlf set.
-* text=auto
+* text eol=auto
 
+*.sublime-package binary
+*.png binary
+*.jpg binary

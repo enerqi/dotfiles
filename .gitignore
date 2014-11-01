@@ -7,9 +7,13 @@
 # .oh-my-zsh/custom files have to be force added to this dotfiles config repo
 .oh-my-zsh
 
+!bin/
+!bin/**
+
 !.config/sublime-text-3/
 !.config/sublime-text-3/**
 .config/sublime-text-3/**/\.nfs*
+.config/sublime-text-3/Backup
 .config/sublime-text-3/Cache
 .config/sublime-text-3/Index
 .config/sublime-text-3/Local

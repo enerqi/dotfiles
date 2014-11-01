@@ -165,7 +165,7 @@
 		</dict>
 		<dict>
 			<key>begin</key>
-			<string>\b(import)\b</string>
+			<string>^(import)\b</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
@@ -182,7 +182,7 @@
 			<array>
 				<dict>
 					<key>match</key>
-					<string>(qualified|as|hiding)</string>
+					<string>\b(qualified|as|hiding)\b</string>
 					<key>name</key>
 					<string>keyword.other.haskell</string>
 				</dict>
@@ -193,6 +193,10 @@
 				<dict>
 					<key>include</key>
 					<string>#module_exports</string>
+				</dict>
+				<dict>
+					<key>include</key>
+					<string>#comments</string>
 				</dict>
 			</array>
 		</dict>
@@ -299,6 +303,17 @@
 			<key>patterns</key>
 			<array>
 				<dict>
+					<!-- tmLanguage cannot capture multiline regexes, that's why we can't simply add a `\\$\s*\\` alternative to `constant.character.escape.haskell` to capture the `\[newline][whitespace]\` Haskell uses for multi-line strings. We have to use begin/end if we want multi-line matches. -->
+					<key>begin</key>
+					<string>\\\s*$</string>
+					<!-- ^ We use `\s*` because Haskell multiline strings do allow whitespace behind the `\` that "ends" the line, even before the line actually ends. -->
+					<key>end</key>
+					<string>\\</string>
+					<key>name</key>
+					<string>constant.character.escape.multilinestring.haskell</string>
+					<!-- We do not currently attempt to detect characters in between the `\`, so `\\n   a   \` will have the `a` counted towards this scope. -->
+				</dict>
+				<dict>
 					<key>match</key>
 					<string>\\(NUL|SOH|STX|ETX|EOT|ENQ|ACK|BEL|BS|HT|LF|VT|FF|CR|SO|SI|DLE|DC1|DC2|DC3|DC4|NAK|SYN|ETB|CAN|EM|SUB|ESC|FS|GS|RS|US|SP|DEL|[abfnrtv\\\"'\&amp;])</string>
 					<key>name</key>
@@ -371,7 +386,7 @@
 		</dict>
 		<dict>
 			<key>begin</key>
-			<string>^\s*([a-z_][a-zA-Z0-9_']*|\([|!%$+\-.,=&lt;/&gt;]+\))\s*(::|∷)</string>
+			<string>^\s*([a-z_][a-zA-Z0-9_']*|\([|!%$+\-.,=&lt;/&gt;]+\))\s*(::)</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
@@ -399,13 +414,125 @@
 		</dict>
 		<dict>
 			<key>match</key>
+			<string>^(foreign)\s+(import|export)((\s+[\w_]+)*)(\s+\"(\\.|[^\"])*\")?\s*$</string>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.other.haskell</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.other.haskell</string>
+				</dict>
+				<key>3</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.other.haskell</string>
+				</dict>
+				<key>5</key>
+				<dict>
+					<key>name</key>
+					<string>string.quoted.double.haskell</string>
+				</dict>
+			</dict>
+			<key>name</key>
+			<string>meta.function.foreign-declaration.haskell</string>
+		</dict>
+		<dict>
+			<key>begin</key>
+			<string>^(foreign)\s+(import|export)((\s+[\w_]+)*)(\s+\"(\\.|[^\"])*\")?\s+([a-z_][a-zA-Z0-9_']*|\([|!%$+\-.,=&lt;/&gt;]+\))\s*((::)|∷)</string>
+			<key>beginCaptures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.other.haskell</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.other.haskell</string>
+				</dict>
+				<key>3</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.other.haskell</string>
+				</dict>
+				<key>5</key>
+				<dict>
+					<key>name</key>
+					<string>string.quoted.double.haskell</string>
+				</dict>
+				<key>7</key>
+				<dict>
+					<key>name</key>
+					<string>entity.name.function.haskell</string>
+				</dict>
+				<key>8</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.other.double-colon.haskell</string>
+				</dict>
+			</dict>
+			<key>end</key>
+			<string>$\n?</string>
+			<key>name</key>
+			<string>meta.function.type-declaration.haskell</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>include</key>
+					<string>#type_signature</string>
+				</dict>
+			</array>
+		</dict>
+		<dict>
+			<key>begin</key>
+			<string>(\[)([a-z][\w\d_]+)(\|)</string>
+			<key>beginCaptures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.operator.haskell</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>support.quasiquoter.template.haskell</string>
+				</dict>
+				<key>3</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.operator.haskell</string>
+				</dict>
+			</dict>
+			<key>end</key>
+			<string>(\|\])</string>
+			<key>endCaptures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.operator.haskell</string>
+				</dict>
+			</dict>
+			<key>name</key>
+			<string>string.quasiquoting.template.haskell</string>
+		</dict>
+		<dict>
+			<key>match</key>
 			<string>\b(Just|Nothing|Left|Right|True|False|LT|EQ|GT|\(\)|\[\])\b</string>
 			<key>name</key>
 			<string>support.constant.haskell</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b[A-Z][A-Za-z_'0-9]*</string>
+			<string>(?&lt;!')\b[A-Z][A-Za-z_'0-9]*</string>
+			<!-- ^ We have to prepend the negative lookbehind (?<!') to forbid single quotes before the word boundary. That is because in contrast to Python's re, Sublime's matching engine treats `my'str` as `my\b'\b'str`, thus detecting constants (constructors) in identifier names like `m'result`. Single quotes are the only such characters allowed in Haskell identifiers. -->
 			<key>name</key>
 			<string>constant.other.haskell</string>
 		</dict>
@@ -427,7 +554,7 @@
 			<key>comment</key>
 			<string>In case this regex seems overly general, note that Haskell permits the definition of new operators which can be nearly any string of punctuation characters, such as $%^&amp;*.</string>
 			<key>match</key>
-			<string>\(\s*([A-Z][A-Za-z]*)\s+([a-z][A-Za-z_']*)\)\s*(=&gt;|⇒)</string>
+			<string>[|!%$?~+:\-.*=&lt;/&gt;\\]+</string>
 			<key>name</key>
 			<string>keyword.operator.haskell</string>
 		</dict>
@@ -455,7 +582,8 @@
 				</dict>
 			</dict>
 			<key>end</key>
-			<string>-\}</string>
+			<string>(?&lt;!#)-\}</string>
+			<!-- ^ Using `(?&lt;!#)-\}` instead of `-\}` so that pragmas don't close block comments. `(?<!#)-}` is a negative lookbehind saying: match `-}` but not when there's a `#` in front of it. -->
 			<key>name</key>
 			<string>comment.block.haskell</string>
 			<key>patterns</key>
@@ -493,7 +621,7 @@
 		<key>infix_op</key>
 		<dict>
 			<key>match</key>
-			<string>(\([|!%$+:\-.=&lt;/&gt;]+\)|\(,+\))</string>
+			<string>(\([|!%$+:\-.*=&lt;/&gt;]+\)|\(,+\))</string>
 			<key>name</key>
 			<string>entity.name.function.infix.haskell</string>
 		</dict>
@@ -536,6 +664,10 @@
 					<string>\(.*?\)</string>
 					<key>name</key>
 					<string>meta.other.unknown.haskell</string>
+				</dict>
+				<dict>
+					<key>include</key>
+					<string>#comments</string>
 				</dict>
 			</array>
 		</dict>
@@ -588,7 +720,7 @@
 						</dict>
 					</dict>
 					<key>match</key>
-					<string>\(\s*([A-Z][A-Za-z]*)\s+([a-z][A-Za-z_']*)\)\s*(=&gt;|⇒)</string>
+					<string>\(\s*([A-Z][A-Za-z]*)\s+([a-z][A-Za-z_']*)\)\s*(=&gt;)</string>
 					<key>name</key>
 					<string>meta.class-constraint.haskell</string>
 				</dict>
@@ -598,13 +730,13 @@
 				</dict>
 				<dict>
 					<key>match</key>
-					<string>(-&gt;|→)</string>
+					<string>-&gt;</string>
 					<key>name</key>
 					<string>keyword.other.arrow.haskell</string>
 				</dict>
 				<dict>
 					<key>match</key>
-					<string>(=&gt;|⇒)</string>
+					<string>=&gt;</string>
 					<key>name</key>
 					<string>keyword.other.big-arrow.haskell</string>
 				</dict>

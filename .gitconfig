@@ -1,2 +1,4 @@
+[user]
+    email = enerqi@pulsar.is
 [core]
-	autocrlf = true
+    autocrlf = true

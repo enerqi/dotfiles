@@ -54,6 +54,7 @@ typeset -U PATH
 
 alias c=colorize_via_pygmentize
 alias hadoop='nocorrect hadoop'
+alias hi='rlwrap --always-readline -t dumb hive'
 alias hl='hdfs dfs -ls'
 alias xclip='xclip -selection c'
 
@@ -62,9 +63,9 @@ ZSH_HIGHLIGHT_HIGHLIGHTERS=(main) # brackets pattern root)
 
 
 function cl() {
-	FILENAMES=("$@")
+    FILENAMES=("$@")
 
-	colorize $FILENAMES | less
+    colorize $FILENAMES | less
 }
 
 function git_permission_reset() {

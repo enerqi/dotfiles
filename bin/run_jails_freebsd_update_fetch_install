@@ -1,0 +1,7 @@
+#!/usr/local/bin/zsh
+for j in `running_jails`
+do
+sudo warden chroot $j 'freebsd-update fetch'
+sudo warden chroot $j 'freebsd-update install'
+done
+
