@@ -1,0 +1,7 @@
+#!/usr/local/bin/zsh
+for j in `running_jails`
+do
+echo $j
+sudo warden chroot $j "zsh /root/.zprezto/upgrade.zsh"
+echo
+done
