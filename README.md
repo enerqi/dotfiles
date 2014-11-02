@@ -7,6 +7,10 @@ ZSH Setup with these Dotfiles
 git clone --recursive https://github.com/enerqi/prezto.git "${ZDOTDIR:-$HOME}/.zprezto"
 ```
 
+ZSH Prezto Only Setup 
+----------------------------
+Follow setup steps in [https://github.com/enerqi/prezto](enerqi-prezto) and ignore these dotfiles.
+
 Sublime Text Setup on Windows
 ------------------------------
 
