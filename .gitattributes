@@ -1,4 +1,6 @@
-# default behaviour, in case people don't have core.autocrlf set.
+# By default text files are stored with LF line endings (Linux, OSX, Unix)
+# Auto convert default behaviour, in case windows people don't have core.autocrlf set
+# which is a global or user gitconfig that might be forgotten
 * text eol=auto
 
 *.sublime-package binary
