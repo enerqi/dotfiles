@@ -1,22 +1,10 @@
 dotfiles
 ========
 
-Installing Oh-My-ZSH Setup with these Dotfiles
+ZSH Setup with these Dotfiles
 ----------------------------------------------
 ```
-git clone https://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
-
-git clone https://github.com/enerqi/dotfiles ~/dotfiles
-
-mv dotfiles/* ~
-mv dotfiles/\.* ~
-
-mkdir -p ~/.oh-my-zsh/custom/plugins
-mkdir -p ~/.oh-my-zsh/custom/themes
-mv dotfiles/.oh-my-zsh/custom/plugins/* ~/.oh-my-zsh/custom/plugins
-mv dotfiles/.oh-my-zsh/custom/themes/* ~/.oh-my-zsh/custom/themes
-
-rm -rf ~/dotfiles
+git clone --recursive https://github.com/enerqi/prezto.git "${ZDOTDIR:-$HOME}/.zprezto"
 ```
 
 Sublime Text Setup on Windows
