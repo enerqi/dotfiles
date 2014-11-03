@@ -6,6 +6,7 @@
 # exclude git subprojects as they have their own ignore file
 # .oh-my-zsh/custom files have to be force added to this dotfiles config repo
 .oh-my-zsh
+.zprezto
 
 !bin/
 !bin/**
@@ -36,6 +37,7 @@
 
 .bash_history
 .dmenu_cache
+.gitconfig
 .gtk*
 .install4j
 .k_history
@@ -43,6 +45,7 @@
 .pgadmin_histo*
 .rc.local
 .recently-used
+.SpiderOak
 .viminfo
 .zcompdump*
 .zsh-update
