@@ -6,3 +6,4 @@
 *.sublime-package binary
 *.png binary
 *.jpg binary
+*.gz binary
