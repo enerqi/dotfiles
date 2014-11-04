@@ -7,7 +7,7 @@ ZSH Setup with these Dotfiles
 git clone --recursive https://github.com/enerqi/prezto.git "${ZDOTDIR:-$HOME}/.zprezto"
 ```
 
-ZSH Prezto Only Setup 
+ZSH Prezto Only Setup
 ----------------------------
 Follow setup steps in [https://github.com/enerqi/prezto](enerqi-prezto) and ignore these dotfiles.
 
@@ -46,7 +46,7 @@ Haskell Setup to Support Sublime
 
 ```
 cabal install cabal-install
-cabal install aeson haskell-src-exts ghc-mod stylish-haskell haskell-docs hdevtools hdocs [--constraint=haddock==2.13.2.1]
+cabal install aeson [codex] haskell-src-exts ghc-mod stylish-haskell haskell-docs hasktags hdevtools hdocs [--constraint=haddock==2.13.2.1]
 ```
 
-The constraint on haddock maybe needed with GHC 7.6
+Codex might not build with GHC 7.8. The constraint on haddock maybe needed with GHC 7.6.

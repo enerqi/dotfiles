@@ -20,6 +20,7 @@
     { "keys": ["ctrl+="], "command": "alignment" },
     { "keys": ["alt+r"], "command": "reindent"},
     { "keys": ["ctrl+q"], "command": "toggle_record_macro"},
+    { "keys": ["ctrl+alt+b"], "command": "show_panel", "args": {"panel": "output.exec"} },
 
     { "keys": ["ctrl+e", "ctrl+b"], "command": "toggle_side_bar" },
     { "keys": ["ctrl+e", "ctrl+v"], "command": "paste_from_history" },
