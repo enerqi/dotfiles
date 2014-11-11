@@ -6,6 +6,12 @@ ZSH Setup with these Dotfiles
 ```
 git clone --recursive https://github.com/enerqi/prezto.git "${ZDOTDIR:-$HOME}/.zprezto"
 ```
+Then add local machine specific definitions as desired:
+```
+.zshrc.local
+.zprofile.local
+```
+zprofile shouldn't change the key bindings, aliases, functions or shell options but could set the PATH for non-interactive or login GUI programs such as sublime-text that don't take the path from zshrc.
 
 ZSH Prezto Only Setup
 ----------------------------
