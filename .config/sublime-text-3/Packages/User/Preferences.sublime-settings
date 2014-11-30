@@ -9,7 +9,7 @@
 	"font_size": 13,
 	"ignored_packages":
 	[
-		"Vintage",
+		"Vintage"
 	],
 	"indent_to_bracket": true,
 	"theme": "Aprosopo Dark@st3.sublime-theme",
