@@ -2,7 +2,7 @@
 for j in `running_jails`
 do
 echo $j
-sudo warden chroot $j 'pkg audit'
+sudo warden chroot $j 'pkg audit -q'
 echo
 
 done
