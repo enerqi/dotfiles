@@ -156,7 +156,6 @@ bindsym Control+mod1+l exec i3lock -c 333333
 
 
 # Colouring and Styling
-
 exec --no-startup-id xsetroot -solid "#333333"
 exec --no-startup-id ~/bin/desktop_wallpaper
 
@@ -226,6 +225,16 @@ bar {
         urgent_workspace    $rd        $bg        $ac
     }
 }
+
+
+# Volume Control
+#bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -- +5% && killall -SIGUSR1 i3status
+#bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -- -5% && killall -SIGUSR1 i3status
+#bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ -- toggle && killall -SIGUSR1 i3status
+bindsym $mod+Shift+plus exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -- +5% && killall -SIGUSR1 i3status
+bindsym $mod+Shift+minus exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -- -5% && killall -SIGUSR1 i3status
+bindsym $mod+m exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ -- toggle && killall -SIGUSR1 i3status
+
 
 exec gnome-settings-daemon
 
