@@ -26,6 +26,8 @@ For more portability you can use `todolist.txt` either as a filename or as suffi
 
 ☐ <kbd>⌘ + shift + a</kbd> will archive the done tasks, by removing them from your list and appending them to the bottom of the file under Archive project
 
+☐ <kbd>⌘ + shift + o</kbd> will archive in Org-Mode style, removing the entire subtree after cursor and appending it to new file next to original one, e.g. if original is `filename.TODO` then new would be `filename_archive.TODO`
+
 ☐ <kbd>⌘ + shift + u</kbd> will open the url under the cursor in your default browser
 
 ☐ Anything with colon at the end of the line is a project title, you can also nest projects by indenting them. 
@@ -40,12 +42,83 @@ For more portability you can use `todolist.txt` either as a filename or as suffi
 
 ☐ Completion rules (<kbd>ctrl+space</kbd> to see list of them):  
 
-- type `s`, press <kbd>tab</kbd> — it’ll become `@started` — press tab again and current date will be inserted, when you’ll complete or cancel a task with such tag, you’ll know how many time has passed since start;
-- `tg` and twice <kbd>tab</kbd> work in the same manner as `s`, but inserts `@toggle(current date)` — so you can pause and resume to get more correct result when done/cancel; each toggle tag is either pause or resume depending on its place in sequence;
 - type `t`, press <kbd>tab</kbd> — it’ll become `@today` — this one is highlighted differently than other tags;
-- type `c`, press <kbd>tab</kbd> — it’ll become `@critical`;
-- type `h`, press <kbd>tab</kbd> — it’ll become `@high`;
-- type `l`, press <kbd>tab</kbd> — it’ll become `@low`.
+- `c`, <kbd>tab</kbd> — `@critical`;
+- `h`, <kbd>tab</kbd> — `@high`;
+- `l`, <kbd>tab</kbd> — `@low`;
+- `s`, <kbd>tab</kbd> — `@started` — press <kbd>tab</kbd> again and current date will be inserted, when you’ll complete or cancel a task with such tag, you’ll know how many time has passed since start;
+- `tg`, <kbd>tab</kbd>, <kbd>tab</kbd> work in the same manner as `s`, but inserts `@toggle(current date)` — so you can pause and resume to get more correct result when done/cancel; each toggle tag is either pause or resume depending on its place in sequence;
+- `cr`, <kbd>tab</kbd>, <kbd>tab</kbd> — `@created(current date)`;
+- `d`, <kbd>tab</kbd> — `@due( )`  
+  If you press <kbd>tab</kbd> again, it’ll insert current date, same for `@due( 0)`.  
+  You can type short date (similar to [OrgMode’s date prompt](http://orgmode.org/manual/The-date_002ftime-prompt.html), but not the same) and then press <kbd>tab</kbd> to expand it into default format.  
+  Short date should be __`@due(year-month-day hour:minute)`__  
+  Dot can be used instead of hyphen, but should be consistent _`year.month.day`_
+
+    - year, month, minute, hour can be omitted:
+
+        <table>
+         <tr>
+          <th>  Notation    </th><th>   Meaning     </th>
+         </tr>
+         <tr>
+          <td>  <code>@due(1)</code>    </td>
+          <td>  1st day of next month always    </td>
+         </tr>
+         <tr>
+          <td>  <code>@due(5)</code>    </td>
+          <td>  5th day of current month (or next month if current day is 5th or older) </td>
+         </tr>
+         <tr>
+          <td>  <code>@due(2-3)</code>  </td>
+          <td>  February 3rd of current year or next one    </td>
+         </tr>
+         <tr>
+          <td>  <code>@due(31 23:)</code>   </td>
+          <td>  31st day of current/next month at 23 hours and minutes are equal to current moment  </td>
+         </tr>
+         <tr>
+          <td>  <code>@due(16.1.1 1:1)</code>   </td>
+          <td>  January 1st of 2016 at 01:01    <code>@due(16-01-01 01:01)</code>  </td>
+         </tr>
+        </table>
+
+    - relative period of time starts with a plus sign or two  
+      __`+[+][number][DdWw][h:m]`__ — number is optional as well as letter `d` for days or letter `w` for weeks.
+
+        <table>
+         <tr>
+          <th>  Notation    </th><th>   Meaning     </th>
+         </tr>
+         <tr>
+          <td>  <code>@due(+)</code>    </td>
+          <td>  tomorrow as well as <code>@due( +1)</code> or <code>@due( +1d)</code></td>
+         </tr>
+         <tr>
+          <td>  <code>@due(+w)</code>    </td>
+          <td>  one week since current date, i.e. <code>@due( +7)</code></td>
+         </tr>
+         <tr>
+          <td>  <code>@due(+3w)</code>  </td>
+          <td>  3 weeks since current date, i.e. <code>@due( +21d)</code></td>
+         </tr>
+         <tr>
+          <td>  <code>@due(++)</code>   </td>
+          <td>  one day since <code>@created(date)</code> if any, otherwise it is equal to <code>@due(+)</code></td>
+         </tr>
+         <tr>
+          <td>  <code>@due(+2:)</code>   </td>
+          <td>  two hours since current date</td>
+         </tr>
+         <tr>
+          <td>  <code>@due(+:555)</code>   </td>
+          <td>  555 minutes since current date</td>
+         </tr>
+         <tr>
+          <td>  <code>@due(+2 12:)</code>   </td>
+          <td>  2 days and 12 hours since current date</td>
+         </tr>
+        </table>
 
 ☐ You can create a link to a file within your project by prefixing the file name with a dot and (back)slash like: `.\filename\` or `./another filename/`.  
   The line and column can be specified by colons: `.\filename:11:8`.  
@@ -100,8 +173,6 @@ add these settings to the json file:
 }
 ```
 
-*Note*, `"translate_tabs_to_spaces": false` will cause tab character *after* bullet as well as before, if you need whitespace add `"tasks_bullet_space": " "`.
-
 ### Spell check
 It is build-in feature of Sublime, you can toggle spell check with <kbd>F6</kbd>.  
 For convinience, you may add bullets in list of ignored words into **`Preferences → Settings - User`**, e.g.
@@ -130,6 +201,7 @@ Statistics of current file are represented in status-bar, based on `stats_format
 | `$percent`   | Ratio of `$n` to `$a`                                 |
 | `$progress`  | Percent as pseudo graphics (absents if less than 10%) |
 | `$last`      | Date of lastly completed task                         |
+| `{{...}}`    | Return `pending/completed/cancelled` tasks which matched by regex `...`;<br> e.g. `{{@tag}}` — amounts of tasks with `@tag`; or `{{@a|@b}}` — tasks with either `@a` or `@b` or both.<br> You may add several `{{...}}` to get separate stats for different tags. |
 
 So you can customise it as you like, by adding to `Settings - User`, e.g.
 

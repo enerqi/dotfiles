@@ -1,43 +1,61 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import sublime, sublime_plugin
 import os
 import re
-import sublime
-import sublime_plugin
 import webbrowser
 import itertools
 from datetime import datetime
 from datetime import timedelta
-if int(sublime.version()) < 3000:
+
+ST2 = int(sublime.version()) < 3000
+
+if ST2:
     import locale
+
+# io is not operable in ST2 on Linux, but in all other cases io is better
+# https://github.com/SublimeTextIssues/Core/issues/254
+if ST2 and sublime.platform() == 'linux':
+    import codecs as io
+else:
+    import io
 
 
 class PlainTasksBase(sublime_plugin.TextCommand):
     def run(self, edit):
-        self.taskpaper_compatible = self.view.settings().get('taskpaper_compatible', False)
+        settings = self.view.settings()
+
+        self.taskpaper_compatible = settings.get('taskpaper_compatible', False)
         if self.taskpaper_compatible:
             self.open_tasks_bullet = self.done_tasks_bullet = self.canc_tasks_bullet = '-'
             self.before_date_space = ''
         else:
-            self.open_tasks_bullet = self.view.settings().get('open_tasks_bullet', u'☐')
-            self.done_tasks_bullet = self.view.settings().get('done_tasks_bullet', u'✔')
-            self.canc_tasks_bullet = self.view.settings().get('cancelled_tasks_bullet', u'✘')
-            self.before_date_space = ' '
-        translate_tabs_to_spaces = self.view.settings().get('translate_tabs_to_spaces', False)
-        self.before_tasks_bullet_spaces = ' ' * self.view.settings().get('before_tasks_bullet_margin', 1) if translate_tabs_to_spaces else '\t'
-        self.tasks_bullet_space = self.view.settings().get('tasks_bullet_space', ' ' if translate_tabs_to_spaces else '\t')
-        self.date_format = self.view.settings().get('date_format', '(%y-%m-%d %H:%M)')
-        if self.view.settings().get('done_tag', True) or self.taskpaper_compatible:
+            self.open_tasks_bullet = settings.get('open_tasks_bullet', u'☐')
+            self.done_tasks_bullet = settings.get('done_tasks_bullet', u'✔')
+            self.canc_tasks_bullet = settings.get('cancelled_tasks_bullet', u'✘')
+            self.before_date_space = settings.get('before_date_space', ' ')
+
+        translate_tabs_to_spaces = settings.get('translate_tabs_to_spaces', False)
+        self.before_tasks_bullet_spaces = ' ' * settings.get('before_tasks_bullet_margin', 1) if not self.taskpaper_compatible and translate_tabs_to_spaces else '\t'
+        self.tasks_bullet_space = settings.get('tasks_bullet_space', ' ' if self.taskpaper_compatible or translate_tabs_to_spaces else '\t')
+
+        self.date_format = settings.get('date_format', '(%y-%m-%d %H:%M)')
+        if settings.get('done_tag', True) or self.taskpaper_compatible:
             self.done_tag = "@done"
             self.canc_tag = "@cancelled"
         else:
             self.done_tag = ""
             self.canc_tag = ""
-        if int(sublime.version()) < 3000:
+
+        self.project_postfix = settings.get('project_tag', True)
+        self.archive_name = settings.get('archive_name', 'Archive:')
+        # org-mode style archive stuff
+        self.archive_org_default_filemask = u'{dir}{sep}{base}_archive{ext}'
+        self.archive_org_filemask = settings.get('archive_org_filemask', self.archive_org_default_filemask)
+
+        if ST2:
             self.sys_enc = locale.getpreferredencoding()
-        self.project_postfix = self.view.settings().get('project_tag', True)
-        self.archive_name = self.view.settings().get('archive_name', 'Archive:')
         self.runCommand(edit)
 
 
@@ -115,7 +133,7 @@ class PlainTasksCompleteCommand(PlainTasksBase):
             done_matches = re.match(rdm, line_contents, re.U)
             canc_matches = re.match(rcm, line_contents, re.U)
             started_matches = re.match(started, line_contents, re.U)
-            toggle_matches = re.findall(toggle,line_contents, re.U)
+            toggle_matches = re.findall(toggle, line_contents, re.U)
 
             current_scope = self.view.scope_name(line.a)
             if 'pending' in current_scope:
@@ -164,9 +182,13 @@ class PlainTasksCompleteCommand(PlainTasksBase):
         deltas = [pair[1] - pair[0] for pair in pairs]
 
         delta = str(sum(deltas, timedelta()))
-        if delta[~2:] == ':00': # strip meaningless seconds
+        if delta[~6:] == '0:00:00': # strip meaningless time
+            delta = delta[:~6]
+        elif delta[~2:] == ':00': # strip meaningless seconds
             delta = delta[:~2]
-        self.view.insert(edit, line.end() + eol, ' @%s(%s)' % (tag, delta))
+
+        tag = ' @%s(%s)' % (tag, delta.rstrip(', ') if delta else ('a bit' if '%H' in self.date_format else 'less than day'))
+        self.view.insert(edit, line.end() + eol, tag)
 
     @staticmethod
     def check_parentheses(date_format, regex_group, is_date=False):
@@ -351,7 +373,13 @@ class PlainTasksArchiveCommand(PlainTasksBase):
 class PlainTasksNewTaskDocCommand(sublime_plugin.WindowCommand):
     def run(self):
         view = self.window.new_file()
+        view.settings().add_on_change('color_scheme', lambda: self.set_proper_scheme(view))
         view.set_syntax_file('Packages/PlainTasks/PlainTasks.tmLanguage')
+
+    def set_proper_scheme(self, view):
+        # Since we cannot create file with syntax, there is moment when view has no settings,
+        # but it is activated, so some plugins (e.g. Color Highlighter) set wrong color scheme
+        view.settings().set('color_scheme', sublime.load_settings('PlainTasks.sublime-settings').get('color_scheme'))
 
 
 class PlainTasksOpenUrlCommand(sublime_plugin.TextCommand):
@@ -492,6 +520,127 @@ class PlainTaskInsertDate(PlainTasksBase):
             self.view.insert(edit, s.b, datetime.now().strftime(self.date_format))
 
 
+class PlainTasksReplaceShortDate(PlainTasksBase):
+    def runCommand(self, edit):
+        self.date_format = self.date_format.strip('()')
+        now = datetime.now()
+
+        s = self.view.sel()[0]
+        start, end = s.a, s.b
+        while self.view.substr(start) != '(':
+            start -= 1
+        while self.view.substr(end) != ')':
+            end += 1
+        self.rgn = sublime.Region(start + 1, end)
+        matchstr = self.view.substr(self.rgn)
+        # print(matchstr)
+
+        if '+' in matchstr:
+            date = self.increase_date(matchstr, now)
+        else:
+            date = self.convert_date(matchstr, now)
+
+        self.view.replace(edit, self.rgn, date)
+        offset = start + len(date) + 2
+        self.view.sel().clear()
+        self.view.sel().add(sublime.Region(offset, offset))
+
+    def increase_date(self, matchstr, now):
+        # relative from date of creation if any
+        if '++' in matchstr:
+            line_content = self.view.substr(self.view.line(self.rgn))
+            created = re.search(r'(?mxu)@created\(([\d\w,\.:\-\/ @]*)\)', line_content)
+            if created:
+                try:
+                    now = datetime.strptime(created.group(1), self.date_format)
+                except ValueError as e:
+                    return sublime.error_message('PlainTasks:\n\n FAILED date convertion: %s' % e)
+
+        match_obj = re.search(r'''(?mxu)
+            \s*\+\+?\s*
+            (?:
+             (?P<number>\d*(?![:.]))\s*
+             (?P<days>[Dd]?)
+             (?P<weeks>[Ww]?)
+             (?! \d*[:.])
+            )?
+            \s*
+            (?:
+             (?P<hour>\d*)
+             [:.]
+             (?P<minute>\d*)
+            )?''', matchstr)
+        number = int(match_obj.group('number') or 0)
+        days   = match_obj.group('days')
+        weeks  = match_obj.group('weeks')
+        hour   = int(match_obj.group('hour') or 0)
+        minute = int(match_obj.group('minute') or 0)
+        if not (number or hour or minute) or (not number and (days or weeks)):
+            # set 1 if number is ommited, i.e.
+            #   @due(+) == @due(+1) == @due(+1d)
+            #   @due(+w) == @due(+1w)
+            number = 1
+        delta = now + timedelta(days=(number*7 if weeks else number), minutes=minute, hours=hour)
+        return delta.strftime(self.date_format)
+
+    def convert_date(self, matchstr, now):
+        match_obj = re.search(r'''(?mxu)
+            (?:\s*
+             (?P<yearORmonthORday>\d*(?!:))
+             (?P<sep>[-\.])?
+             (?P<monthORday>\d*)
+             (?P=sep)?
+             (?P<day>\d*)
+             (?! \d*:)(?# e.g. '23:' == hour, but '1 23:' == day=1, hour=23)
+            )?
+            \s*
+            (?:
+             (?P<hour>\d*)
+             :
+             (?P<minute>\d*)
+            )?''', matchstr)
+        year  = now.year
+        month = now.month
+        day   = int(match_obj.group('day') or 0)
+        # print(day)
+        if day:
+            year  = int(match_obj.group('yearORmonthORday'))
+            month = int(match_obj.group('monthORday'))
+        else:
+            day = int(match_obj.group('monthORday') or 0)
+            # print(day)
+            if day:
+                month = int(match_obj.group('yearORmonthORday'))
+                if month < now.month:
+                    year += 1
+            else:
+                day = int(match_obj.group('yearORmonthORday') or 0)
+                # print(day)
+                if 0 < day <= now.day:
+                    # expect next month
+                    month += 1
+                    if month == 13:
+                        year += 1
+                        month = 1
+                else: # @due(0) == today
+                    day = now.day
+        hour   = match_obj.group('hour')   or now.hour
+        minute = match_obj.group('minute') or now.minute
+        hour, minute = int(hour), int(minute)
+        if year < 100:
+            year += 2000
+
+        # print(year, month, day, hour, minute)
+        try:
+            date = datetime(year, month, day, hour, minute, 0).strftime(self.date_format)
+        except ValueError as e:
+            return sublime.error_message('PlainTasks:\n\n'
+                '%s:\n year:\t%d\n month:\t%d\n day:\t%d\n HH:\t%d\n MM:\t%d\n' %
+                (e, year, month, day, hour, minute))
+        else:
+            return date
+
+
 class PlainTasksConvertToHtml(PlainTasksBase):
     def is_enabled(self):
         return self.view.score_selector(0, "text.todo") > 0
@@ -588,7 +737,7 @@ class PlainTasksConvertToHtml(PlainTasksBase):
             html_doc.append(ht)
 
         # create file
-        import tempfile, io
+        import tempfile
         tmp_html = tempfile.NamedTemporaryFile(delete=False, suffix='.html')
         with io.open('%s/PlainTasks/templates/template.html' % sublime.packages_path(), 'r', encoding='utf8') as template:
             title = os.path.basename(self.view.file_name()) if self.view.file_name() else 'Export'
@@ -646,6 +795,23 @@ class PlainTasksStatsStatus(sublime_plugin.EventListener):
     @staticmethod
     def get_stats(view):
         msgf = view.settings().get('stats_format', '$n/$a done ($percent%) $progress Last task @done $last')
+
+        special_interest = re.findall(r'{{.*?}}', msgf)
+        for i in special_interest:
+            matches = view.find_all(i.strip('{}'))
+            pend, done, canc = [], [], []
+            for t in matches:
+                # one task may contain same tag/word several times—we count amount of tasks, not tags
+                t = view.line(t).a
+                scope = view.scope_name(t)
+                if 'pending' in scope and t not in pend:
+                    pend.append(t)
+                elif 'completed' in scope and t not in done:
+                    done.append(t)
+                elif 'cancelled' in scope and t not in canc:
+                    canc.append(t)
+            msgf = msgf.replace(i, '%d/%d/%d'%(len(pend), len(done), len(canc)))
+
         ignore_archive = view.settings().get('stats_ignore_archive', False)
         if ignore_archive:
             archive_pos = view.find(view.settings().get('archive_name', 'Archive:'), 0, sublime.LITERAL)
@@ -695,3 +861,91 @@ class PlainTasksCopyStats(sublime_plugin.TextCommand):
                 msg = msg.replace(o, r)
 
         sublime.set_clipboard(msg)
+
+
+class PlainTasksArchiveOrgCommand(PlainTasksBase):
+    def runCommand(self, edit):
+        # Archive the curent subtree to our archive file, not just completed tasks.
+        # For now, it's mapped to ctrl-shift-o or super-shift-o
+
+        # TODO: Mark any tasks found as complete, or maybe warn.
+
+        # Get our archive filename
+        archive_filename = self.__createArchiveFilename()
+
+        # Figure out our subtree
+        region = self.__findCurrentSubtree()
+        if region.empty():
+            # How can we get here?
+            sublime.error_message("Error:\n\nCould not find a tree to archive.")
+            return
+
+        # Write our region or our archive file
+        success = self.__writeArchive(archive_filename, region)
+
+        # only erase our region if the write was successful
+        if success:
+            self.view.erase(edit,region)
+
+        return
+
+    def __writeArchive(self, filename, region):
+        # Write out the given region
+
+        sublime.status_message(u'Archiving tree to {0}'.format(filename))
+        try:
+            # Have to use io.open because windows doesn't like writing
+            # utf8 to regular filehandles
+            with io.open(filename, 'a', encoding='utf8') as fh:
+                data = self.view.substr(region)
+                # Is there a way to read this in?
+                fh.write(u"--- ✄ -----------------------\n")
+                fh.write(u"Archived {0}:\n".format(datetime.now().strftime(
+                    self.date_format)))
+                # And, finally, write our data
+                fh.write(u"{0}\n".format(data))
+            return True
+
+        except Exception as e:
+            sublime.error_message(u"Error:\n\nUnable to append to {0}\n{1}".format(
+                filename, str(e)))
+            return False
+
+    def __createArchiveFilename(self):
+        # Create our archive filename, from the mask in our settings.
+
+        # Split filename int dir, base, and extension, then apply our mask
+        path_base, extension = os.path.splitext(self.view.file_name())
+        dir  = os.path.dirname(path_base)
+        base = os.path.basename(path_base)
+        sep  = os.sep
+
+        # Now build our new filename
+        try:
+            # This could fail, if someone messed up the mask in the
+            # settings.  So, if it did fail, use our default.
+            archive_filename = self.archive_org_filemask.format(
+                dir=dir, base=base, ext=extension, sep=sep)
+        except:
+            # Use our default mask
+            archive_filename = self.archive_org_default_filemask.format(
+                    dir=dir, base=base, ext=extension, sep=sep)
+
+            # Display error, letting the user know
+            sublime.error_message(u"Error:\n\nInvalid filemask:{0}\nUsing default: {1}".format(
+                self.archive_org_filemask, self.archive_org_default_filemask))
+
+        return archive_filename
+
+    def __findCurrentSubtree(self):
+        # Return the region that starts at the cursor, or starts at
+        # the beginning of the selection
+
+        line = self.view.line(self.view.sel()[0].begin())
+        # Start finding the region at the beginning of the next line
+        region = self.view.indented_region(line.b + 2)
+
+        if not region.empty():
+            region = sublime.Region(line.a, region.b)
+
+        return region
