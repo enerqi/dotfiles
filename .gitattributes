@@ -7,3 +7,5 @@
 *.png binary
 *.jpg binary
 *.gz binary
+*.pyd binary
+*.so binary
