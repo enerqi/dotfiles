@@ -20,6 +20,7 @@
     { "keys": ["ctrl+="], "command": "alignment" },
     { "keys": ["alt+r"], "command": "reindent"},
     { "keys": ["ctrl+q"], "command": "toggle_record_macro"},
+    { "keys": ["ctrl+alt+b"], "command": "show_panel", "args": {"panel": "output.exec"} },
 
     { "keys": ["ctrl+e", "ctrl+b"], "command": "toggle_side_bar" },
     { "keys": ["ctrl+e", "ctrl+v"], "command": "paste_from_history" },
@@ -29,6 +30,8 @@
     { "keys": ["ctrl+e", "ctrl+down"], "command": "close_pane" },
     { "keys": ["ctrl+e", "ctrl+left"], "command": "focus_neighboring_group", "args": {"forward": false} },
     { "keys": ["ctrl+e", "ctrl+right"], "command": "focus_neighboring_group" },
+    { "keys": ["ctrl+e", "ctrl+n"], "command": "focus_neighboring_group", "args": {"forward": false} },
+    { "keys": ["ctrl+e", "ctrl+i"], "command": "focus_neighboring_group" },
     { "keys": ["ctrl+e", "ctrl+shift+left"], "command": "move_to_neighboring_group", "args": {"forward": false} },
     { "keys": ["ctrl+e", "ctrl+shift+right"], "command": "move_to_neighboring_group" },
     { "keys": ["ctrl+e", "ctrl+u"], "command": "upper_case" },
