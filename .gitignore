@@ -11,17 +11,13 @@
 !bin/
 !bin/**
 
+# sync just Packages/User/*, minus a few regularly updated files
 !.config/sublime-text-3/
-!.config/sublime-text-3/**
-.config/sublime-text-3/**/\.nfs*
-.config/sublime-text-3/Backup
-.config/sublime-text-3/Cache
-.config/sublime-text-3/Index
-.config/sublime-text-3/Local
+!.config/sublime-text-3/Packages/
+!.config/sublime-text-3/Packages/User/
+!.config/sublime-text-3/Packages/User/**
 .config/sublime-text-3/Packages/User/Package Control.cache
 .config/sublime-text-3/Packages/User/.SublimeREPLHistory
-.config/sublime-text-3/Packages/SublimeHaskell/cache
-.config/sublime-text-3/Packages/SublimeHaskell/CabalInspector
 .config/sublime-text-3/Packages/User/Package Control.last-run
 .config/sublime-text-3/Packages/User/Package Control.ca-list
 .config/sublime-text-3/Packages/User/Package Control.ca-bundle
@@ -29,8 +25,6 @@
 .config/sublime-text-3/Packages/User/Package Control.cache/
 .config/sublime-text-3/Packages/User/Package Control.ca-certs/
 
-
-.config/sublime-text-3/Settings
 
 !.config/terminator/
 !.config/terminator/**
