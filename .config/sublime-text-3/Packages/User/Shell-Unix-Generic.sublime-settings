@@ -1,7 +1,14 @@
 {
 	"extensions":
 	[
-		".zshrc",
-		".zlogin"
+        ".bashrc",
+        ".zlogin",
+        ".zlogout",
+        ".zpreztorc",
+        ".zprofile",
+        ".zprofile.local",
+        ".zshenv",
+        ".zshrc",
+        ".zshrc.local"
 	]
 }
