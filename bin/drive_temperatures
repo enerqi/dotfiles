@@ -1,4 +1,8 @@
 #!/usr/local/bin/zsh
+# For running from crons with more limited environments
+PATH=$PATH:/usr/local/bin:/usr/local/sbin
+typeset -U PATH
+
 
 echo current maximum
 for i in {0..5} 
