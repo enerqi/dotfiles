@@ -6,7 +6,7 @@ sudo warden chroot dns 'service dnscrypt-proxy restart'
 sudo warden chroot murmur 'service murmur restart'
 sudo warden chroot proxy 'service nginx restart'
 sudo warden chroot shares 'service samba restart'
-sudo warden chroot subsonic 'service tomcat6 restart'
+sudo warden chroot subsonic 'service jetty restart'
 sudo warden chroot www 'service nginx restart'
 
 
