@@ -72,12 +72,11 @@
         ]
     },
 
-    {
-      "keys": ["ctrl+e", "ctrl+r"], "command": "browser_refresh", "args": {
+    { "keys": ["ctrl+e", "ctrl+r"], "command": "browser_refresh", "args": {
           "auto_save": true,
-          "delay": 0.5,
-          "activate_browser": true,
-          "browser_name" : "all"
+          "delay": 0.1,
+          "activate": true,
+          "browsers" : ["firefox"]
       }
     },
 
