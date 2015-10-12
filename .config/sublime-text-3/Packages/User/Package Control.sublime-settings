@@ -1,5 +1,6 @@
 {
 	"auto_upgrade_last_run": null,
+	"bootstrapped": true,
 	"in_process_packages":
 	[
 	],
@@ -7,6 +8,7 @@
 	[
 		"AdvancedNewFile",
 		"AlignTab",
+		"AngularJS",
 		"Apache Hive",
 		"Apache Pig",
 		"ApacheConf.tmLanguage",
@@ -14,6 +16,7 @@
 		"Cap'n Proto Syntax",
 		"Character Table",
 		"CUDA C++",
+		"Dart",
 		"Dictionaries",
 		"Elm Language Support",
 		"Expand Selection to Whitespace",
@@ -22,7 +25,10 @@
 		"HexViewer",
 		"i3 wm",
 		"INI",
+		"Inno Setup",
 		"Jai",
+		"Markdown Extended",
+		"Monokai Extended",
 		"MultiEditUtils",
 		"Package Control",
 		"Path Tools",
