@@ -1,0 +1,5 @@
+{
+  // Replace with your own path to cmder.exe
+  "terminal": "cmder.exe",
+  "parameters": ["/START", "%CWD%"]
+}
