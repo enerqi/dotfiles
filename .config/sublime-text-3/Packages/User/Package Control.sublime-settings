@@ -70,6 +70,7 @@
 		"SublimeGit",
 		"SublimeHaskell",
 		"SublimeLinter",
+		"SublimeLinter-contrib-elixirc",
 		"SublimeLinter-contrib-puppet",
 		"SublimeLinter-contrib-rustc",
 		"SublimeLinter-flake8",
