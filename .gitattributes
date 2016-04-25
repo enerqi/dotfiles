@@ -1,6 +1,8 @@
 # By default text files are stored with LF line endings (Linux, OSX, Unix)
 # Auto convert default behaviour, in case windows people don't have core.autocrlf set
 # which is a global or user gitconfig that might be forgotten
+# https://stackoverflow.com/questions/17628305/windows-git-warning-lf-will-be-replaced-by-crlf-is-that-warning-tail-backwar
+# Also set core.autocrlf = false globally
 * text eol=auto
 
 *.sublime-package binary

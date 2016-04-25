@@ -42,6 +42,8 @@
 !.lein/**
 .lein/self-installs/
 
+.cargo/
+
 .bash_history
 .dmenu_cache
 .gitconfig
@@ -52,6 +54,7 @@
 .pgadmin_histo*
 .rc.local
 .recently-used
+.rnd
 .SpiderOak
 .viminfo
 .zcompdump*
