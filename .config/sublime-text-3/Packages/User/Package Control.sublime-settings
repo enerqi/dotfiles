@@ -3,12 +3,12 @@
 	"bootstrapped": true,
 	"in_process_packages":
 	[
+
 	],
 	"installed_packages":
 	[
 		"AdvancedNewFile",
 		"AlignTab",
-		"All Autocomplete",
 		"AngularJS",
 		"Apache Hive",
 		"Apache Pig",
@@ -24,7 +24,6 @@
 		"ConvertToUTF8",
 		"CSS Unminifier",
 		"CUDA C++",
-		"Dart",
 		"Dictionaries",
 		"EditorConfig",
 		"Elixir",
@@ -77,6 +76,7 @@
 		"SublimeLinter-flake8",
 		"SublimeLinter-pylint",
 		"SublimeREPL",
+		"Sublimerge Pro",
 		"Terminal",
 		"Theme - Aprosopo",
 		"Theme - Brogrammer",
@@ -89,6 +89,7 @@
 		"Theme - Spacegray",
 		"TOML",
 		"Trimmer",
-		"UnicodeMath"
+		"UnicodeMath",
+		"XSL"
 	]
 }
