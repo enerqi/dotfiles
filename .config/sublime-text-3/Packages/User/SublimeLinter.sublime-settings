@@ -3,10 +3,23 @@
         "debug": false,
         "delay": 2.5,
         "error_color": "D02000",
-        "gutter_theme": "Packages/SublimeLinter/gutter-themes/Default/Default.gutter-theme",
+        "gutter_theme": "Packages/SublimeLinter/gutter-themes/Blueberry/cross/Blueberry - cross.gutter-theme",
         "gutter_theme_excludes": [],
         "lint_mode": "background",
         "linters": {
+            "elixirc": {
+                "@disable": false,
+                "args": [],
+                "excludes": [],
+                "include_dirs": [],
+                "mix": false,
+                "pa": []
+            },
+            "elixirlinter": {
+                "@disable": false,
+                "args": [],
+                "excludes": []
+            },
             "flake8": {
                 "@disable": false,
                 "args": [],
@@ -40,6 +53,7 @@
                 "crate-root": null,
                 "excludes": [],
                 "use-cargo": true,
+                "use-cargo-check": false,
                 "use-crate-root": true
             }
         },
