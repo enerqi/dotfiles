@@ -8,7 +8,6 @@
 	[
 		"AdvancedNewFile",
 		"AlignTab",
-		"All Autocomplete",
 		"AngularJS",
 		"Apache Hive",
 		"Apache Pig",
@@ -39,6 +38,7 @@
 		"Hasher",
 		"HexViewer",
 		"Highlight",
+		"Highlight Build Errors",
 		"HTML-CSS-JS Prettify",
 		"i3 wm",
 		"INI",
