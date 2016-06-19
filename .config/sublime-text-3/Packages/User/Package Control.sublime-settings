@@ -23,7 +23,6 @@
 		"ConvertToUTF8",
 		"CSS Unminifier",
 		"CUDA C++",
-		"Dart",
 		"Dictionaries",
 		"EditorConfig",
 		"Elixir",
@@ -31,6 +30,7 @@
 		"Elm Language Support",
 		"Expand Selection to Whitespace",
 		"FileBrowser",
+		"FindKeyConflicts",
 		"GitGutter",
 		"GitHub Flavored Markdown Preview",
 		"GoToLastEdit",
@@ -78,6 +78,7 @@
 		"SublimeLinter-flake8",
 		"SublimeLinter-pylint",
 		"SublimeREPL",
+		"Sublimerge Pro",
 		"Terminal",
 		"Theme - Aprosopo",
 		"Theme - Brogrammer",
@@ -90,6 +91,7 @@
 		"Theme - Spacegray",
 		"TOML",
 		"Trimmer",
-		"UnicodeMath"
+		"UnicodeMath",
+		"XSL"
 	]
 }
