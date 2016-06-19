@@ -78,7 +78,7 @@
           "auto_save": true,
           "delay": 0.1,
           "activate": true,
-          "browsers" : ["firefox"]
+          "browsers" : ["chrome"]
       }
     },
 
