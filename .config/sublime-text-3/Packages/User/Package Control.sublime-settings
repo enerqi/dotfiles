@@ -3,6 +3,7 @@
 	"bootstrapped": true,
 	"in_process_packages":
 	[
+		"BracketHighlighter"
 	],
 	"installed_packages":
 	[
@@ -34,7 +35,6 @@
 		"FindKeyConflicts",
 		"GitGutter",
 		"GitHub Flavored Markdown Preview",
-		"GoToLastEdit",
 		"Grunt",
 		"Hasher",
 		"HexViewer",
