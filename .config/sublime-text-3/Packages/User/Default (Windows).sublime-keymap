@@ -1,5 +1,7 @@
 [
     { "keys": ["ctrl+,"], "command": "goto_definition" },
+    { "keys": ["ctrl+alt+,"], "command": "rust_goto_definition", "context":
+        [{"key": "selector", "operator": "equal", "operand": "source.rust" }] },
     { "keys": ["ctrl+shift+o"], "command": "prompt_open_folder" },
     { "keys": ["ctrl+t"], "command": "find_under_expand" },
     { "keys": ["ctrl+d"], "command": "transpose" },
@@ -72,12 +74,11 @@
         ]
     },
 
-    {
-      "keys": ["ctrl+e", "ctrl+r"], "command": "browser_refresh", "args": {
+    { "keys": ["ctrl+e", "ctrl+r"], "command": "browser_refresh", "args": {
           "auto_save": true,
-          "delay": 0.5,
-          "activate_browser": true,
-          "browser_name" : "all"
+          "delay": 0.1,
+          "activate": true,
+          "browsers" : ["chrome"]
       }
     },
 
@@ -89,6 +90,9 @@
     { "keys": ["shift+alt+.", "l"], "command": "repl_transfer_current", "args": {"scope": "lines", "action":"view_write"}},
     { "keys": ["alt+.", "b"], "command": "repl_transfer_current", "args": {"scope": "block"}},
     { "keys": ["shift+alt+.", "b"], "command": "repl_transfer_current", "args": {"scope": "block", "action":"view_write"}},
+
+    { "keys": ["f5"], "command": "open_terminal" },
+    { "keys": ["ctrl+f5"], "command": "open_terminal_project_folder" },
 
     { "keys": [":",":"], "command": "insert_snippet", "args": {"contents": "∷"}, "context":
         [{"key": "selector", "operator": "equal", "operand": "source.haskell" }]
