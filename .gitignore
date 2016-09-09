@@ -11,6 +11,9 @@
 !bin/
 !bin/**
 
+!cmder/
+!cmder/**
+
 # sync just Packages/User/*, minus a few regularly updated files
 .config/sublime-text-3/**/\.nfs*
 !.config/sublime-text-3/
