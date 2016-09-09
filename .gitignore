@@ -13,6 +13,13 @@
 
 !cmder/
 !cmder/**
+!cmder/config
+cmder/*.md
+cmder/icons/
+cmder/vendor/
+cmder/Version*
+cmder/Cmder.exe
+
 
 # sync just Packages/User/*, minus a few regularly updated files
 .config/sublime-text-3/**/\.nfs*
