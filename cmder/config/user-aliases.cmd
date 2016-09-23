@@ -15,3 +15,4 @@ vi=vim $*
 cmderr=cd /d "%CMDER_ROOT%"
 gst=git status $*  
 l=ls --show-control-chars -F --color -Alh $*  
+gfm=git pull $*  
