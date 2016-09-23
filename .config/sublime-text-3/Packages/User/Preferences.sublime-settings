@@ -9,6 +9,7 @@
 	"font_size": 13,
 	"ignored_packages":
 	[
+		"ApacheConf.tmLanguage",
 		"Markdown",
 		"Vintage"
 	],
@@ -17,5 +18,15 @@
 	"show_panel_on_build": false,
 	"theme": "Freesia.sublime-theme",
 	"translate_tabs_to_spaces": true,
-	"trim_trailing_white_space_on_save": true
+	"trim_trailing_white_space_on_save": true,
+    "index_exclude_patterns":
+    [
+        "node_modules/**",
+        "*.log"
+    ],
+    "binary_file_patterns":
+    ["node_modules/",
+     "*.jpg", "*.jpeg", "*.png", "*.gif", "*.ttf", "*.tga", "*.dds", "*.ico",
+     "*.eot", "*.pdf", "*.swf", "*.jar", "*.zip"],
+    "index_workers": 3
 }
