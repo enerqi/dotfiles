@@ -13,6 +13,7 @@ history=cat %CMDER_ROOT%\config\.history
 unalias=alias /d $1
 vi=vim $*
 cmderr=cd /d "%CMDER_ROOT%"
-gst=git status $*  
-l=ls --show-control-chars -F --color -Alh $*  
-gfm=git pull $*  
+gst=git status $*
+l=ls --show-control-chars -F --color -Alh $*
+gfm=git pull $*
+udesql=pclip | grep -v === | column -t
