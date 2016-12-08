@@ -3,7 +3,7 @@ for j in `running_jails`
 do
 echo ''
 echo $j
-sudo warden chroot $j 'freebsd-update fetch'
+sudo warden chroot $j 'freebsd-update fetch --not-running-from-cron'
 sudo warden chroot $j 'freebsd-update install'
 echo ''
 done
