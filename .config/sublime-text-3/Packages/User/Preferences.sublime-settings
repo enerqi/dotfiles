@@ -26,7 +26,6 @@
 	"font_size": 13,
 	"ignored_packages":
 	[
-		"ApacheConf.tmLanguage",
 		"Markdown",
 		"Vintage"
 	],
