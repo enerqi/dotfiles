@@ -27,6 +27,9 @@ cmder/Cmder.exe
 !.config/sublime-text-3/Packages/
 !.config/sublime-text-3/Packages/User/
 !.config/sublime-text-3/Packages/User/**
+.config/sublime-text-3/**/*.tmTheme
+.config/sublime-text-3/Packages/User/encoding_cache.json
+.config/sublime-text-3/Packages/User/i_opener_history.sublime-settings
 .config/sublime-text-3/Packages/User/Package Control.cache
 .config/sublime-text-3/Packages/User/.SublimeREPLHistory
 .config/sublime-text-3/Packages/User/Package Control.last-run
