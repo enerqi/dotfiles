@@ -78,6 +78,7 @@
 		"SublimeLinter-contrib-rustc",
 		"SublimeLinter-flake8",
 		"SublimeLinter-pylint",
+		"SublimePythonIDE",
 		"SublimeREPL",
 		"Sublimerge Pro",
 		"Terminal",
