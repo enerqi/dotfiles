@@ -25,6 +25,7 @@
                 "args": [],
                 "builtins": "",
                 "excludes": [],
+                "executable": "",
                 "ignore": "",
                 "jobs": "1",
                 "max-complexity": -1,
@@ -46,15 +47,6 @@
                 "paths": [],
                 "rcfile": "",
                 "show-codes": false
-            },
-            "rust": {
-                "@disable": false,
-                "args": [],
-                "crate-root": null,
-                "excludes": [],
-                "use-cargo": true,
-                "use-cargo-check": false,
-                "use-crate-root": true
             }
         },
         "mark_style": "outline",
