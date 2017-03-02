@@ -73,6 +73,8 @@ cmder/Cmder.exe
 .viminfo
 .zcompdump*
 .zsh-update
+.zshrc.local
+.zprofile.local
 
 *authority
 *cookie*
