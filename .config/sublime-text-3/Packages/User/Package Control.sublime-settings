@@ -3,6 +3,7 @@
 	"bootstrapped": true,
 	"in_process_packages":
 	[
+
 	],
 	"installed_packages":
 	[
@@ -23,7 +24,6 @@
 		"ConvertToUTF8",
 		"CSS Unminifier",
 		"CUDA C++",
-		"Dictionaries",
 		"EasyDiff",
 		"EditorConfig",
 		"Elixir",
