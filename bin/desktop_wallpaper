@@ -1,9 +1,0 @@
-#!/usr/bin/env zsh
-
-if (uname -a | grep -q Ubuntu); then
-    export WALLPAPER_DIR=/usr/share/backgrounds
-else
-    export WALLPAPER_DIR=/usr/share/backgrounds/gnome
-fi
-
-feh --bg-scale $WALLPAPER_DIR/`python -c 'import os,random; print random.choice([f for f in os.listdir(os.environ["WALLPAPER_DIR"]) if os.path.isfile(os.path.join(os.environ["WALLPAPER_DIR"], f))])'`
