@@ -269,6 +269,7 @@ assign [class="^tresorit"] 9
 # Auto start programs launched with startup notification support (requires i3 to have got going)
 # Programs that just need generic X stuff started up can use ~/.xinitrc
 # Note this is not shell `exec` but i3 command to pass code to the shell to run
+exec --no-startup-id nm-applet
 exec nohup unity-settings-daemon &
-exec tresorit
+exec nohup tresorit &
 
