@@ -8,6 +8,7 @@
 	[
 		"AdvancedNewFile",
 		"AlignTab",
+		"Anaconda",
 		"AngularJS",
 		"Apache Hive",
 		"Apache Pig",
@@ -23,7 +24,6 @@
 		"ConvertToUTF8",
 		"CSS Unminifier",
 		"CUDA C++",
-		"Dictionaries",
 		"EasyDiff",
 		"EditorConfig",
 		"Elixir",
@@ -47,6 +47,7 @@
 		"Inno Setup",
 		"iOpener",
 		"Jai",
+		"Jinja2",
 		"Load file to REPL",
 		"Markdown Extended",
 		"MarkdownEditing",
@@ -62,6 +63,7 @@
 		"Puppet",
 		"PureScript",
 		"Random Everything",
+		"requirementstxt",
 		"Rust Enhanced",
 		"RustAutoComplete",
 		"Sass",
@@ -76,9 +78,6 @@
 		"SublimeLinter",
 		"SublimeLinter-contrib-elixirc",
 		"SublimeLinter-contrib-puppet",
-		"SublimeLinter-flake8",
-		"SublimeLinter-pylint",
-		"SublimePythonIDE",
 		"SublimeREPL",
 		"Sublimerge 3",
 		"Terminal",
@@ -94,6 +93,7 @@
 		"TOML",
 		"Trimmer",
 		"UnicodeMath",
-		"XSL"
+		"XSL",
+		"Zen Tabs"
 	]
 }
