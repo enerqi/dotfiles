@@ -26,6 +26,7 @@
 	"ignored_packages":
 	[
 		"Markdown",
+		"RustAutoComplete",
 		"SublimeHaskell",
 		"Vintage"
 	],

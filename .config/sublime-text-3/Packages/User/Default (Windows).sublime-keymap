@@ -1,12 +1,14 @@
 [
     { "keys": ["ctrl+,"], "command": "goto_definition" },
-    { "keys": ["ctrl+alt+,"], "command": "rust_goto_definition", "context":
+    { "keys": ["ctrl+alt+,"], "command": "rust_goto", "context":
         [{"key": "selector", "operator": "equal", "operand": "source.rust" }] },
     { "keys": ["ctrl+alt+,"], "command": "anaconda_goto", "context":
         [{"key": "selector", "operator": "equal", "operand": "source.python" }] },
     { "keys": ["ctrl+shift+o"], "command": "prompt_open_folder" },
     { "keys": ["ctrl+t"], "command": "find_under_expand" },
-    { "keys": ["ctrl+d"], "command": "transpose" },
+    { "keys": ["ctrl+alt+d"], "command": "transpose" },
+    { "keys": ["ctrl+d"], "command": "rust_doc", "context":
+        [{"key": "selector", "operator": "equal", "operand": "source.rust" }] },
     { "keys": ["alt+l"], "command": "jump_back" },
     { "keys": ["alt+u"], "command": "jump_forward" },
     { "keys": ["alt+pagedown"], "command": "next_view_in_stack" },
