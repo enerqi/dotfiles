@@ -19,7 +19,7 @@
 		"*.jar",
 		"*.zip"
 	],
-	"color_scheme": "Packages/User/SublimeLinter/Monokai Extended Bright (SL).tmTheme",
+	"color_scheme": "Packages/User/Monokai Extended Bright (SL) (SublimePythonIDE).tmTheme",
 	"ensure_newline_at_eof_on_save": true,
 	"font_face": "Consolas",
 	"font_size": 13,

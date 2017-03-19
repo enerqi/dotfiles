@@ -5,9 +5,8 @@
 
   // A list of search paths. This should generally just
   // be the path to the rust compiler src/ directory.
-  "search_paths": [
-    "~/dev/rust/rust/src"
-  ],
+  // Picks up RUST_SRC_PATH
+  "search_paths": [],
 
   "auto_complete_triggers": [
         {"selector": "source.rust", "characters": "."},
