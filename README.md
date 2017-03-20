@@ -9,9 +9,15 @@ git clone --recursive https://github.com/enerqi/prezto.git "${ZDOTDIR:-$HOME}/.z
 Then add local machine specific definitions as desired:
 ```
 .zshrc.local
-.zprofile.local
+.profile  (graphical login environment variables)
+.xinitrc/.xsession (running graphical programs)
+.zprofile.local (login shells - rarely needed)
 ```
-zprofile shouldn't change the key bindings, aliases, functions or shell options but could set the PATH for non-interactive or login GUI programs such as sublime-text that don't take the path from zshrc.
+
+- For programs started by the desktop manager and not the interactive shell process hierarachy, such as sublime-text, use `~/.profile` to setup the environment variables.
+- `zprofile` / `~/.zprofile.local`  shouldn't change the key bindings, aliases, functions or shell options but could set the PATH for non-interactive or login commandline programs.
+- `xinitrc` (startx) / `xsession` (xdm) run window manager independent programs after graphical login. Window manager specific scripts such as `~/.i3/config` could also be used.
+
 
 ### ZSH Prezto Only Setup
 Follow setup steps in [https://github.com/enerqi/prezto](enerqi-prezto) and ignore these dotfiles.
