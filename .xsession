@@ -1,1 +1,1 @@
-/home/kelvin/.xinitrc
+.xinitrc
