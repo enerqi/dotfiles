@@ -14,9 +14,9 @@ Then add local machine specific definitions as desired:
 .zprofile.local (login shells - rarely needed)
 ```
 
-- For programs started by the desktop manager and not the interactive shell process hierarachy, such as sublime-text, use `~/.profile` to setup the environment variables.
-- `zprofile` / `~/.zprofile.local`  shouldn't change the key bindings, aliases, functions or shell options but could set the PATH for non-interactive or login commandline programs.
-- `xinitrc` (startx) / `xsession` (xdm) run window manager independent programs after graphical login. Window manager specific scripts such as `~/.i3/config` could also be used.
+- For programs started by the desktop manager and not the interactive shell process hierarachy, such as sublime-text, use `~/.profile` to setup the environment variables. `.xsessionrc` maybe a better approved way to do this.
+- `.zprofile` / `~/.zprofile.local`  shouldn't change the key bindings, aliases, functions or shell options but could set the PATH for non-interactive or login commandline programs.
+- `.xinitrc` (startx) / `.xsession` (xdm) run window manager independent programs after graphical login. Window manager specific scripts such as `~/.i3/config` could also be used.
 
 
 ### ZSH Prezto Only Setup
