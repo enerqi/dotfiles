@@ -41,6 +41,8 @@ cmder/Cmder.exe
 .config/sublime-text-3/Packages/User/Character Table/Default/Default.sublime-keymap
 .config/sublime-text-3/Packages/User/SublimeLinter/*.tmTheme
 .config/sublime-text-3/Packages/User/PythonTestRunner*
+.config/sublime-text-3/Packages/User/SQLToolsConnections.sublime-settings
+.config/sublime-text-3/Packages/User/SQLToolsSavedQueries.sublime-settings
 !.config/sublime-text-3/Installed Packages/
 !.config/sublime-text-3/Installed Packages/.empty-directory
 !.config/sublime-text-3/Installed Packages/Shrink Whitespaces.sublime-package
@@ -66,6 +68,8 @@ cmder/Cmder.exe
 .k_history
 .lesshst
 .pgadmin_histo*
+.pgpass
+.pythonhist
 .rc.local
 .recently-used
 .rnd
