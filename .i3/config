@@ -15,7 +15,7 @@ set $mod Mod4
 
 # Font for window titles. Will also be used by the bar unless a different font
 # is used in the bar {} block below. ISO 10646 = Unicode
-font -misc-fixed-medium-r-normal--13-120-75-75-C-70-iso10646-1
+# font -misc-fixed-medium-r-normal--13-120-75-75-C-70-iso10646-1
 # The font above is very space-efficient, that is, it looks good, sharp and
 # clear in small sizes. However, if you need a lot of unicode glyphs or
 # right-to-left text rendering, you should instead use pango for rendering and
@@ -274,6 +274,7 @@ workspace 3 output $mainScreen
 workspace 4 output $mainScreen
 workspace 5 output $rightScreen
 workspace 6 output $rightScreen
+workspace 8 output $laptopScreen
 workspace 9 output $laptopScreen
 
 
