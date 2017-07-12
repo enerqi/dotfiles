@@ -19,14 +19,16 @@
 		"*.jar",
 		"*.zip"
 	],
-	"color_scheme": "Packages/User/Monokai Extended Bright (SL) (SublimePythonIDE).tmTheme",
+	"color_scheme": "Packages/User/SublimeLinter/Monokai Extended Bright (SL).tmTheme",
 	"ensure_newline_at_eof_on_save": true,
 	"font_face": "Consolas",
 	"font_size": 13,
+	"highlight_modified_tabs": true,
 	"ignored_packages":
 	[
 		"Markdown",
 		"RustAutoComplete",
+		"SQLTools",
 		"SublimeHaskell",
 		"Vintage"
 	],
@@ -36,9 +38,11 @@
 		"node_modules/**",
 		"*.log"
 	],
+	"rulers": [120],
 	"overlay_scroll_bars": "enabled",
 	"show_panel_on_build": false,
 	"theme": "Freesia.sublime-theme",
 	"translate_tabs_to_spaces": true,
-	"trim_trailing_white_space_on_save": true
+	"trim_trailing_white_space_on_save": true,
+	"wrap_width": 120
 }
