@@ -1,4 +1,5 @@
 [
+    { "keys": ["ctrl+shift+r"], "command": "goto_symbol_in_project" },
     { "keys": ["ctrl+,"], "command": "goto_definition" },
     { "keys": ["ctrl+alt+,"], "command": "rust_goto", "context":
         [{"key": "selector", "operator": "equal", "operand": "source.rust" }] },
@@ -22,11 +23,18 @@
     { "keys": ["alt+shift+m"], "command": "find_under_prev" },
     { "keys": ["alt+,"], "command": "find_all_under" },
     { "keys": ["alt+d"], "command": "expand_selection_to_whitespace" },
+    { "keys": ["alt+."], "command": "select_until", "args": { "extend": true }},
+    { "keys": ["alt+shift+."], "command": "reverse_select"},
     { "keys": ["ctrl+."], "command": "last_edit_line"},
     { "keys": ["ctrl+="], "command": "alignment" },
     { "keys": ["alt+r"], "command": "reindent"},
     { "keys": ["ctrl+q"], "command": "toggle_record_macro"},
     { "keys": ["ctrl+alt+b"], "command": "show_panel", "args": {"panel": "output.exec"} },
+    { "keys": ["ctrl+alt+space"], "command": "expand_selection", "args": {"to": "scope"} },
+    { "keys": ["ctrl+alt+m"], "command": "expand_selection", "args": {"to": "brackets"} },
+    { "keys": ["ctrl+m"], "command": "move_to", "args": {"to": "brackets"} },
+    { "keys": ["ctrl+alt+j"], "command": "expand_selection", "args": {"to": "indentation"} },
+    { "keys": ["ctrl+alt+a"], "command": "expand_selection", "args": {"to": "tag"} },
 
     { "keys": ["ctrl+e", "ctrl+b"], "command": "toggle_side_bar" },
     { "keys": ["ctrl+e", "ctrl+v"], "command": "paste_from_history" },
@@ -82,11 +90,11 @@
           "auto_save": true,
           "delay": 0.1,
           "activate": true,
-          "browsers" : ["firefox"]
+          "browsers" : ["chrome"]
       }
     },
 
-    { "keys": ["alt+.", "s"], "command": "repl_transfer_current", "args": {"scope": "selection"}},
+    { "keys": ["ctrl+alt+.", "s"], "command": "repl_transfer_current", "args": {"scope": "selection"}},
     { "keys": ["ctrl+shift+,", "s"], "command": "repl_transfer_current", "args": {"scope": "selection", "action":"view_write"}},
     { "keys": ["alt+.", "f"], "command": "repl_transfer_current", "args": {"scope": "file"}},
     { "keys": ["shift+alt+.", "f"], "command": "repl_transfer_current", "args": {"scope": "file", "action":"view_write"}},

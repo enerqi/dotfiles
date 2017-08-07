@@ -20,6 +20,7 @@
 		"*.zip"
 	],
 	"color_scheme": "Packages/User/SublimeLinter/Monokai Extended Bright (SL).tmTheme",
+	"dictionary": "Packages/Language - English/en_GB.dic",
 	"ensure_newline_at_eof_on_save": true,
 	"font_face": "Consolas",
 	"font_size": 13,
@@ -38,8 +39,11 @@
 		"node_modules/**",
 		"*.log"
 	],
-	"rulers": [120],
 	"overlay_scroll_bars": "enabled",
+	"rulers":
+	[
+		120
+	],
 	"show_panel_on_build": false,
 	"theme": "Freesia.sublime-theme",
 	"translate_tabs_to_spaces": true,
