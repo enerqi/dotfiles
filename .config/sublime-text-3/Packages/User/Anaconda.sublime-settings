@@ -1,0 +1,4 @@
+{
+    "mypy_silent_imports": true,
+    "auto_python_builder_enabled": false
+}
