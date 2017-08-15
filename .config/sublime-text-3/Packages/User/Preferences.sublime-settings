@@ -19,7 +19,7 @@
 		"*.jar",
 		"*.zip"
 	],
-	"color_scheme": "Packages/User/SublimeLinter/Monokai Extended Bright (SL).tmTheme",
+	"color_scheme": "Packages/User/SublimeLinter/Material Monokai (SL).tmTheme",
 	"dictionary": "Packages/Language - English/en_GB.dic",
 	"ensure_newline_at_eof_on_save": true,
 	"font_face": "Consolas",
@@ -27,6 +27,7 @@
 	"highlight_modified_tabs": true,
 	"ignored_packages":
 	[
+		"Elm Language Support",
 		"Markdown",
 		"RustAutoComplete",
 		"SQLTools",
