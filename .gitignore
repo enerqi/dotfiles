@@ -20,34 +20,6 @@ cmder/vendor/
 cmder/Version*
 cmder/Cmder.exe
 
-
-# sync just Packages/User/*, minus a few regularly updated files
-.config/sublime-text-3/**/\.nfs*
-!.config/sublime-text-3/
-!.config/sublime-text-3/Packages/
-!.config/sublime-text-3/Packages/User/
-!.config/sublime-text-3/Packages/User/**
-.config/sublime-text-3/**/*.tmTheme
-.config/sublime-text-3/Packages/User/encoding_cache.json
-.config/sublime-text-3/Packages/User/i_opener_history.sublime-settings
-.config/sublime-text-3/Packages/User/Package Control.cache
-.config/sublime-text-3/Packages/User/.SublimeREPLHistory
-.config/sublime-text-3/Packages/User/Package Control.last-run
-.config/sublime-text-3/Packages/User/Package Control.ca-list
-.config/sublime-text-3/Packages/User/Package Control.ca-bundle
-.config/sublime-text-3/Packages/User/Package Control.system-ca-bundle
-.config/sublime-text-3/Packages/User/Package Control.cache/
-.config/sublime-text-3/Packages/User/Package Control.ca-certs/
-.config/sublime-text-3/Packages/User/Character Table/Default/Default.sublime-keymap
-.config/sublime-text-3/Packages/User/SublimeLinter/*.tmTheme
-.config/sublime-text-3/Packages/User/PythonTestRunner*
-.config/sublime-text-3/Packages/User/SQLToolsConnections.sublime-settings
-.config/sublime-text-3/Packages/User/SQLToolsSavedQueries.sublime-settings
-!.config/sublime-text-3/Installed Packages/
-!.config/sublime-text-3/Installed Packages/.empty-directory
-!.config/sublime-text-3/Installed Packages/Shrink Whitespaces.sublime-package
-
-
 !.config/terminator/
 !.config/terminator/**
 
