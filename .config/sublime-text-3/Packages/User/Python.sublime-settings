@@ -1,9 +1,0 @@
-{
-    "auto_complete_triggers": [{"selector": "source.python - string - comment- constant.numeric", "characters": "."}],
-    "anaconda_linter_phantoms": true,
-    "anaconda_linting_behaviour": "load-save",
-    "validate_imports": true,
-    "pep8_ignore": ["E501"],
-    "pep257": false,
-    "test_command": "python3 -m pytest"
-}

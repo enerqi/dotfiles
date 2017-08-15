@@ -1,5 +1,0 @@
-{
-    "anaconda_rust_linting": false,
-    "anaconda_rust_autocompletion": true,
-    "rust_format_on_save": false
-}
