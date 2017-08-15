@@ -23,29 +23,16 @@ Then add local machine specific definitions as desired:
 Follow setup steps in [https://github.com/enerqi/prezto](enerqi-prezto) and ignore these dotfiles.
 
 
-## Sublime Text Setup on Windows
+## Sublime Text Setup
 
-The configuration files for sublime text are checked out to the linux standard location, so we must make a hard folder link (junction) on Windows.
+With a fresh sublime install:
+- install package control from the sublime command pallette
+- install the sync settings package and sync everything using the private gist access token and gist id from keepass.
 
-```
-git clone https://github.com/enerqi/dotfiles.git %USERPROFILE%/dotfiles
-cd dotfiles
-```
-Move everything to %USERPROFILE% `mv * %USERPROFILE`.
-```
-cd "%USERPROFILE%/AppData/Roaming/Sublime Text 3"
-rmdir /S /Q "%USERPROFILE%/AppData/Roaming/Sublime Text 3/Packages"
-rmdir /S /Q "%USERPROFILE%/AppData/Roaming/Sublime Text 3/Installed Packages"
+This is easier than the earlier approach of syncing everything through this repository and then having to create a
+hard folder link (junction) on windows so that the windows/linux file layouts were similar. It's still convenient to
+create a hard link for the keymap files as we want the windows/linux keymaps to be the same.
 
-mklink /J Packages "%USERPROFILE%/.config/sublime-text-3/Packages"
-mklink /J "Installed Packages" "%USERPROFILE%/.config/sublime-text-3/Installed Packages"
-```
-
-If sublime-text was installed and used earlier you may need to nuke the session file:
-
-`del %USERPROFILE%/AppData/Roaming/Sublime Text 3/Local/*.session`
-
-The keymap files are different for windows and linux but we can hard link from the windows file to the linux one. Keeping them in sync manually is not so difficult as well.
 ```
 cd "%USERPROFILE%/AppData/Roaming/Sublime Text 3/Packages/User"
 del "Default (Windows).sublime-keymap"
