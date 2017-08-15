@@ -6,6 +6,8 @@
 	],
 	"installed_packages":
 	[
+		"A File Icon",
+		"Advanced CSV",
 		"AdvancedNewFile",
 		"AlignTab",
 		"Anaconda",
@@ -24,6 +26,7 @@
 		"ConvertToUTF8",
 		"CSS Unminifier",
 		"CUDA C++",
+		"Dockerfile Syntax Highlighting",
 		"EasyDiff",
 		"EditorConfig",
 		"Elixir",
@@ -36,6 +39,7 @@
 		"GDScript (Godot Engine)",
 		"GitGutter",
 		"GitHub Flavored Markdown Preview",
+		"Gradle_Language",
 		"Grunt",
 		"Hasher",
 		"HexViewer",
@@ -47,12 +51,16 @@
 		"iOpener",
 		"Jai",
 		"Jinja2",
+		"JSX",
+		"Julia",
 		"Load file to REPL",
 		"Markdown Extended",
 		"MarkdownEditing",
+		"Materialize",
 		"Modific",
 		"Monokai Extended",
 		"MultiEditUtils",
+		"nginx",
 		"Package Control",
 		"Path Tools",
 		"PlainNotes",
@@ -74,6 +82,7 @@
 		"Shrink Whitespaces",
 		"SideBarEnhancements",
 		"SQLTools",
+		"sublime-shrink-whitespaces",
 		"sublime-text-2-buildview",
 		"SublimeGit",
 		"SublimeHaskell",
@@ -82,6 +91,7 @@
 		"SublimeLinter-contrib-puppet",
 		"SublimeREPL",
 		"Sublimerge 3",
+		"Sync Settings",
 		"Terminal",
 		"Theme - Aprosopo",
 		"Theme - Brogrammer",
@@ -98,5 +108,9 @@
 		"Wrap Plus",
 		"XSL",
 		"Zen Tabs"
+	],
+	"repositories":
+	[
+		"https://github.com/dacap/sublime-shrink-whitespaces"
 	]
 }
