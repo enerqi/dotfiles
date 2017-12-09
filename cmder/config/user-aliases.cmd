@@ -18,3 +18,4 @@ l=ls --show-control-chars -F --color -Alh $*
 gfm=git pull $*
 udesql=pclip | grep -v === | column -t
 duplicateLines=sed "/^$/d" $1 | sort | uniq -d
+pkt=.paket\paket.exe  
