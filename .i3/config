@@ -259,6 +259,7 @@ bindsym $mod+m exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ -- toggle
 # i3 workspace assignment
 # https://i3wm.org/docs/userguide.html#command_criteria
 # $ `xprop WM_CLASS` is useful here
+assign [class="^(?i)slack"] 1
 assign [class="^(?i)sublime"] 4
 assign [class="^(?i)google-chrome"] 5
 assign [class="^(?i)firefox"] 6
@@ -281,7 +282,8 @@ workspace 9 output $laptopScreen
 # Auto start programs launched with startup notification support (requires i3 to have got going)
 # Programs that just need generic X stuff started up can use ~/.xinitrc
 # Note this is not shell `exec` but i3 command to pass code to the shell to run
+exec --no-startup-id ~/.screenlayout/main.sh
 exec --no-startup-id nm-applet
-exec nohup unity-settings-daemon &
+exec --no-startup-id compton
 exec --no-startup-id tresorit
 
