@@ -1,0 +1,7 @@
+#!/usr/local/bin/zsh
+
+for j in {bittorrent,mediastream,murmur,proxy,sandbox,shares,template,www} do
+    sudo warden start $j
+
+
+
