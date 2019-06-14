@@ -24,4 +24,13 @@ PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 # Starting graphical programs/scripts can be .xinitrc/.xsession
 export CARGO_HOME="$HOME/.cargo/bin"
 export RUST_SRC_PATH="$HOME/.multirust/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/src"
+
+# cargo home + tresorit
 export PATH="$PATH:$CARGO_HOME:$HOME/.local/share/tresorit"
+
+# cargo installed binaries
+export PATH="$HOME/.cargo/bin/bin:$PATH"
+
+# miniconda - end of path for graphical programs
+export PATH="$PATH:$HOME/miniconda3/bin"
+

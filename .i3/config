@@ -237,15 +237,27 @@ client.urgent #D11931 #D11931 #ffffff
 # Start i3bar to display a workspace bar (plus the system information i3status
 # finds out, if available)
 bar {
-    status_command i3status
+    # apt install fonts-font awesome (https://fontawesome.com/v4.7.0/assets/font-awesome-4.7.0.zip)
+    font pango:DejaVu Sans Mono, FontAwesome 12
+    position bottom
+    # build i3status-rs from source and put in ~/bin
+    # apt install fonts-font-awesome
+    status_command i3status-rs ~/.config/i3/status.toml
     colors {
-        background          $bg
-        statusline          $fg
-        separator           $hi
-        focused_workspace   $gn        $bg        $ac
-        active_workspace    $gn        $ac        $tx
-        inactive_workspace  $bg        $bg        $ia
-        urgent_workspace    $rd        $bg        $ac
+        separator #666666
+        background #222222
+        statusline #dddddd
+        focused_workspace #0088CC #0088CC #ffffff
+        active_workspace #333333 #333333 #ffffff
+        inactive_workspace #333333 #333333 #888888
+        urgent_workspace #2f343a #900000 #ffffff
+        #background          $bg
+        #statusline          $fg
+        #separator           $hi
+        #focused_workspace   $gn        $bg        $ac
+        #active_workspace    $gn        $ac        $tx
+        #inactive_workspace  $bg        $bg        $ia
+        #urgent_workspace    $rd        $bg        $ac
     }
 }
 

@@ -1,5 +1,6 @@
 [global_config]
   borderless = True
+  suppress_multiple_term_dialog = True
   title_font = Consolas 12
   title_use_system_font = False
 [keybindings]
@@ -20,5 +21,6 @@
     background_type = transparent
     cursor_color = "#aaaaaa"
     font = Consolas 12
+    scrollback_lines = 5000
     show_titlebar = False
     use_system_font = False
