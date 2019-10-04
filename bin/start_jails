@@ -1,6 +1,6 @@
 #!/usr/local/bin/zsh
 
-for j in {bittorrent,mediastream,murmur,proxy,sandbox,shares,template,www} do
+for j in {bittorrent,mediastream,proxy,sandbox,shares,www} do
     sudo warden start $j
 
 
