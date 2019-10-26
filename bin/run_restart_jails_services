@@ -1,13 +1,7 @@
 #!/usr/local/bin/zsh
 
 sudo warden chroot bittorrent 'service transmission restart'
-#sudo warden chroot dns 'service unbound restart'
-#sudo warden chroot dns 'service dnscrypt-proxy restart'
-#sudo warden chroot murmur 'service murmur restart'
-sudo warden chroot proxy 'service nginx restart'
 sudo warden chroot shares 'service samba restart'
-sudo warden chroot mediastream 'service emby-server restart'
-sudo warden chroot www 'service nginx restart'
 
 
 
