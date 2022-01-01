@@ -1,0 +1,8 @@
+@ECHO OFF
+
+SET CD_DIR=%1%
+if %1== (SET CD_DIR=%USERPROFILE%)
+if %1==~ (SET CD_DIR=%USERPROFILE%)
+
+zoxide add %CD_DIR%
+cd %CD_DIR%
