@@ -1,0 +1,23 @@
+
+# Disable the package module, hiding it from the prompt completely
+[package]
+disabled = true
+
+[aws]
+disabled = true
+
+[memory_usage]
+disabled = false
+threshold = 85
+
+[status]
+disabled = false
+
+[time]
+disabled = false
+
+# [username]
+# show_always = true
+
+[hg_branch]
+disabled = true
