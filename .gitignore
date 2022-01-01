@@ -22,6 +22,7 @@ cmder/Cmder.exe
 
 !.config/terminator/
 !.config/terminator/**
+!.config/starship.toml
 
 !.i3/
 !.i3/**
@@ -52,6 +53,7 @@ cmder/Cmder.exe
 .zsh-update
 .zshrc.local
 .zprofile.local
+.zgenom/
 
 *authority
 *cookie*
