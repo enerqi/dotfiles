@@ -23,7 +23,6 @@ PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 # Debian sources .profile at graphical login. So setting up environment variables here.
 # Starting graphical programs/scripts can be .xinitrc/.xsession
 export CARGO_HOME="$HOME/.cargo/bin"
-export RUST_SRC_PATH="$HOME/.multirust/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/src"
 
 # cargo home + tresorit
 export PATH="$PATH:$CARGO_HOME:$HOME/.local/share/tresorit"
@@ -35,8 +34,9 @@ export PATH="$HOME/.cargo/bin/bin:$PATH"
 export PATH="$PATH:$HOME/miniconda3/bin"
 
 # Mouse trackball button settings
-KENSINGTON_ID=$(xinput list | grep "Kensington" | head -n 1 | sed -r 's/.*id=([0-9]+).*/\1/')
-[[ ! -z "$KENSINGTON_ID" ]] && xinput --set-button-map ${KENSINGTON_ID} 8 3 1 5 4 0 0 2
+# Called in .xsessionrc
+# KENSINGTON_ID=$(xinput list | grep "Kensington" | head -n 1 | sed -r 's/.*id=([0-9]+).*/\1/')
+# [[ ! -z "$KENSINGTON_ID" ]] && xinput --set-button-map ${KENSINGTON_ID} 8 3 1 5 4 0 0 2
 
 # custom additional mode for dell 3007 wfp on display DP-1-3
 # cvt needs running with -r for reduced blanking to make the screen tolerable
