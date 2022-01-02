@@ -20,6 +20,8 @@ cmder/vendor/
 cmder/Version*
 cmder/Cmder.exe
 
+!.config/alacritty/
+!.config/alacritty/**
 !.config/terminator/
 !.config/terminator/**
 !.config/starship.toml
