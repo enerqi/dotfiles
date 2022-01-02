@@ -4,6 +4,7 @@
 
 ### With these dotfiles
 
+- Install `zsh` with your package manager
 - Install [zgenom](https://github.com/jandamm/zgenom) zsh plugin manager:
 
 ```
@@ -16,6 +17,10 @@ git clone https://github.com/jandamm/zgenom.git "${HOME}/.zgenom"
 ```
 curl -sS https://webinstall.dev/zoxide | bash
 ```
+
+- Optional suggested other binaries include [ripgrep - rg](https://crates.io/crates/ripgrep#installation),
+  [fd-find - fd](https://crates.io/crates/fd-find#installation) and [exa](https://crates.io/crates/exa#installation).
+  All buildable with `cargo install ...`.
 
 Then add local machine specific definitions as desired:
 
