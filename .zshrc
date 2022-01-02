@@ -4,7 +4,11 @@
 #
 # (2) Install starship prompt binary
 # cargo install starship (or other ways: https://starship.rs/)
-
+#
+# Optionally make sure have an active font in the terminal with suitable suitable glyphs - https://www.nerdfonts.com/
+#
+# (3) Install `zoxide` for smarter cd support (`z` and `zi` commands). The fzf-zsh-plugin will fetch `fzf`.
+# https://github.com/ajeetdsouza/zoxide#installation
 
 # The [configuration files][1] are read in the following order:
 
@@ -125,6 +129,9 @@ if ! zgenom saved; then
     # additional completions
     zgenom load zsh-users/zsh-completions
 
+    # will fetch fzf from github for us and setup keybindings
+    zgenom load unixorn/fzf-zsh-plugin
+
     # save all to init script
     zgenom save
 
@@ -145,11 +152,10 @@ set -o ignoreeof
 # Local machine specific shell setup that we don't want to commit to source control
 if [[ -s "${ZDOTDIR:-$HOME}/.zshrc.local" ]]; then
     source "${ZDOTDIR:-$HOME}/.zshrc.local"
-
-    # if [[ -z "$LANG" ]]; then
-    #   export LANG='en_GB.UTF-8'
-    # fi
 fi
+
+# ctrl+space can autocomplete, not tab
+bindkey '^ ' autosuggest-accept
 
 alias e='exa -1 -a'      # Lists in one column, hidden files.
 alias el='exa -l'        # Lists human readable sizes.
@@ -164,6 +170,9 @@ alias eu='el -s accessed' # Lists sorted by date, most recent last, shows access
 
 export CARGO_HOME="${HOME}/.cargo"
 export PATH="$PATH:${CARGO_HOME}/bin"
+
+# Smarter CD
+eval "$(zoxide init zsh)"
 
 # PROMPT
 #
