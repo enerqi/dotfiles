@@ -24,11 +24,8 @@ PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 # Starting graphical programs/scripts can be .xinitrc/.xsession
 export CARGO_HOME="$HOME/.cargo"
 
-# cargo home + tresorit
-export PATH="$PATH:$CARGO_HOME:$HOME/.local/share/tresorit"
-
-# cargo installed binaries
-export PATH="$HOME/.cargo/bin/bin:$PATH"
+# tresorit
+export PATH="$PATH:$HOME/.local/share/tresorit"
 
 # miniconda - end of path for graphical programs
 export PATH="$PATH:$HOME/miniconda3/bin"
