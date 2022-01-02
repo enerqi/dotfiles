@@ -1,4 +1,0 @@
-:set prompt "λ> "
-:set +s
-:set +t
-:set -XUnicodeSyntax
