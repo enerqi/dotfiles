@@ -21,3 +21,7 @@ disabled = false
 
 [hg_branch]
 disabled = true
+
+[battery]
+# typically handled by i3 window manager
+disabled = true
