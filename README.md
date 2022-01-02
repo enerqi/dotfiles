@@ -33,11 +33,11 @@ Then add local machine specific definitions as desired:
 
 - For programs started by the desktop manager and not the interactive shell process hierarachy, such as sublime-text, use `~/.profile` to setup the environment variables. `.xsessionrc` maybe a better approved way to do this.
 - `.zprofile` / `~/.zprofile.local`  shouldn't change the key bindings, aliases, functions or shell options but could set the PATH for non-interactive or login commandline programs.
-- `.xinitrc` (startx) / `.xsession` (xdm) run window manager independent programs after graphical login. Window manager specific scripts such as `~/.i3/config` could also be used.
+- `.xinitrc` (startx) / `.xsession` (xdm) run window manager independent programs after graphical login. Window manager specific scripts could also be used.
 
 ## Window Manager Setup
 
-- install [i3 window manager](https://i3wm.org/downloads/)
+- install [i3 window manager](https://i3wm.org/downloads/) >= *v4.20*
 - install v0.9+ of `alacritty` terminal manager (i.e. with rust `cargo install alacritty`)
 - install nerd fonts by tweaking/running [`~/bin/fetch-fonts.sh`](./bin/fetch-fonts.sh)
 - a copy of `i3status-rs` is already in `~/bin` but a recent version could be compiled with rust (`cargo install i3status-rs; cp ~/.cargo/bin/i3status-rs ~/bin`)
