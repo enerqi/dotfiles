@@ -28,8 +28,8 @@ workspace_auto_back_and_forth yes
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
 
-# start a terminal
-bindsym $mod+g exec i3-sensible-terminal
+# start a terminal (or i3-sensible-terminal - default ordered list or $TERMINAL env var)
+bindsym $mod+g exec alacritty
 
 # kill focused window
 bindsym $mod+Shift+Delete kill

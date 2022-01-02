@@ -22,7 +22,7 @@ PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 
 # Debian sources .profile at graphical login. So setting up environment variables here.
 # Starting graphical programs/scripts can be .xinitrc/.xsession
-export CARGO_HOME="$HOME/.cargo/bin"
+export CARGO_HOME="$HOME/.cargo"
 
 # cargo home + tresorit
 export PATH="$PATH:$CARGO_HOME:$HOME/.local/share/tresorit"
@@ -43,3 +43,4 @@ export PATH="$PATH:$HOME/miniconda3/bin"
 # > cvt -r 2560 1600 60
 xrandr --newmode "2560x1600_60.00"  268.50  2560 2608 2640 2720  1600 1603 1609 1646 +hsync -vsync
 xrandr --addmode DP-1-3 "2560x1600_60.00"
+. "$HOME/.cargo/env"
