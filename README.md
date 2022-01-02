@@ -4,14 +4,18 @@
 
 ### With these dotfiles
 
-- Install [zgenom]([zgenom plugin manager](https://github.com/jandamm/zgenom) zsh plugin manager:
+- Install [zgenom](https://github.com/jandamm/zgenom) zsh plugin manager:
 
 ```
 git clone https://github.com/jandamm/zgenom.git "${HOME}/.zgenom"
 ```
 
 - Install [starship](https://starship.rs/guide/#%F0%9F%9A%80-installation) shell prompt tool
-- Install [zoxide](https://github.com/ajeetdsouza/zoxide#installation) i.e. `curl -sS https://webinstall.dev/zoxide | bash`
+- Install [zoxide](https://github.com/ajeetdsouza/zoxide#installation) i.e.
+
+```
+curl -sS https://webinstall.dev/zoxide | bash
+```
 
 Then add local machine specific definitions as desired:
 
