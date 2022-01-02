@@ -4,9 +4,14 @@
 
 ### With these dotfiles
 
+- Install [zgenom]([zgenom plugin manager](https://github.com/jandamm/zgenom) zsh plugin manager:
+
 ```
 git clone https://github.com/jandamm/zgenom.git "${HOME}/.zgenom"
 ```
+
+- Install [starship](https://starship.rs/guide/#%F0%9F%9A%80-installation) shell prompt tool
+- Install [zoxide](https://github.com/ajeetdsouza/zoxide#installation) i.e. `curl -sS https://webinstall.dev/zoxide | bash`
 
 Then add local machine specific definitions as desired:
 
@@ -21,6 +26,12 @@ Then add local machine specific definitions as desired:
 - `.zprofile` / `~/.zprofile.local`  shouldn't change the key bindings, aliases, functions or shell options but could set the PATH for non-interactive or login commandline programs.
 - `.xinitrc` (startx) / `.xsession` (xdm) run window manager independent programs after graphical login. Window manager specific scripts such as `~/.i3/config` could also be used.
 
+## Window Manager Setup
+
+- install [i3 window manager](https://i3wm.org/downloads/)
+- install v0.9+ of `alacritty` terminal manager (i.e. with rust `cargo install alacritty`)
+- install nerd fonts by tweaking/running [`~/bin/fetch-fonts.sh`](./bin/fetch-fonts.sh)
+- a copy of `i3status-rs` is already in `~/bin` but a recent version could be compiled with rust (`cargo install i3status-rs; cp ~/.cargo/bin/i3status-rs ~/bin`)
 
 ## Sublime Text Setup
 

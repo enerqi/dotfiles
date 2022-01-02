@@ -1,11 +1,3 @@
-# Prerequisites
-# (1) Clone the [zgenom plugin manager](https://github.com/jandamm/zgenom)
-# git clone https://github.com/jandamm/zgenom.git "${HOME}/.zgenom"
-#
-# (2) Install starship prompt binary
-# cargo install starship (or other ways: https://starship.rs/)
-
-
 # The [configuration files][1] are read in the following order:
 
 # 1.  _`/etc/zshenv`_
@@ -171,13 +163,8 @@ export PATH="$PATH:${CARGO_HOME}/bin"
 # Cmder also breaks - does freeze input handling. Windows Terminal problems *maybe* prompt related, as
 # occasionally seems to create a stuck child process of zsh that blocks stdin
 #
-# We could consider `xonsh` a totally different shell alternative that may work fine, though it
-# has its own version of venv (vox). It's a superset of python syntax and similar(ish) to IPython with the ability to
-# pass through / run anything looking like shell invocations in a Bash compatible way. Won't be able to run every
-# Bash script out there, so more for greenfield / developer shell usage
-#
 # Starship.rs (requires a binary, written in Rust) is fastest and clean to use with `starship.toml` for config
-# Cross platform and cross shell *Prompt*: https://starship.rs/
+# It's a cross platform and cross shell *Prompt*: https://starship.rs/
 # cargo install starship | choco install starship etc. | https://github.com/starship/starship/releases/download/v1.1.1/
 #
 # - Requires a "Nerd Font" with lots of glyphs: https://www.nerdfonts.com/#home
@@ -198,38 +185,6 @@ eval "$(starship init zsh)"
 # Uses async, but maybe only for git status
 # zgenom load mafredri/zsh-async
 # zgenom load agkozak/agkozak-zsh-prompt
-
-# spaceship-prompt-async
-# very obviously async, distractingly so, even with some modules turned off
-# only stable prompt in win terminal? maybe best one so far, but it's *many commits behind* the main
-# spaceship repo that it's forked off
-# zgenom load marcopelegrini/spaceship-prompt-async
-# SPACESHIP_TIME_SHOW=true
-# SPACESHIP_USER_SHOW=needed
-# SPACESHIP_HOST_SHOW=always
-# SPACESHIP_PROMPT_ORDER=(
-#     time          # Time stamps section
-#     user          # Username section
-#     dir           # Current directory section
-#     host          # Hostname section
-#     git_branch
-#     git_status
-#     package       # Package version
-#     # golang        # Go section
-#     rust          # Rust section
-#     # docker        # Docker section
-#     # aws
-#     venv          # virtualenv section
-#     conda         # conda virtualenv section
-#     dotnet        # .NET section
-#     # kubecontext   # Kubectl context section
-#     # terraform     # Terraform workspace section
-#     exec_time     # Execution time
-#     line_sep      # Line break
-#     jobs          # Background jobs indicator
-#     exit_code     # Exit code section
-#     char          # Prompt character
-# )
 
 # powerlevel10k
 # another popular prompt, easy to follow the wizard to customise it, fast and async parts to it
