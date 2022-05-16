@@ -11,7 +11,6 @@ ls=ls --show-control-chars -F --color $*
 cd=zcd $*
 pwd=cd
 clear=cls
-history=cat %CMDER_ROOT%\config\.history
 unalias=alias /d $1
 vi=vim $*
 cmderr=cd /d "%CMDER_ROOT%"
