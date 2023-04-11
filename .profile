@@ -27,9 +27,6 @@ export CARGO_HOME="$HOME/.cargo"
 # tresorit
 export PATH="$PATH:$HOME/.local/share/tresorit"
 
-# miniconda - end of path for graphical programs
-export PATH="$PATH:$HOME/miniconda3/bin"
-
 # Mouse trackball button settings
 # Called in .xsessionrc
 # KENSINGTON_ID=$(xinput list | grep "Kensington" | head -n 1 | sed -r 's/.*id=([0-9]+).*/\1/')
@@ -38,6 +35,6 @@ export PATH="$PATH:$HOME/miniconda3/bin"
 # custom additional mode for dell 3007 wfp on display DP-1-3
 # cvt needs running with -r for reduced blanking to make the screen tolerable
 # > cvt -r 2560 1600 60
-xrandr --newmode "2560x1600_60.00"  268.50  2560 2608 2640 2720  1600 1603 1609 1646 +hsync -vsync
-xrandr --addmode DP-1-3 "2560x1600_60.00"
+#xrandr --newmode "2560x1600_60.00"  268.50  2560 2608 2640 2720  1600 1603 1609 1646 +hsync -vsync
+#xrandr --addmode DP-1-3 "2560x1600_60.00"
 . "$HOME/.cargo/env"

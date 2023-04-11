@@ -89,6 +89,12 @@ if ! zgenom saved; then
     zgenom prezto spectrum
     zgenom prezto utility
     zgenom prezto completion
+    # additional completions
+    zgenom load zsh-users/zsh-completions
+    zgenom load chitoku-k/fzf-zsh-completions
+    # Replace zsh's default completion selection menu with fzf
+    # must be before suggestions/syntax highlighting
+    zgenom load Aloxaf/fzf-tab
     zgenom prezto git
     zgenom prezto archive
     # must be before history-substring-search, autosuggestions and prompt (in that order)
@@ -114,25 +120,38 @@ if ! zgenom saved; then
     # https://github.com/tj/git-extras/blob/master/Installation.md
     # zgenom bin tj/git-extras
 
-    # additional completions
-    zgenom load zsh-users/zsh-completions
-
     # will fetch fzf from github for us and setup keybindings
     zgenom load unixorn/fzf-zsh-plugin
+
+    alias e='exa -1 -a'      # Lists in one column, hidden files.
+    alias el='exa -l'        # Lists human readable sizes.
+    alias er='el -R'         # Lists human readable sizes, recursively.
+    alias ea='el -a'         # Lists human readable sizes, hidden files.
+    alias es='el -s size'    # Lists sorted by size, largest last.
+    alias ex='el -s extension' # Lists sorted by extension (GNU only).
+    alias em='el -a | "$PAGER"' # Lists human readable sizes, hidden files through pager.
+    alias et='el -s created' # Lists sorted by date, most recent last.
+    alias ec='el -s modified' # Lists sorted by date, most recent last, shows change time.
+    alias eu='el -s accessed' # Lists sorted by date, most recent last, shows access time.
+    alias ls='lsd'
 
     # save all to init script
     zgenom save
 
     # Compile your zsh files
     zgenom compile "$HOME/.zshrc"
-    # zgenom compile $ZDOTDIR
+   # zgenom compile $ZDOTDIR
 
     # You can perform other "time consuming" maintenance tasks here as well.
     # If you use `zgenom autoupdate` you're making sure it gets
     # executed every 7 days.
-
-    # rbenv rehash
 fi
+
+# ctrl+space can autocomplete, not tab
+bindkey '^ ' autosuggest-accept
+
+export CARGO_HOME="${HOME}/.cargo"
+export PATH="$PATH:${CARGO_HOME}/bin"
 
 # https://unix.stackexchange.com/questions/110240/why-does-ctrl-d-eof-exit-the-shell
 set -o ignoreeof
@@ -141,23 +160,6 @@ set -o ignoreeof
 if [[ -s "${ZDOTDIR:-$HOME}/.zshrc.local" ]]; then
     source "${ZDOTDIR:-$HOME}/.zshrc.local"
 fi
-
-# ctrl+space can autocomplete, not tab
-bindkey '^ ' autosuggest-accept
-
-alias e='exa -1 -a'      # Lists in one column, hidden files.
-alias el='exa -l'        # Lists human readable sizes.
-alias er='el -R'         # Lists human readable sizes, recursively.
-alias ea='el -a'         # Lists human readable sizes, hidden files.
-alias es='el -s size'    # Lists sorted by size, largest last.
-alias ex='el -s extension' # Lists sorted by extension (GNU only).
-alias em='el -a | "$PAGER"' # Lists human readable sizes, hidden files through pager.
-alias et='el -s created' # Lists sorted by date, most recent last.
-alias ec='el -s modified' # Lists sorted by date, most recent last, shows change time.
-alias eu='el -s accessed' # Lists sorted by date, most recent last, shows access time.
-
-export CARGO_HOME="${HOME}/.cargo"
-export PATH="$PATH:${CARGO_HOME}/bin"
 
 # Smarter CD
 eval "$(zoxide init zsh)"
@@ -197,3 +199,7 @@ eval "$(starship init zsh)"
 # zgenom load romkatv/powerlevel10k powerlevel10k
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 # [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
