@@ -7,7 +7,9 @@
 ;= https://github.com/cmderdev/cmder/wiki/Cmder-Aliases
 e.=explorer .
 gl=git log --oneline --all --graph --decorate  $*
-ls=ls --show-control-chars -F --color $*
+ls=lsd $*
+l=lsd -Alh $*
+lt=lsd -lStr $*
 cd=zcd $*
 pwd=cd
 clear=cls
@@ -15,8 +17,6 @@ unalias=alias /d $1
 vi=vim $*
 cmderr=cd /d "%CMDER_ROOT%"
 gst=git status $*
-l=ls --show-control-chars -F --color -Alh $*
-lt=ls -lstr --color=auto
 gfm=git pull $*
 udesql=pclip | grep -v === | column -t
 duplicateLines=sed "/^$/d" $1 | sort | uniq -d
