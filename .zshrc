@@ -1,3 +1,6 @@
+# profile start:
+# zmodload zsh/zprof
+
 # The [configuration files][1] are read in the following order:
 
 # 1.  _`/etc/zshenv`_
@@ -55,6 +58,10 @@ source "${HOME}/.zgenom/zgenom.zsh"
 # This does not increase the startup time.
 zgenom autoupdate
 
+# force nvm to lazy load
+zstyle ':omz:plugins:nvm' lazy yes
+zstyle ':omz:plugins:nvm' lazy-cmd eslint prettier typescript
+
 # Everything in this if branch is loaded pre-compiled from an init script if it exists
 # if the init script doesn't exist (use `zgenom reset` to clear the init script) then run all
 # these (slow) zgenom functions
@@ -62,8 +69,14 @@ if ! zgenom saved; then
     echo "Creating a zgenom save"
 
     # Ohmyzsh base library
-    # zgenom ohmyzsh
+    zgenom ohmyzsh
     # plugins
+    # both NVM and manually installed ASDF add annoying amounts of overhead
+    zgenom ohmyzsh plugins/asdf
+
+    # see zstyle nvm commands above to lazy load this slow plugin
+    zgenom ohmyzsh plugins/nvm
+
     # zgenom ohmyzsh plugins/git
     # zgenom ohmyzsh plugins/sudo
     # just load the completions
@@ -200,6 +213,5 @@ eval "$(starship init zsh)"
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 # [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+# profile end:
+# zprof
