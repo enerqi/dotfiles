@@ -20,7 +20,7 @@ set $mod Mod4
 # clear in small sizes. However, if you need a lot of unicode glyphs or
 # right-to-left text rendering, you should instead use pango for rendering and
 # chose a FreeType font, such as:
-font pango:Caskaydia Cove NF Mono 12
+font pango:"CaskaydiaCove Nerd Font Mono" Mono 12
 
 # enable window icons for all windows with extra horizontal padding of 1px
 #for_window [class="(?i)firefox"] title_format "<span foreground='red'>%title</span>"
@@ -243,7 +243,7 @@ client.urgent #D11931 #D11931 #ffffff
 bar {
     # apt install fonts-font awesome (https://fontawesome.com/v4.7.0/assets/font-awesome-4.7.0.zip)
     #font pango:DejaVu Sans Mono, FontAwesome 15
-    font pango:Caskaydia Cove NF Mono 12
+    font pango:"CaskaydiaCove Nerd Font Mono" Mono 12
     position bottom
     # build i3status-rs from source and put in ~/bin
     # apt install fonts-font-awesome
