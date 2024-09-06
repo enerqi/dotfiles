@@ -215,3 +215,5 @@ eval "$(starship init zsh)"
 
 # profile end:
 # zprof
+
+eval "$(~/.local/bin/mise activate zsh)"
