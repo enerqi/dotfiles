@@ -1,17 +1,21 @@
 # dotfiles
 
+## Clone to existing home directory
+
+- `git clone https://github.com/enerqi/dotfiles.git tempdir; mv tempdir/.git ~; rm -rf temp-dir; cd ~; git checkout .`
+
 ## ZSH Setup
 
 ### With these dotfiles
 
 - Install `zsh` with your package manager
-- Install [zgenom](https://github.com/jandamm/zgenom) zsh plugin manager:
+- Install [zgenom](https://github.com/jandamm/zgenom) zsh plugin manager from Git:
 
 ```
 git clone https://github.com/jandamm/zgenom.git "${HOME}/.zgenom"
 ```
 
-- Install [starship](https://starship.rs/guide/#%F0%9F%9A%80-installation) shell prompt tool
+- Install [starship](https://starship.rs/guide/#%F0%9F%9A%80-installation) shell prompt tool (see cargo commands below)
 - Install [zoxide](https://github.com/ajeetdsouza/zoxide#installation) i.e.
 
 ```
@@ -35,25 +39,56 @@ Then add local machine specific definitions as desired:
 - `.zprofile` / `~/.zprofile.local`  shouldn't change the key bindings, aliases, functions or shell options but could set the PATH for non-interactive or login commandline programs.
 - `.xinitrc` (startx) / `.xsession` (xdm) run window manager independent programs after graphical login. Window manager specific scripts could also be used.
 
+## Assorted Development Tools
+
+Some mentioned above and below.
+
+- apt install `git zsh build-essential libsensors-dev libssl-dev cmake clang pkg-config postgresql-client`
+- apt install `openvpn feh font-font-awesome`
+- [LLVM install script for Apt](https://apt.llvm.org/)
+- libs for compiling more things e.g apt install `libsdl2-dev libpulse-dev libnotmuch_dev libssl-dev
+  libpipewire-0.3-dev`
+- [mise](https://mise.jdx.dev/getting-started.html) for python/node etc. version management on Linux
+  - `mise use -g python@3.11.9` or `mise use -g node@lts` etc.
+- [fzf](https://github.com/junegunn/fzf?tab=readme-ov-file#using-git) fuzzy finder from git or os packages
+- [sublime text / sublime merge](https://www.sublimetext.com/docs/linux_repositories.html) apt packages
+- docker binaries - apt install `docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin`
+  - [permission issue]([permission](https://stackoverflow.com/questions/48957195/how-to-fix-docker-got-permission-denied-issue)
+  - apt install `python3-setuptools` if missing distutils problem with `docker compose` commands
+- [rustup](https://rustup.rs/)
+  - `cargo install cargo-binstall`
+  - `cargo binstall -y alacritty` + `startship` + `zoxide` + `bat`
+- install some sync service, e.g. [tresorit](https://tresorit.com/)
+- `firefox` sync for custom settings and extensions
+- `chrome` plus `ublock origin` extension for commonly used browser dev tools
+
 ## Window Manager Setup
 
 - install [i3 window manager](https://i3wm.org/downloads/) >= *v4.20*
-- install v0.9+ of `alacritty` terminal manager (i.e. with rust `cargo install alacritty`)
+  - `i3wm i3lock-fancy i3blocks` (not `i3` meta package as we want the rust status bar)
+  - a copy of `i3status-rs` is already in `~/bin` but a recent version could be compiled with rust (`cargo install i3status-rs; cp ~/.cargo/bin/i3status-rs ~/bin`)
+- install v0.13+ of `alacritty` terminal manager (i.e. with rust `cargo binstall alacritty`)
 - install nerd fonts by tweaking/running [`~/bin/fetch-fonts.sh`](./bin/fetch-fonts.sh)
-- a copy of `i3status-rs` is already in `~/bin` but a recent version could be compiled with rust (`cargo install i3status-rs; cp ~/.cargo/bin/i3status-rs ~/bin`)
+  - `fc-list` to check font names used in `.config/i3/config` and `.config/alacritty/alacritty.toml`
+- `apt install compton pavucontrol` (compositor for transparency etc., sound panel control)
+
 
 ## Sublime Text Setup
 
-With a fresh sublime install:
+With a fresh sublime install
+
 - install package control from the sublime command pallette
-- install the sync settings package and sync everything using the private gist access token and gist id from keepass.
 
-This is easier than the earlier approach of syncing everything through this repository and then having to create a
-hard folder link (junction) on windows so that the windows/linux file layouts were similar. It's still convenient to
-create a hard link for the keymap files as we want the windows/linux keymaps to be the same.
+After that we are going back to (manually) using a sync service (e.g. Dropbox, Tresorit, One Drive etc.) as the
+formerly useful `SyncSettings` sublime package is (currently in 2024) unmaintained and not working.
+
+Sync `%USERPROFILE%/AppData/Roaming/Roaming/Sublime Text/Packages` (windows) to another machine. E.g. on Linux:
 
 ```
-cd "%USERPROFILE%/AppData/Roaming/Sublime Text 3/Packages/User"
-del "Default (Windows).sublime-keymap"
-mklink /H "Default (Windows).sublime-keymap" "Default (Linux).sublime-keymap"
+cd ~
+ln -s ~/.config/sublime-text/Packages sublime-packages
 ```
+
+Delete/move existing files and then you can sync into `~/sublime-packages`.
+
+Might need to hard link (e.g. mklink /H) `"Default (Windows).sublime-keymap"` to `"Default (Linux).sublime-keymap"`
