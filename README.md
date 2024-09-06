@@ -44,6 +44,7 @@ Then add local machine specific definitions as desired:
 Some mentioned above and below.
 
 - apt install `git zsh build-essential libsensors-dev libssl-dev cmake clang pkg-config postgresql-client`
+  - `git config --global credential.helper cache`
 - apt install `openvpn feh font-font-awesome`
 - [LLVM install script for Apt](https://apt.llvm.org/)
 - libs for compiling more things e.g apt install `libsdl2-dev libpulse-dev libnotmuch_dev libssl-dev
