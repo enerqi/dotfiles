@@ -49,6 +49,7 @@ Some mentioned above and below.
 - [LLVM install script for Apt](https://apt.llvm.org/)
 - libs for compiling more things e.g apt install `libsdl2-dev libpulse-dev libnotmuch_dev libssl-dev
   libpipewire-0.3-dev`
+- `gsimplecal`
 - [mise](https://mise.jdx.dev/getting-started.html) for python/node etc. version management on Linux
   - `mise use -g python@3.11.9` or `mise use -g node@lts` etc.
 - [fzf](https://github.com/junegunn/fzf?tab=readme-ov-file#using-git) fuzzy finder from git or os packages

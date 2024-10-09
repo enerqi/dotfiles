@@ -58,10 +58,6 @@ source "${HOME}/.zgenom/zgenom.zsh"
 # This does not increase the startup time.
 zgenom autoupdate
 
-# force nvm to lazy load
-zstyle ':omz:plugins:nvm' lazy yes
-zstyle ':omz:plugins:nvm' lazy-cmd eslint prettier typescript
-
 # Everything in this if branch is loaded pre-compiled from an init script if it exists
 # if the init script doesn't exist (use `zgenom reset` to clear the init script) then run all
 # these (slow) zgenom functions
@@ -71,11 +67,7 @@ if ! zgenom saved; then
     # Ohmyzsh base library
     zgenom ohmyzsh
     # plugins
-    # both NVM and manually installed ASDF add annoying amounts of overhead
-    zgenom ohmyzsh plugins/asdf
-
-    # see zstyle nvm commands above to lazy load this slow plugin
-    zgenom ohmyzsh plugins/nvm
+    zgenom ohmyzsh plugins/mise
 
     # zgenom ohmyzsh plugins/git
     # zgenom ohmyzsh plugins/sudo
@@ -164,7 +156,8 @@ fi
 bindkey '^ ' autosuggest-accept
 
 export CARGO_HOME="${HOME}/.cargo"
-export PATH="$PATH:${CARGO_HOME}/bin"
+export GO_HOME="${HOME}/go"
+export PATH="$PATH:${CARGO_HOME}/bin:${GO_HOME}/bin"
 
 # https://unix.stackexchange.com/questions/110240/why-does-ctrl-d-eof-exit-the-shell
 set -o ignoreeof
@@ -215,5 +208,3 @@ eval "$(starship init zsh)"
 
 # profile end:
 # zprof
-
-eval "$(~/.local/bin/mise activate zsh)"

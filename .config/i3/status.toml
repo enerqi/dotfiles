@@ -1,3 +1,11 @@
+icons_format = "{icon} "  # spacing control to uncramp icons
+
+[icons.overrides]
+cpu = [
+    "\uf2db"
+]
+memory_mem = ["\uf538"]
+
 [theme]
 theme = "solarized-dark"
 
@@ -49,7 +57,7 @@ critical_cpu = 90
 [[block]]
 block = "load"
 interval = 1
-format = "$icon 1min avg: $1m.eng(w:4)"
+format = "$icon  1min avg: $1m.eng(w:4)"
 
 # apt install libsensors
 [[block]]
@@ -69,3 +77,6 @@ cmd = "pavucontrol"
 block = "time"
 interval = 5
 format = " $timestamp.datetime(f:'%a %d/%m %R') "
+[[block.click]]
+button = "left"
+cmd = "gsimplecal"

@@ -311,7 +311,7 @@ bindsym Control+$mod+y exec --no-startup-id "${HOME}/.screenlayout/single.sh"
 # Auto start programs launched with startup notification support (requires i3 to have got going)
 # Programs that just need generic X stuff started up can use ~/.xinitrc
 # Note this is not shell `exec` but i3 command to pass code to the shell to run
-exec --no-startup-id ~/.screenlayout/main.sh
+#exec --no-startup-id ~/.screenlayout/main.sh
 exec --no-startup-id nm-applet
 exec --no-startup-id compton
 exec --no-startup-id tresorit
