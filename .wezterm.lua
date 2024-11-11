@@ -156,9 +156,9 @@ wezterm.on('update-right-status', function(window, pane)
   window:set_right_status(wezterm.format {
     { Background = { Color = '#3c1361' } },
     -- { Attribute = { Bold = true } },
-    { Text = wezterm.nerdfonts.oct_file_directory .. ' ' .. cwd .. ' ' ..
+    { Text = ' ' .. wezterm.nerdfonts.md_desktop_classic .. ' ' .. hostname .. ' ' ..
       wezterm.nerdfonts.fa_user .. ' ' .. who .. ' '  ..
-      wezterm.nerdfonts.md_desktop_classic .. ' ' .. hostname .. ' '},
+      wezterm.nerdfonts.oct_file_directory .. ' ' .. cwd .. ' '},
   })
 end)
 
