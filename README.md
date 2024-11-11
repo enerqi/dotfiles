@@ -59,7 +59,7 @@ Some mentioned above and below.
   - apt install `python3-setuptools` if missing distutils problem with `docker compose` commands
 - [rustup](https://rustup.rs/)
   - `cargo install cargo-binstall`
-  - `cargo binstall -y alacritty` + `startship` + `zoxide` + `bat`
+  - `cargo binstall -y starship` + `zoxide` + `bat`
 - install some sync service, e.g. [tresorit](https://tresorit.com/)
 - `firefox` sync for custom settings and extensions
 - `chrome` plus `ublock origin` extension for commonly used browser dev tools
@@ -69,9 +69,11 @@ Some mentioned above and below.
 - install [i3 window manager](https://i3wm.org/downloads/) >= *v4.20*
   - `i3wm i3lock-fancy i3blocks` (not `i3` meta package as we want the rust status bar)
   - a copy of `i3status-rs` is already in `~/bin` but a recent version could be compiled with rust (`cargo install i3status-rs; cp ~/.cargo/bin/i3status-rs ~/bin`)
-- install v0.13+ of `alacritty` terminal manager (i.e. with rust `cargo binstall alacritty`)
+- install [wezterm](https://wezfurlong.org/wezterm/index.html)
 - install nerd fonts by tweaking/running [`~/bin/fetch-fonts.sh`](./bin/fetch-fonts.sh)
-  - `fc-list` to check font names used in `.config/i3/config` and `.config/alacritty/alacritty.toml`
+  - optional for some things as wezterm bundles nerd fonts, but that script includes many fonts
+  - `fc-list` to check font names used in `.config/i3/config` and `.config/alacritty/alacritty.toml` or with wezterm
+    `wezterm ls-fonts --list-system`
 - `apt install compton pavucontrol` (compositor for transparency etc., sound panel control)
 
 
