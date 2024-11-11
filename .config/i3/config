@@ -33,7 +33,7 @@ workspace_auto_back_and_forth yes
 floating_modifier $mod
 
 # start a terminal (or i3-sensible-terminal - default ordered list or $TERMINAL env var)
-bindsym $mod+g exec alacritty
+bindsym $mod+g exec wezterm
 
 # kill focused window
 bindsym $mod+Shift+Delete kill

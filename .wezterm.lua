@@ -68,17 +68,18 @@ end
 -- `wezterm ls-fonts`, `wezterm ls-fonts --list-system`
 config.window_decorations = "RESIZE"  -- default "TITLE | RESIZE"
 config.use_fancy_tab_bar = false
-config.hide_tab_bar_if_only_one_tab = true
 config.color_scheme = 'Monokai (dark) (terminal.sexy)'
 config.enable_scroll_bar = true
 -- config.background = {source = {File = 'C:/Users/Enerqi/Pictures/chi-20201002-rot.png'}}
 -- C:\Users\Enerqi\Pictures/chi-20201002.jpg
 if is_windows_os then
-  config.font = wezterm.font 'CaskaydiaCove NF Mono'
-  config.window_background_opacity = 0.95
+    config.font = wezterm.font 'CaskaydiaCove NF Mono'
+    config.window_background_opacity = 0.95
+    config.hide_tab_bar_if_only_one_tab = false  -- unlike i3 there's no title bar info so preserve tab info
 else
-  config.font = wezterm.font "CaskaydiaCove Nerd Font Mono"
-  config.window_background_opacity = 0.85
+    config.font = wezterm.font "CaskaydiaCove Nerd Font Mono"
+    config.window_background_opacity = 0.85
+    config.hide_tab_bar_if_only_one_tab = true  -- i3 populates title bar info
 end
 -- config.font = wezterm.font 'FuraCode Nerd Font Mono'
 -- config.font = wezterm.font 'Jetbrains Mono'
