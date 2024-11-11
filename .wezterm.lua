@@ -22,7 +22,7 @@ local launch_menu = {}
 config.launch_menu = launch_menu
 table.insert(launch_menu, {
     label = 'Nu',
-    args = { 'nu.exe' },
+    args = { 'nu' },
 })
 
 if is_windows_os then
@@ -55,6 +55,13 @@ if is_windows_os then
       },
     })
   end
+
+  -- Cmder shell (msys2 based)
+  table.insert(launch_menu, {
+      label = 'Cmder',
+      args = { 'cmd.exe', '/k', '%cmder_root%/vendor/init.bat', '/f' },
+  })
+
 else
 
     -- Default to zsh on Posix O.S.
