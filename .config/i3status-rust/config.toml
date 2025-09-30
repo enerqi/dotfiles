@@ -45,7 +45,8 @@ format = " $icon $running/$total "
 
 [[block]]
 block = "net"
-device = "wlp0s20f3"
+# device = "wlp0s20f3"
+# device = "enp0s31f6"
 interval = 5
 
 [[block]]
