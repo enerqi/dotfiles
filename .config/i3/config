@@ -286,10 +286,9 @@ assign [class="^(?i)slack"] 1
 assign [class="^(?i)sublime_merge"] 4
 assign [class="^(?i)google-chrome"] 5
 assign [class="^(?i)firefox"] 6
-assign [class="(?i)thunderbird"] 8
-assign [class="(?i)virtualBox"] 8
 assign [class="(?i)tresorit"] 8
 assign [class="(?i)keepass"] 8
+assign [class="(?i)deskflow"] 8
 
 set $laptopScreen eDP-1-1
 set $mainScreen DP-1-3
@@ -318,4 +317,4 @@ bindsym Control+$mod+y exec --no-startup-id "${HOME}/.screenlayout/single.sh"
 exec --no-startup-id nm-applet
 exec --no-startup-id compton
 exec --no-startup-id tresorit
-
+exec --no-startup-id deskflow

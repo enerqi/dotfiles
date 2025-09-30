@@ -54,7 +54,7 @@ Some mentioned above and below.
 - [fzf](https://github.com/junegunn/fzf?tab=readme-ov-file#using-git) fuzzy finder from git or os packages
 - [sublime text / sublime merge](https://www.sublimetext.com/docs/linux_repositories.html) apt packages
 - docker binaries - apt install `docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin`
-  - [permission issue]([permission](https://stackoverflow.com/questions/48957195/how-to-fix-docker-got-permission-denied-issue)
+  - [permission issue](https://stackoverflow.com/questions/48957195/how-to-fix-docker-got-permission-denied-issue) (`sudo usermod -aG docker $USER` etc.)
   - apt install `python3-setuptools` if missing distutils problem with `docker compose` commands
 - [rustup](https://rustup.rs/)
   - `cargo install cargo-binstall`
