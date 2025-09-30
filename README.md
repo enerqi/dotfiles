@@ -45,6 +45,7 @@ Some mentioned above and below.
 
 - apt install `git zsh build-essential libsensors-dev libssl-dev cmake clang pkg-config postgresql-client`
   - `git config --global credential.helper cache`
+  - separately install any `.ssh` keys from secret repository
 - apt install `openvpn feh fonts-font-awesome`
 - [LLVM install script for Apt](https://apt.llvm.org/)
 - libs for compiling more things e.g apt install `libsdl2-dev libpulse-dev libnotmuch_dev libssl-dev libpipewire-0.3-dev`
