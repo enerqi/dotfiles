@@ -73,7 +73,7 @@ Some mentioned above and below.
   - optional for some things as wezterm bundles nerd fonts, but that script includes many fonts
   - `fc-list` to check font names used in `.config/i3/config` and `.config/alacritty/alacritty.toml` or with wezterm
     `wezterm ls-fonts --list-system`
-- `apt install compton pavucontrol` (compositor for transparency etc., sound panel control)
+- `apt install compton pulseaudio pavucontrol` (compositor, sound panel control, i3 volume control etc.)
 
 
 ## Sublime Text Setup

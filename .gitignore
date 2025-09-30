@@ -28,7 +28,7 @@ cmder/Cmder.exe
 !.config/i3status-rust/
 !.config/i3status-rust/**
 
-!.i3/
+!.i3/config
 !.i3/**
 
 !.lein/
