@@ -105,3 +105,6 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
 fi
 
 . "$HOME/.cargo/env"
+
+# Generated for envman. Do not edit.
+[ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"

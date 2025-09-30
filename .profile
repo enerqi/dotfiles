@@ -38,3 +38,6 @@ export PATH="$PATH:$HOME/.local/share/tresorit"
 #xrandr --newmode "2560x1600_60.00"  268.50  2560 2608 2640 2720  1600 1603 1609 1646 +hsync -vsync
 #xrandr --addmode DP-1-3 "2560x1600_60.00"
 . "$HOME/.cargo/env"
+
+# Generated for envman. Do not edit.
+[ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"

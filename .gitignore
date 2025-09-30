@@ -25,6 +25,8 @@ cmder/Cmder.exe
 !.config/terminator/
 !.config/terminator/**
 !.config/starship.toml
+!.config/i3status-rust/
+!.config/i3status-rust/**
 
 !.i3/
 !.i3/**

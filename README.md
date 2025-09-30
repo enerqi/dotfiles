@@ -45,13 +45,12 @@ Some mentioned above and below.
 
 - apt install `git zsh build-essential libsensors-dev libssl-dev cmake clang pkg-config postgresql-client`
   - `git config --global credential.helper cache`
-- apt install `openvpn feh font-font-awesome`
+- apt install `openvpn feh fonts-font-awesome`
 - [LLVM install script for Apt](https://apt.llvm.org/)
-- libs for compiling more things e.g apt install `libsdl2-dev libpulse-dev libnotmuch_dev libssl-dev
-  libpipewire-0.3-dev`
+- libs for compiling more things e.g apt install `libsdl2-dev libpulse-dev libnotmuch_dev libssl-dev libpipewire-0.3-dev`
 - `gsimplecal`
 - [mise](https://mise.jdx.dev/getting-started.html) for python/node etc. version management on Linux
-  - `mise use -g python@3.11.9` or `mise use -g node@lts` etc.
+  - `mise use -g node@lts` etc.
 - [fzf](https://github.com/junegunn/fzf?tab=readme-ov-file#using-git) fuzzy finder from git or os packages
 - [sublime text / sublime merge](https://www.sublimetext.com/docs/linux_repositories.html) apt packages
 - docker binaries - apt install `docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin`
@@ -86,13 +85,13 @@ With a fresh sublime install
 After that we are going back to (manually) using a sync service (e.g. Dropbox, Tresorit, One Drive etc.) as the
 formerly useful `SyncSettings` sublime package is (currently in 2024) unmaintained and not working.
 
-Sync `%USERPROFILE%/AppData/Roaming/Roaming/Sublime Text/Packages` (windows) to another machine. E.g. on Linux:
+Sync `%USERPROFILE%/AppData/Roaming/Roaming/Sublime Text/Packages/User` (windows) to another machine. E.g. on Linux:
 
 ```
 cd ~
-ln -s ~/.config/sublime-text/Packages sublime-packages
+ln -s ~/.config/sublime-text/Packages/User sublime-user-packages
 ```
 
-Delete/move existing files and then you can sync into `~/sublime-packages`.
+Delete/move existing files and then you can sync into `~/sublime-user-packages` (e.g. "selective sync" tresor in tresorit to that dir).
 
 Might need to hard link (e.g. mklink /H) `"Default (Windows).sublime-keymap"` to `"Default (Linux).sublime-keymap"`
