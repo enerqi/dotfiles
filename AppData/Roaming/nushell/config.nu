@@ -106,3 +106,5 @@ use ~/.cache/starship/init.nu
 source ~/.zoxide.nu
 
 alias j = just
+alias wx = ^watchexec --no-global-ignore
+

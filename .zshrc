@@ -139,6 +139,7 @@ if ! zgenom saved; then
     alias ec='el -s modified' # Lists sorted by date, most recent last, shows change time.
     alias eu='el -s accessed' # Lists sorted by date, most recent last, shows access time.
     alias ls='lsd'
+    alias wx='watchexec --no-global-ignore "$@"'
 
     # save all to init script
     zgenom save

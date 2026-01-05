@@ -68,3 +68,4 @@ cmder/Cmder.exe
 *.log
 *.pid
 
+.aider*
