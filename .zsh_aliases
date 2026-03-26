@@ -1,0 +1,12 @@
+alias e='exa -1 -a'      # Lists in one column, hidden files.
+alias el='exa -l'        # Lists human readable sizes.
+alias er='el -R'         # Lists human readable sizes, recursively.
+alias ea='el -a'         # Lists human readable sizes, hidden files.
+alias es='el -s size'    # Lists sorted by size, largest last.
+alias ex='el -s extension' # Lists sorted by extension (GNU only).
+alias em='el -a | "$PAGER"' # Lists human readable sizes, hidden files through pager.
+alias et='el -s created' # Lists sorted by date, most recent last.
+alias ec='el -s modified' # Lists sorted by date, most recent last, shows change time.
+alias eu='el -s accessed' # Lists sorted by date, most recent last, shows access time.
+alias ls='lsd'
+alias wx='watchexec --no-global-ignore "$@"'
