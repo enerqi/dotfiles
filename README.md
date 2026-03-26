@@ -22,6 +22,13 @@ git clone https://github.com/jandamm/zgenom.git "${HOME}/.zgenom"
 curl -sS https://webinstall.dev/zoxide | bash
 ```
 
+- Install [carapace]() cross-shell completion library
+
+```
+echo "deb [trusted=yes] https://apt.fury.io/rsteube/ /" | sudo tee /etc/apt/sources.list.d/fury.list
+sudo apt-get update && sudo apt-get install carapace-bin
+```
+
 - Optional suggested other binaries include [ripgrep - rg](https://crates.io/crates/ripgrep#installation),
   [fd-find - fd](https://crates.io/crates/fd-find#installation) and [exa](https://crates.io/crates/exa#installation).
   All buildable with `cargo install ...`.
@@ -43,7 +50,7 @@ Then add local machine specific definitions as desired:
 
 Some mentioned above and below.
 
-- apt install `git zsh build-essential libsensors-dev libssl-dev cmake clang pkg-config postgresql-client`
+- apt install `git zsh build-essential libsensors-dev libssl-dev cmake clang pkg-config postgresql-client golang`
   - `git config --global credential.helper cache`
   - separately install any `.ssh` keys from secret repository
 - apt install `openvpn feh fonts-font-awesome`

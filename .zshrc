@@ -67,7 +67,8 @@ if ! zgenom saved; then
     # Ohmyzsh base library
     zgenom ohmyzsh
     # plugins
-    zgenom ohmyzsh plugins/mise
+    # mise is loaded lazily with the mise() function further below
+    # zgenom ohmyzsh plugins/mise
 
     # zgenom ohmyzsh plugins/git
     # zgenom ohmyzsh plugins/sudo
@@ -77,15 +78,9 @@ if ! zgenom saved; then
     # Install ohmyzsh osx plugin if on macOS
     # [[ "$(uname -s)" = Darwin ]] && zgenom ohmyzsh plugins/osx
 
-    # prezto options
-    zgenom prezto editor key-bindings 'emacs'
-    # zgenom prezto prompt theme 'steeef'
-
-    # prezto and modules
+    # Prezto core (keep these — they are lightweight and provide good defaults)
     # If you use prezto and ohmyzsh - load ohmyzsh first.
     zgenom prezto
-    zgenom prezto command-not-found
-    zgenom prezto archive
     zgenom prezto environment
     zgenom prezto terminal
     zgenom prezto editor
@@ -93,40 +88,47 @@ if ! zgenom saved; then
     zgenom prezto directory
     zgenom prezto spectrum
     zgenom prezto utility
+
+    # Completion — load early but we'll override later (core zsh `compsys` which carapace uses)
     zgenom prezto completion
-    # additional completions
-    zgenom load zsh-users/zsh-completions
+
+    # fzf-related (important order) replace zsh's default completion selection menu with fzf
     zgenom load chitoku-k/fzf-zsh-completions
-    # Replace zsh's default completion selection menu with fzf
-    # must be before suggestions/syntax highlighting
-    zgenom load Aloxaf/fzf-tab
+    zgenom load Aloxaf/fzf-tab   # must be after compinit, before widget wrappers
+
+    # Git and other utility prezto modules
+    # zgenom prezto command-not-found
+    # zgenom prezto archive
     zgenom prezto git
-    zgenom prezto archive
-    # must be before history-substring-search, autosuggestions and prompt (in that order)
+    # interactive gnu utilities on BSD
+    zgenom prezto gnu-utility
+
+    # Syntax & suggestions — load before prompt
     zgenom prezto syntax-highlighting
-    zgenom prezto history-substring-search
+    # this is slow (up down arrow substring search) and mostly redundant with fzf
+    # zgenom prezto history-substring-search
     zgenom prezto autosuggestions
+
     # ssh agent for persistent connections, uses `ps -U` etc.
     if ps -U &>/dev/null; then
         zgenom prezto ssh
     fi
-    # interactive gnu utilities on BSD
-    zgenom prezto gnu-utility
-    zgenom prezto prompt
+
+    # prezto options
+    zgenom prezto editor key-bindings 'emacs'
+    # zgenom prezto prompt theme 'steeef'
+
+    # mostly redundant with `starship`
+    # zgenom prezto prompt
 
     # Load prezto tmux when tmux is installed
     if hash tmux &>/dev/null; then
         zgenom prezto tmux
     fi
 
-    zgenom load zsh-users/zsh-syntax-highlighting
-
     # add binaries
     # https://github.com/tj/git-extras/blob/master/Installation.md
     # zgenom bin tj/git-extras
-
-    # will fetch fzf from github for us and setup keybindings
-    zgenom load unixorn/fzf-zsh-plugin
 
     alias e='exa -1 -a'      # Lists in one column, hidden files.
     alias el='exa -l'        # Lists human readable sizes.
@@ -146,11 +148,31 @@ if ! zgenom saved; then
 
     # Compile your zsh files
     zgenom compile "$HOME/.zshrc"
-   # zgenom compile $ZDOTDIR
+    # zgenom compile $ZDOTDIR
 
     # You can perform other "time consuming" maintenance tasks here as well.
     # If you use `zgenom autoupdate` you're making sure it gets
     # executed every 7 days.
+
+    # Lazy mise
+    mise() {
+      unset -f mise
+      eval "$(mise activate zsh)"
+      mise "$@"
+    }
+fi
+
+# Deduplicate fpath (helps prevent unnecessary cache rebuilds)
+typeset -gU fpath
+fpath=(${(u)fpath})
+
+# Fast compinit for Linux — rebuild cache only once per day (day-of-year check)
+autoload -Uz compinit
+
+if [[ ! -f ~/.zcompdump ]] || [[ "$(date +'%j')" != "$(date +'%j' -r ~/.zcompdump 2>/dev/null || echo '0')" ]]; then
+    compinit -i
+else
+    compinit -C
 fi
 
 # ctrl+space can autocomplete, not tab
@@ -168,25 +190,6 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zshrc.local" ]]; then
     source "${ZDOTDIR:-$HOME}/.zshrc.local"
 fi
 
-# Smarter CD
-eval "$(zoxide init zsh)"
-
-# PROMPT
-#
-# Easy to get these all working on Linux, but in Windows Msys2 little if anything works reliably inside Windows Terminal
-# Cmder also breaks - does freeze input handling. Windows Terminal problems *maybe* prompt related, as
-# occasionally seems to create a stuck child process of zsh that blocks stdin
-#
-# Starship.rs (requires a binary, written in Rust) is fastest and clean to use with `starship.toml` for config
-# It's a cross platform and cross shell *Prompt*: https://starship.rs/
-# cargo install starship | choco install starship etc. | https://github.com/starship/starship/releases/download/v1.1.1/
-#
-# - Requires a "Nerd Font" with lots of glyphs: https://www.nerdfonts.com/#home
-#   Change terminal font to match, e.g. CaskaydiaCove NF, FiraMono NF, JetBrainsMono NF
-# - Add ~/.config/starship.toml to dotfiles
-# - If not available in the standard PATH, we should have compile the starship binary with rust + `cargo install`
-#   so expect to find it in $CARGO_HOME/bin
-eval "$(starship init zsh)"
 
 # https://spaceship-prompt.sh/
 # The original, like starship.rs but much slower
@@ -209,6 +212,36 @@ eval "$(starship init zsh)"
 
 # profile end:
 # zprof
+
+# Carapace (after compinit + fzf-tab)
+export CARAPACE_BRIDGES='zsh,fish,bash,inshellisense'
+zstyle ':completion:*' format $'\e[2;37mCompleting %d\e[m'
+source <(carapace _carapace)
+
+# fzf shell integration (modern way — works with package-installed fzf)
+if command -v fzf >/dev/null 2>&1; then
+    eval "$(fzf --zsh)"
+fi
+
+# Smarter CD
+eval "$(zoxide init zsh)"
+
+# PROMPT
+#
+# Easy to get these all working on Linux, but in Windows Msys2 little if anything works reliably inside Windows Terminal
+# Cmder also breaks - does freeze input handling. Windows Terminal problems *maybe* prompt related, as
+# occasionally seems to create a stuck child process of zsh that blocks stdin
+#
+# Starship.rs (requires a binary, written in Rust) is fastest and clean to use with `starship.toml` for config
+# It's a cross platform and cross shell *Prompt*: https://starship.rs/
+# cargo install starship | choco install starship etc. | https://github.com/starship/starship/releases/download/v1.1.1/
+#
+# - Requires a "Nerd Font" with lots of glyphs: https://www.nerdfonts.com/#home
+#   Change terminal font to match, e.g. CaskaydiaCove NF, FiraMono NF, JetBrainsMono NF
+# - Add ~/.config/starship.toml to dotfiles
+# - If not available in the standard PATH, we should have compile the starship binary with rust + `cargo install`
+#   so expect to find it in $CARGO_HOME/bin
+eval "$(starship init zsh)"
 
 # Generated for envman. Do not edit.
 [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
