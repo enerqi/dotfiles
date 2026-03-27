@@ -53,7 +53,8 @@ if ! zgenom saved; then
     zgenom prezto gnu-utility
 
     # Syntax & suggestions — load before prompt
-    zgenom prezto syntax-highlighting
+    # `zgenom prezto syntax-highlighting` but fast-syntax-highlighting quicker
+    zgenom load zdharma-continuum/fast-syntax-highlighting
     # this is slow (up down arrow substring search) and mostly redundant with fzf
     # zgenom prezto history-substring-search
     zgenom prezto autosuggestions
