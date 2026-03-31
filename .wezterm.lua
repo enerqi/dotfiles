@@ -1,10 +1,44 @@
--- examples
--- https://alexplescan.com/posts/2024/08/10/wezterm/#multiplexing-terminals-levelling-up-key-assignments
-
 local wezterm = require 'wezterm'  -- Pull in the wezterm API
-local act = wezterm.action
 local config = wezterm.config_builder()  -- This will hold the configuration.
+local act = wezterm.action
+local mux = wezterm.mux
 local is_windows_os = wezterm.target_triple == 'x86_64-pc-windows-msvc'
+
+-- Load project-specific layout logic
+local project_workspaces = require("projects")
+local workspace_setup = require("workspace_setup")
+
+local session_manager = require("wezterm-session-manager/session-manager")
+local workspace_switcher = wezterm.plugin.require(
+  "https://github.com/MLFlexer/smart_workspace_switcher.wezterm"
+)
+
+------------------------------------------------------------
+-- MANUAL SAVE / MANUAL RESTORE (SAFE & RELIABLE)
+------------------------------------------------------------
+wezterm.on("save_session", function(window, pane)
+  session_manager.save_state(window)
+end)
+
+wezterm.on("restore_session", function(window, pane)
+  session_manager.restore_state(window)
+end)
+
+------------------------------------------------------------
+-- NO AUTO-RESTORE ON STARTUP
+------------------------------------------------------------
+-- We intentionally do *not* restore on startup.
+-- The session-manager’s design explicitly expects manual triggering:
+--   “restore Session ... triggered via restore_session event”
+--
+-- Auto restore causes:
+--   - multiple windows on Windows
+--   - duplicate workspaces
+--   - endless recursion when switching
+--
+-- If you *want* to automatically restore, you would need a mux-based
+-- custom solution rather than the session-manager plugin.
+
 
 -- Debugging (ctrl shift L), ctrl D to exit etc.
 -- myconfig = window:effective_config()
@@ -67,7 +101,6 @@ else
     -- Default to zsh on Posix O.S.
   config.default_prog = { 'zsh' }
 end
-
 
 
 -- Appearance settings
@@ -166,7 +199,7 @@ wezterm.on('update-right-status', function(window, pane)
     -- { Attribute = { Bold = true } },
     { Text = ' ' .. wezterm.nerdfonts.md_desktop_classic .. ' ' .. hostname .. ' ' ..
       wezterm.nerdfonts.fa_user .. ' ' .. who .. ' '  ..
-      wezterm.nerdfonts.oct_file_directory .. ' ' .. cwd .. ' '},
+      wezterm.nerdfonts.oct_file_directory .. ' ' .. cwd .. ' ' .. window:active_workspace()},
   })
 end)
 
@@ -179,7 +212,6 @@ config.quick_select_alphabet = "arstqwfpzxcdneioluyhvkgmbj"
 -- text selections from keyboard movements.
 -- `y` (or 'c') to exit copy with text copied.
 -- 'v' (or 'ctrl t'), shift v ('ctrl l'), ctrl v ('space') for cell, line and rectangular selection
-
 
 -- Key bindings
 -- https://wezfurlong.org/wezterm/config/default-keys.html
@@ -199,6 +231,31 @@ config.keys = {
   { key = 'm', mods = 'CMD', action = wezterm.action.DisableDefaultAssignment},  -- "hide or minimize"
   { key = 't', mods = 'CTRL', action = act.SpawnTab 'CurrentPaneDomain' },
   { key = 'v', mods = 'CTRL', action = act.PasteFrom 'Clipboard' },
+
+-- Show list of active workspaces
+  {
+    key = "S",
+    mods = "CTRL|SHIFT",
+    action = act.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES" })
+  },
+
+  -- Smart workspace switcher (fuzzy search projects)
+  {
+    key = "o",
+    mods = "CTRL",
+    action = workspace_switcher.switch_workspace(),
+  },
+-- Save/restore session state (MANUAL)
+  {
+    key = "F5",
+    mods = "CTRL",
+    action = act.EmitEvent("save_session"),
+  },
+  {
+    key = "F6",
+    mods = "CTRL",
+    action = act.EmitEvent("restore_session"),
+  },
 }
 
 --* scrolling shift+page up/down

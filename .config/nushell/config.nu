@@ -22,7 +22,7 @@ $env.config.cursor_shape = {
     vi_insert: "line"
     vi_normal: "block"
 }
-$env.config.buffer_editor = "subl"   # or "code", "hx", "nvim", etc.
+$env.config.buffer_editor = ["subl", "-w"]   # or "code", "hx", "nvim", etc.
 
 # === Prompt: Starship (via autoload) ===
 # The actual prompt logic is in autoload/starship.nu
