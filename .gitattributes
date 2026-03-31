@@ -5,6 +5,8 @@
 # Also set core.autocrlf = false globally
 * text eol=auto
 
+bin/i3status-rs binary
+
 *.sublime-package binary
 *.png binary
 *.jpg binary
