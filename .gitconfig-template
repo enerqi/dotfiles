@@ -1,15 +1,29 @@
-[color]
-    ui = true
 [user]
     name = enerqi
     email = enerqi@pulsar.is
 [core]
     editor = subl -w
-[merge]
-    tool = p4merge
-[mergetool "p4merge"]
-    path = /opt/perforce/p4/bin/p4merge
-    trustExitCode = false
-[diff]
-    tool = p4merge
-
+[color]
+    ui = true
+[credential]
+    # Choose one of the following credential helpers AFTER cloning dotfiles:
+    #
+    # Windows:
+    #   git config --global credential.helper manager-core
+    #
+    # macOS:
+    #   git config --global credential.helper osxkeychain
+    #
+    # Linux:
+    #   git config --global credential.helper manager-core
+    #   # or: git config --global credential.helper cache --timeout=3600
+    #
+    # Plaintext storage (NOT recommended):
+    #   git config --global credential.helper store
+    #
+    # You can also scope credentials to a hostname:
+    # [credential "https://github.com"]
+    #     username = your-github-username
+    #
+    # NOTE: This template deliberately avoids setting a helper,
+    #       so you won’t accidentally override per‑machine settings.
