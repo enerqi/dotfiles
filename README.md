@@ -46,6 +46,10 @@ Then add local machine specific definitions as desired:
 - `.zprofile` / `~/.zprofile.local`  shouldn't change the key bindings, aliases, functions or shell options but could set the PATH for non-interactive or login commandline programs.
 - `.xinitrc` (startx) / `.xsession` (xdm) run window manager independent programs after graphical login. Window manager specific scripts could also be used.
 
+## NuShell Setup
+
+- set `XDG_CONFIG_HOME` if on Windows to `C:/Users/<you>/.config`
+
 ## Assorted Development Tools
 
 Some mentioned above and below.

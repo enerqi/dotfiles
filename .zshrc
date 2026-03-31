@@ -163,3 +163,8 @@ eval "$(starship init zsh)"
 
 # profile end:
 # zprof
+
+# Generated for envman. Do not edit.
+[ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
+
+# if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi

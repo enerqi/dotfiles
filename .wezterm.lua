@@ -40,7 +40,7 @@ if is_windows_os then
   -- environment command prompts to the menu
   for _, vsvers in
     ipairs(
-      wezterm.glob('Microsoft Visual Studio/20*', 'C:/Program Files (x86)')
+      wezterm.glob('Microsoft Visual Studio/18*', 'C:/Program Files (x86)')
     )
   do
     local year = vsvers:gsub('Microsoft Visual Studio/', '')
@@ -207,3 +207,7 @@ config.keys = {
 --* `wezterm ssh [-h]` for embedded ssh, then new tabs keep the connection!
 
 return config
+
+-- c.f. windows desktops: win + ctrl + l/r arrow for 1 or 2. win + tab view all. win + ctrl + d new. win + ctrl + f4 close.
+-- -- windows virtualdesktop helper adds option to ctrl+alt+# switch
+-- moving windows across? ahk script?
