@@ -22,16 +22,16 @@ git clone https://github.com/jandamm/zgenom.git "${HOME}/.zgenom"
 curl -sS https://webinstall.dev/zoxide | bash
 ```
 
-- Install [carapace]() cross-shell completion library
+- Install [carapace](https://github.com/carapace-sh/carapace-bin) cross-shell completion library
 
 ```
 echo "deb [trusted=yes] https://apt.fury.io/rsteube/ /" | sudo tee /etc/apt/sources.list.d/fury.list
 sudo apt-get update && sudo apt-get install carapace-bin
 ```
 
-- Optional suggested other binaries include [ripgrep - rg](https://crates.io/crates/ripgrep#installation),
-  [fd-find - fd](https://crates.io/crates/fd-find#installation) and [exa](https://crates.io/crates/exa#installation).
-  All buildable with `cargo install ...`.
+- Optional suggested other binaries include [ripgrep - rg](https://crates.io/crates/ripgrep#installation) and
+  [fd-find - fd](https://crates.io/crates/fd-find#installation).
+  All buildable with `cargo install ...` (and often available with `cargo binstall ...`).
 
 Then add local machine specific definitions as desired:
 
@@ -49,6 +49,20 @@ Then add local machine specific definitions as desired:
 ## NuShell Setup
 
 - set `XDG_CONFIG_HOME` if on Windows to `C:/Users/<you>/.config`
+
+## WezTerm Terminal Setup
+- install [wezterm](https://wezfurlong.org/wezterm/index.html) (recent nightly as of early 2026 for best experience)
+- install nerd fonts by tweaking/running [`~/bin/fetch-fonts.sh`](./bin/fetch-fonts.sh)
+  - optional for some things as wezterm bundles nerd fonts, but that script includes many fonts
+  - `fc-list` to check font names used in `.config/i3/config` and `.config/alacritty/alacritty.toml` or with wezterm
+    `wezterm ls-fonts --list-system`
+
+## Window Manager Setup
+
+- install [i3 window manager](https://i3wm.org/downloads/) >= *v4.20*
+  - `i3wm i3lock-fancy i3blocks` (not `i3` meta package as we want the rust status bar)
+  - a copy of `i3status-rs` is already in `~/bin` but a recent version could be compiled with rust (`cargo install i3status-rs; cp ~/.cargo/bin/i3status-rs ~/bin`)
+- `apt install compton pulseaudio pavucontrol` (compositor, sound panel control, i3 volume control etc.)
 
 ## Assorted Development Tools
 
@@ -74,19 +88,6 @@ Some mentioned above and below.
 - install some sync service, e.g. [tresorit](https://tresorit.com/)
 - `firefox` sync for custom settings and extensions
 - `chrome` plus `ublock origin` extension for commonly used browser dev tools
-
-## Window Manager Setup
-
-- install [i3 window manager](https://i3wm.org/downloads/) >= *v4.20*
-  - `i3wm i3lock-fancy i3blocks` (not `i3` meta package as we want the rust status bar)
-  - a copy of `i3status-rs` is already in `~/bin` but a recent version could be compiled with rust (`cargo install i3status-rs; cp ~/.cargo/bin/i3status-rs ~/bin`)
-- install [wezterm](https://wezfurlong.org/wezterm/index.html)
-- install nerd fonts by tweaking/running [`~/bin/fetch-fonts.sh`](./bin/fetch-fonts.sh)
-  - optional for some things as wezterm bundles nerd fonts, but that script includes many fonts
-  - `fc-list` to check font names used in `.config/i3/config` and `.config/alacritty/alacritty.toml` or with wezterm
-    `wezterm ls-fonts --list-system`
-- `apt install compton pulseaudio pavucontrol` (compositor, sound panel control, i3 volume control etc.)
-
 
 ## Sublime Text Setup
 
