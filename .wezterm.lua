@@ -247,12 +247,12 @@ config.keys = {
   },
 -- Save/restore session state (MANUAL)
   {
-    key = "F5",
+    key = "F6",
     mods = "CTRL",
     action = act.EmitEvent("save_session"),
   },
   {
-    key = "F6",
+    key = "F5",
     mods = "CTRL",
     action = act.EmitEvent("restore_session"),
   },
