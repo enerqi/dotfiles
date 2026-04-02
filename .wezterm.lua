@@ -242,7 +242,7 @@ config.keys = {
   -- Smart workspace switcher (fuzzy search projects)
   {
     key = "o",
-    mods = "CTRL",
+    mods = "CTRL|SHIFT",
     action = workspace_switcher.switch_workspace(),
   },
 -- Save/restore session state (MANUAL)

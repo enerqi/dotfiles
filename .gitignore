@@ -27,6 +27,10 @@ cmder/Cmder.exe
 !.config/starship.toml
 !.config/i3status-rust/
 !.config/i3status-rust/**
+!.config/wezterm/
+!.config/wezterm/**
+!.config/wezterm/wezterm-session-manager/
+!.config/wezterm/wezterm-session-manager/**
 
 !.i3/config
 !.i3/**
