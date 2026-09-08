@@ -1,0 +1,18 @@
+// Keymap used for input injected by waynergy from the Windows deskflow server.
+//
+// A Windows primary sends PS/2 set-1 make scancodes, which no stock xkbcommon
+// keycodes section understands - hence the "win" section shipped with
+// waynergy, installed to ~/.config/xkb/keycodes/win. Pair it with
+// xkb_key_offset = 7 in config.ini (see the header of that keycodes file).
+//
+// The symbols layout below must match the layout on the WINDOWS machine, not
+// this one. us, not gb: the Glove80 attached to the Windows box is configured
+// as English (US) to avoid dead keys, so that is what the scancodes mean.
+// The gb layout of this laptop's built-in keyboard is irrelevant here - it is
+// set per-device in the sway config instead.
+xkb_keymap {
+        xkb_keycodes  { include "win" };
+        xkb_types     { include "complete" };
+        xkb_compat    { include "complete" };
+        xkb_symbols   { include "pc+us+inet(evdev)" };
+};

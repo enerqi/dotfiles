@@ -1,0 +1,332 @@
+# Sway config, ported from ~/.config/i3/config
+#
+# IMPORTANT: this file existing is what stops sway falling back to
+# ~/.config/i3/config. That fallback broke the xdg-desktop-portal stack,
+# because /etc/sway/config.d/50-systemd-user.conf never got included.
+# See "Window Manager Setup" in ~/README.md.
+
+set $mod Mod4
+
+### Environment for systemd user services and D-Bus activation.
+### MUST stay first: xdg-desktop-portal-gtk exits with "cannot open display"
+### if it is activated before WAYLAND_DISPLAY is in the systemd/dbus env.
+exec_always systemctl --user import-environment DISPLAY WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP
+exec_always hash dbus-update-activation-environment 2>/dev/null && \
+        dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP
+
+font pango:"CaskaydiaCove Nerd Font Mono" Mono 12
+
+# i3's `title_window_icon` has no sway equivalent (sway draws no window icons).
+#for_window [all] title_window_icon padding 1px
+
+# Repeating this workspace number jumps back to the previous workspace
+workspace_auto_back_and_forth yes
+
+# Use Mouse+$mod to drag floating windows to their wanted position
+floating_modifier $mod
+
+# Keyboard layout. sway defaults every keyboard to us and does not read
+# /etc/default/keyboard, so the built-in GB keyboard was typing us.
+# Set by device identifier ON PURPOSE: `input type:keyboard xkb_layout gb`
+# would also capture waynergy's wlr_virtual_keyboard_v1 and override the
+# us keymap that decodes scancodes from the Windows server, breaking
+# remote input. Keep this scoped to the one physical device.
+# `swaymsg -t get_inputs` lists identifiers.
+input "1:1:AT_Translated_Set_2_keyboard" xkb_layout gb
+
+# start a terminal
+bindsym $mod+g exec wezterm
+
+# kill focused window
+bindsym $mod+Shift+Delete kill
+
+# launchers. dmenu_run still works via XWayland; wofi is the native one.
+bindsym $mod+t exec dmenu_run
+# i3-dmenu-desktop talks i3 IPC and does not work under sway -> wofi
+bindsym $mod+d exec --no-startup-id wofi --show drun
+
+# change focus
+#bindsym $mod+n focus left
+bindsym $mod+s focus down
+bindsym $mod+f focus up
+#bindsym $mod+o focus right
+
+# alternatively, you can use the cursor keys:
+bindsym $mod+Left focus left
+bindsym $mod+Down focus down
+bindsym $mod+Up focus up
+bindsym $mod+Right focus right
+
+# move focused window
+#bindsym $mod+Shift+n move left
+bindsym $mod+Shift+s move down
+bindsym $mod+Shift+f move up
+#bindsym $mod+Shift+o move right
+
+# alternatively, you can use the cursor keys:
+bindsym $mod+Shift+Left move left
+bindsym $mod+Shift+Down move down
+bindsym $mod+Shift+Up move up
+bindsym $mod+Shift+Right move right
+
+bindsym $mod+Home move workspace to output left
+bindsym $mod+End move workspace to output right
+bindsym Control+$mod+s move workspace to output up
+bindsym Control+$mod+f move workspace to output down
+
+# split in horizontal orientation
+bindsym $mod+h split h
+
+# split in vertical orientation
+bindsym $mod+v split v
+
+# enter fullscreen mode for the focused container
+bindsym $mod+p fullscreen
+
+# change container layout (stacked, tabbed, toggle split)
+bindsym $mod+r layout stacking
+bindsym $mod+w layout tabbed
+bindsym $mod+b layout toggle split
+
+# toggle tiling / floating
+bindsym $mod+Shift+BackSpace floating toggle
+
+# change focus between tiling / floating windows
+bindsym $mod+BackSpace focus mode_toggle
+
+# focus the parent container
+bindsym $mod+a focus parent
+
+# focus the child container
+bindsym $mod+c focus child
+
+# switch to workspace
+bindsym $mod+1 workspace 1
+bindsym $mod+2 workspace 2
+bindsym $mod+3 workspace 3
+bindsym $mod+4 workspace 4
+bindsym $mod+5 workspace 5
+bindsym $mod+6 workspace 6
+bindsym $mod+7 workspace 7
+bindsym $mod+8 workspace 8
+bindsym $mod+9 workspace 9
+bindsym $mod+0 workspace 10
+bindsym Control+$mod+1 workspace 11
+bindsym Control+$mod+2 workspace 12
+bindsym Control+$mod+3 workspace 13
+bindsym Control+$mod+4 workspace 14
+bindsym Control+$mod+5 workspace 15
+bindsym Control+$mod+6 workspace 16
+bindsym Control+$mod+7 workspace 17
+bindsym Control+$mod+8 workspace 18
+bindsym Control+$mod+9 workspace 19
+bindsym Control+$mod+0 workspace 20
+
+# move focused container to workspace
+bindsym $mod+Shift+1 move container to workspace 1
+bindsym $mod+Shift+2 move container to workspace 2
+bindsym $mod+Shift+3 move container to workspace 3
+bindsym $mod+Shift+4 move container to workspace 4
+bindsym $mod+Shift+5 move container to workspace 5
+bindsym $mod+Shift+6 move container to workspace 6
+bindsym $mod+Shift+7 move container to workspace 7
+bindsym $mod+Shift+8 move container to workspace 8
+bindsym $mod+Shift+9 move container to workspace 9
+bindsym $mod+Shift+0 move container to workspace 10
+bindsym Control+$mod+Shift+1 move container to workspace 11
+bindsym Control+$mod+Shift+2 move container to workspace 12
+bindsym Control+$mod+Shift+3 move container to workspace 13
+bindsym Control+$mod+Shift+4 move container to workspace 14
+bindsym Control+$mod+Shift+5 move container to workspace 15
+bindsym Control+$mod+Shift+6 move container to workspace 16
+bindsym Control+$mod+Shift+7 move container to workspace 17
+bindsym Control+$mod+Shift+8 move container to workspace 18
+bindsym Control+$mod+Shift+9 move container to workspace 19
+bindsym Control+$mod+Shift+0 move container to workspace 20
+
+# reload the configuration file
+bindsym $mod+Shift+c reload
+# i3's "restart in place" has no sway equivalent; reload is the closest.
+bindsym $mod+Shift+z reload
+# exit sway
+bindsym $mod+Shift+x exec swaynag -t warning -m 'Exit sway? This ends your Wayland session.' -B 'Yes, exit sway' 'swaymsg exit'
+
+# resize window (you can also use the mouse for that)
+mode "resize" {
+        # These bindings trigger as soon as you enter the resize mode
+
+        # Pressing left will shrink the window's width.
+        # Pressing right will grow the window's width.
+        # Pressing up will shrink the window's height.
+        # Pressing down will grow the window's height.
+        bindsym n resize shrink width 10 px or 10 ppt
+        bindsym e resize grow height 10 px or 10 ppt
+        bindsym i resize shrink height 10 px or 10 ppt
+        bindsym o resize grow width 10 px or 10 ppt
+
+        # same bindings, but for the arrow keys
+        bindsym Left resize shrink width 10 px or 10 ppt
+        bindsym Down resize grow height 10 px or 10 ppt
+        bindsym Up resize shrink height 10 px or 10 ppt
+        bindsym Right resize grow width 10 px or 10 ppt
+
+        # back to normal: Enter or Escape
+        bindsym Return mode "default"
+        bindsym Escape mode "default"
+}
+
+bindsym $mod+j mode "resize"
+
+# lock computer ctrl alt l  (i3lock -> swaylock)
+bindsym Control+mod1+l exec swaylock -c 333333
+bindsym Control+Shift+mod1+l exec swaylock -f -c 333333 && systemctl suspend
+
+# screenshots (X11 had none; grim+slurp are the wayland pair)
+bindsym Print exec grim - | wl-copy
+bindsym Shift+Print exec grim -g "$(slurp)" - | wl-copy
+
+
+# Colouring and Styling
+# xsetroot/compton are X11-only. sway composites itself and sets its own bg.
+exec_always --no-startup-id ~/bin/random_background.sh
+
+# color defines for zenburn styled i3
+#set $bg     #2c2c2e
+#set $fg     #9f9f9f
+#set $hi     #efef8f
+#set $ac     #a0afa0
+#set $tx     #040404
+#set $ia     #8f8f8f
+#set $be     #8faf9f
+#set $yw     #ccdc90
+#set $gn     #88b090
+#set $rd     #e89393
+# set some nice colors      border     background  text
+#client.focused              $ac        $ac         $tx
+#client.unfocused            $bg        $bg         $ia
+#client.focused_inactive     $bg        $bg         $ac
+#client.urgent               $rd        $rd         $tx
+
+# colors gentoo
+set $bg     #333333
+set $fg     #9f9f9f
+set $hi     #efef8f
+set $ac     #aaaaaa
+set $tx     #d7ff00
+set $ia     #666666
+set $gn     #88b090
+set $rd     #D11931
+##client.focused #7a5ada #7a5ada #ffff00
+client.focused #000000 #000000 #d7ff00
+client.unfocused #333333 #333333 #666666
+client.focused_inactive #45347b #45347b #aaaaaa
+client.urgent #D11931 #D11931 #ffffff
+
+# colours arch linux
+# Important that vert/horiz blue is still apparent.
+# yellow
+##client.focused #ffff00 #ffff00 #0033ff
+# green
+#client.focused #99ff33 #99ff33 #0033ff
+# orange
+#client.focused_inactive #ff9900 #ff9900 #0044ff
+# purple
+#client.unfocused #7a5ada #7a5ada #ffff00
+# red
+#client.urgent #D11931 #D11931 #777777
+
+# colours freebsd
+#client.focused #990000 #990000 #ffffff
+#client.focused_inactive #666666 #666666 #ffffff
+#client.unfocused #333333 #333333 #ffffff
+#client.urgent #D11931 #D11931 #ffffff
+
+
+# swaybar with the rust status bar
+bar {
+    # apt install fonts-font-awesome (https://fontawesome.com/v4.7.0/assets/font-awesome-4.7.0.zip)
+    # fc-list | grep awesome
+    font pango:"CaskaydiaCove Nerd Font Mono", Mono 12, FontAwesome
+    position bottom
+    # build i3status-rs from source and put in ~/bin
+    # reads .config/i3status-rust/config.toml
+    status_command ~/bin/i3status-rs
+    colors {
+        separator #666666
+        background #222222
+        statusline #dddddd
+        focused_workspace #0088CC #0088CC #ffffff
+        active_workspace #333333 #333333 #ffffff
+        inactive_workspace #333333 #333333 #888888
+        urgent_workspace #2f343a #900000 #ffffff
+        #background          $bg
+        #statusline          $fg
+        #separator           $hi
+        #focused_workspace   $gn        $bg        $ac
+        #active_workspace    $gn        $ac        $tx
+        #inactive_workspace  $bg        $bg        $ia
+        #urgent_workspace    $rd        $bg        $ac
+    }
+}
+
+
+# Volume Control
+# i3status-rs polls on its own, so the i3status SIGUSR1 refresh is dropped.
+bindsym --locked XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -- +5%
+bindsym --locked XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -- -5%
+bindsym --locked XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ -- toggle
+bindsym $mod+Shift+plus exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +3%
+bindsym $mod+Shift+minus exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -3%
+bindsym $mod+Shift+m exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ -- toggle
+
+
+# workspace assignment
+# sway: [class=...] matches XWayland windows only, [app_id=...] matches native
+# wayland windows. Both are listed so it works either way round.
+# Use `swaymsg -t get_tree` to find the app_id / class of a running window.
+assign [class="^(?i)slack"] 1
+assign [app_id="^(?i)slack"] 1
+assign [class="^(?i)sublime_merge"] 4
+assign [app_id="^(?i)sublime_merge"] 4
+assign [class="^(?i)google-chrome"] 5
+assign [app_id="^(?i)google-chrome"] 5
+assign [class="^(?i)firefox"] 6
+assign [app_id="^(?i)firefox"] 6
+assign [class="(?i)tresorit"] 8
+assign [app_id="(?i)tresorit"] 8
+assign [class="(?i)deskflow"] 8
+assign [app_id="(?i)deskflow"] 8
+
+# Output names differ from xrandr under sway (no "-1" connector suffix):
+# xrandr eDP-1-1 -> sway eDP-1. Docked monitor names must be read off
+# `swaymsg -t get_outputs` while docked; see ~/bin/sway-outputs.
+set $laptopScreen eDP-1
+set $mainScreen DP-1
+set $rightScreen HDMI-A-1
+workspace 3 output $mainScreen
+workspace 4 output $mainScreen
+workspace 5 output $rightScreen
+workspace 6 output $rightScreen
+workspace 8 output $laptopScreen
+workspace 9 output $laptopScreen
+
+# Switch monitor layout. xrandr does not drive wayland outputs; these are
+# swaymsg reimplementations of the old ~/.screenlayout scripts.
+# 3 monitor laptopScreen - mainScreen - rightScreen
+bindsym $mod+y exec --no-startup-id "${HOME}/.screenlayout/main.sh"
+# 2 monitor leftExtraScreen - laptopScreen
+bindsym $mod+Shift+y exec --no-startup-id "${HOME}/.screenlayout/dual.sh"
+# Single screen
+bindsym Control+$mod+y exec --no-startup-id "${HOME}/.screenlayout/single.sh"
+
+#bindsym $mod+u exec true || notify-send noooo
+
+# Auto start programs. compton dropped: sway is its own compositor.
+exec --no-startup-id nm-applet
+exec --no-startup-id tresorit
+# deskflow cannot inject input under sway (no RemoteDesktop portal on wlroots),
+# so waynergy replaces it as the keyboard/mouse-sharing client. It drives
+# wlr-virtual-pointer + virtual-keyboard directly and syncs the clipboard via
+# wl-clipboard. Config: ~/.config/waynergy/config.ini. See ~/README.md.
+exec --no-startup-id "${HOME}/.local/bin/waynergy"
+#exec --no-startup-id deskflow

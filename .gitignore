@@ -27,6 +27,16 @@ cmder/Cmder.exe
 !.config/starship.toml
 !.config/i3status-rust/
 !.config/i3status-rust/**
+!.config/i3/
+!.config/i3/**
+!.config/sway/
+!.config/sway/**
+!.config/waynergy/
+!.config/waynergy/config.ini
+!.config/waynergy/xkb_keymap
+.config/waynergy/tls/
+!.config/xkb/
+!.config/xkb/**
 !.config/wezterm/
 !.config/wezterm/**
 !.config/wezterm/wezterm-session-manager/
@@ -35,6 +45,10 @@ cmder/Cmder.exe
 !.i3/config
 !.i3/**
 
+!.screenlayout/
+!.screenlayout/**
+.screenlayout/*.x11.bak
+
 !.lein/
 !.lein/**
 .lein/self-installs/
@@ -42,6 +56,24 @@ cmder/Cmder.exe
 .cargo/
 
 .bash_history
+
+# Credentials and machine-local state. The `!\.*` rule above re-includes every
+# dotfile in $HOME, so anything secret here must be excluded explicitly or a
+# `git add -A` will stage it.
+.vault-token
+.claude/
+.claude.json
+.netrc
+.npmrc
+.aws/
+.ssh/
+.gnupg/
+.docker/config.json
+.sudo_as_admin_successful
+.wget-hsts
+.zshrc.zwc
+.bash_logout
+
 .dmenu_cache
 .gitconfig
 .gtk*

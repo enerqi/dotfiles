@@ -1,0 +1,12 @@
+#!/bin/sh
+# Print sway output names + make/model, for filling in $mainScreen etc.
+# in ~/.config/sway/config and ~/.screenlayout/*.sh. Run while docked.
+swaymsg -t get_outputs | python3 -c '
+import json,sys
+for o in json.load(sys.stdin):
+    m = o.get("current_mode") or {}
+    print("{:<12} active={:<5} {}x{}@{:.0f}Hz  {} {} ({})".format(
+        o["name"], str(o["active"]),
+        m.get("width",0), m.get("height",0), m.get("refresh",0)/1000,
+        o.get("make",""), o.get("model",""), o.get("serial","")))
+'

@@ -64,6 +64,118 @@ Then add local machine specific definitions as desired:
   - a copy of `i3status-rs` is already in `~/bin` but a recent version could be compiled with rust (`cargo install i3status-rs; cp ~/.cargo/bin/i3status-rs ~/bin`)
 - `apt install compton pulseaudio pavucontrol` (compositor, sound panel control, i3 volume control etc.)
 
+### Sway (Wayland)
+
+Ubuntu 26.04 offers sway as a session alongside GNOME. These dotfiles carry a
+working `~/.config/sway/config` ported from the i3 one, so onboarding is:
+
+```
+sudo apt install sway swaylock swayidle wofi grim slurp wl-clipboard \
+    xdg-desktop-portal-wlr
+```
+
+No compton (sway composites itself); `~/bin/i3status-rs` drives swaybar
+unchanged. `dmenu_run` still works via XWayland; `$mod+d` uses wofi because
+`i3-dmenu-desktop` speaks i3 IPC. `i3lock`/`i3-nagbar`/`xsetroot` are replaced
+by `swaylock`/`swaynag`/`swaymsg output bg`.
+
+Then, **while docked**, run `~/bin/sway-outputs` and paste the real output
+names into `~/.screenlayout/sway-outputs.env`. Sway names differ from xrandr
+(`eDP-1-1` -> `eDP-1`), and `$mod+y` / `$mod+Shift+y` / `Ctrl+$mod+y` read that
+file. The layout scripts are dual-mode: swaymsg under sway, xrandr otherwise.
+
+Two things that will silently break a fresh install:
+
+- **`~/.config/sway/config` must exist.** Without it sway falls back to
+  `~/.config/i3/config`, which skips `/etc/sway/config.d/50-systemd-user.conf`
+  and so never runs `systemctl --user import-environment WAYLAND_DISPLAY ...`.
+  The result is a dead `xdg-desktop-portal` (file pickers, screen share and
+  screenshots all fail). That import is the first exec in the config; keep it
+  there.
+- **sway ignores `/etc/default/keyboard`** and defaults every keyboard to us,
+  so the GB laptop keyboard needs
+  `input "1:1:AT_Translated_Set_2_keyboard" xkb_layout gb`. Set it per device,
+  not with `input type:keyboard`, which would also hit waynergy's virtual
+  keyboard (see below). `swaymsg -t get_inputs` lists identifiers.
+
+### Keyboard/mouse sharing under sway: waynergy
+
+Deskflow does not work as a client under sway. Its wayland backend needs the
+`org.freedesktop.portal.RemoteDesktop` portal, which only the GNOME and KDE
+backends implement - `xdg-desktop-portal-wlr` provides just Screenshot and
+ScreenCast. Deskflow still works from the GNOME session if ever needed.
+
+[waynergy](https://github.com/r-c-f/waynergy) replaces it on the client side
+only; the Windows deskflow server is unchanged (it identifies as Barrier 1.8).
+It drives the wlroots virtual pointer/keyboard protocols directly and syncs
+the clipboard via `wl-clipboard`.
+
+```
+sudo apt install meson ninja-build libwayland-dev libwayland-bin \
+    libxkbcommon-dev libtls-dev wl-clipboard
+git clone https://github.com/r-c-f/waynergy.git ~/src/waynergy
+cd ~/src/waynergy && meson setup build --prefix="$HOME/.local" && ninja -C build install
+```
+
+Config is `~/.config/waynergy/config.ini` (in this repo). Two machine-local
+things are not, and both are required:
+
+1. **Client certificate.** Deskflow does mutual TLS. Without a client cert the
+   handshake succeeds and the server then sends *nothing* - it looks like a
+   hang. Point waynergy at the deskflow cert:
+
+   ```
+   mkdir -p ~/.config/waynergy/tls && chmod 700 ~/.config/waynergy/tls
+   ln -sfn ~/.config/Deskflow/tls/deskflow.pem ~/.config/waynergy/tls/cert
+   ```
+
+   Regenerate via deskflow when it expires; the symlink follows.
+
+2. **Windows keycodes.** A Windows server sends PS/2 set-1 scancodes that no
+   stock xkbcommon keycodes section understands - symptom is working mouse and
+   gibberish keys. `~/.config/waynergy/xkb_keymap` (in this repo) handles it,
+   but the keycodes file it includes must be installed:
+
+   ```
+   mkdir -p ~/.config/xkb/keycodes
+   cp ~/src/waynergy/doc/xkb/keycodes/win ~/.config/xkb/keycodes/win
+   ```
+
+   Its `xkb_symbols` layout must match the **Windows** machine (currently
+   `us`, since the Glove80 there is set to English (US) to avoid dead keys) -
+   not this laptop's GB layout.
+
+Also check `name` in `config.ini` matches the screen name in the deskflow
+server's layout.
+
+Launch with an absolute path - `~/.local/bin` is added to PATH by the shell
+rc files, but sway's `exec` inherits the session PATH, which lacks it, so a
+bare `exec waynergy` fails silently. The sway config uses
+`"${HOME}/.local/bin/waynergy"`.
+
+`ninja install` also writes a `waynergy.desktop` with a hardcoded `/usr/bin`
+path and `Terminal=true` (it is a daemon). `~/.local` is not tracked here, so
+re-patch it after every install to get a working `$mod+d` entry:
+
+```
+sed -i "s|^Exec=.*|Exec=$HOME/.local/bin/waynergy|; s|^Terminal=true|Terminal=false|; \
+        s|^StartupNotify=true|StartupNotify=false|" \
+    ~/.local/share/applications/waynergy.desktop
+```
+
+Verify:
+
+```
+swaymsg -t get_inputs   # virtual keyboard English (US), built-in English (UK)
+ss -tnp | grep 24800    # ESTAB to the server
+waynergy -L debug       # if not
+```
+
+Expect one quirk: the first connection each start is rejected (`EBAD` /
+`Protocol error`) and succeeds on retry ~10s later, because waynergy pushes
+the clipboard before the server accepts one. `waynergy -n` avoids it but loses
+the clipboard, so the delay is accepted.
+
 ## Assorted Development Tools
 
 Some mentioned above and below.
