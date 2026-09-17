@@ -1,0 +1,33 @@
+#!/bin/bash
+# Night light toggle (wlsunset).
+#
+# A toggle rather than an autostart: colour temperature shifting is the kind of
+# thing you want to turn off instantly when judging a screenshot or a colour,
+# and hunting for a process to kill is not that.
+#
+# Coordinates decide sunrise/sunset. Override with WLSUNSET_LAT / WLSUNSET_LON
+# (for example in ~/.zshrc.local) if these are far off.
+set -uo pipefail
+
+LAT="${WLSUNSET_LAT:-51.5}"
+LON="${WLSUNSET_LON:--0.1}"
+DAY_TEMP=6500
+NIGHT_TEMP=4000
+
+notify() { command -v notify-send >/dev/null && notify-send -a nightlight "$@"; }
+
+if ! command -v wlsunset >/dev/null; then
+    notify "wlsunset not installed" "sudo apt install wlsunset"
+    exit 1
+fi
+
+if pgrep -x wlsunset >/dev/null; then
+    pkill -x wlsunset
+    # wlsunset restores the default gamma on a clean exit; give it a moment so
+    # the notification does not arrive before the screen goes back to normal.
+    sleep 0.3
+    notify "Night light off"
+else
+    setsid wlsunset -l "$LAT" -L "$LON" -t "$NIGHT_TEMP" -T "$DAY_TEMP" >/dev/null 2>&1 &
+    notify "Night light on" "${NIGHT_TEMP}K after sunset"
+fi

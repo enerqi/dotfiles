@@ -1,0 +1,26 @@
+# Display profiles, applied automatically on hotplug.
+#
+# kanshi matches on output *name* (eDP-1, DP-3) or on "make model serial",
+# which is the more robust key: DP-N numbering moves around between docks and
+# reboots, the monitor's identity does not. Run `~/bin/sway-outputs` while
+# docked to read both off the live outputs.
+#
+# The manual $mod+y / $mod+Shift+y / Ctrl+$mod+y layouts still work and
+# override whatever kanshi last applied, until the next hotplug.
+
+profile laptop {
+    output eDP-1 enable mode 1920x1200 position 0,0
+}
+
+# Fill these in once docked - the names below are placeholders.
+#
+# profile docked-three {
+#     output eDP-1 enable position 3840,2160
+#     output "MAKE MODEL SERIAL" enable mode 3840x2160 position 0,0
+#     output "MAKE MODEL SERIAL" enable mode 1920x1080 position 3840,1080
+# }
+#
+# profile docked-dual {
+#     output eDP-1 enable position 1920,0
+#     output "MAKE MODEL SERIAL" enable mode 1920x1080 position 0,0
+# }

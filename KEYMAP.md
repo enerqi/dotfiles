@@ -14,7 +14,8 @@ reachable from it, so it is the only shortcut worth memorising - the rest are
 accelerators. Type to filter, Enter to run, Escape to dismiss.
 
 It contains: Wi-Fi · Audio output · Clipboard history · Bluetooth · Windows ·
-Emoji / characters · Power profile · System monitor · Screenshot · Display
+Emoji / characters · Power profile · System monitor · Calculator · Record
+screen · Colour picker · Night light · Notifications · Screenshot · Display
 layout · Keybindings · Lock · Power menu.
 
 On `Backspace` rather than `Space` because it is the easier reach on the
@@ -29,6 +30,8 @@ own default for it.
 | `Super`+`Tab` | Window switcher - every window, every workspace |
 | `Super`+`Shift`+`V` | Clipboard history |
 | `Super`+`E` | Emoji and symbols |
+| `Super`+`N` | Re-show last notification |
+| `Super`+`Shift`+`N` | Clear all notifications |
 | `Super`+`D` | App launcher (fuzzel) |
 | `Super`+`G` | Terminal (wezterm) |
 | `Super`+`T` | `dmenu_run`, via XWayland |
@@ -56,6 +59,7 @@ Scratchpad is on `U` rather than the i3 convention `$mod`+`minus`, because
 | `Super`+`R` / `W` / `B` | Stacking / tabbed / toggle split |
 | `Super`+`H` / `V` | Split horizontal / vertical |
 | `Super`+`Shift`+`Backspace` | Float toggle |
+| `Super`+`Shift`+`T` | Sticky - pin a floating window across workspaces |
 | `Super`+`Space` | Focus tiling <-> floating |
 | `Super`+`J` | Resize mode (`n` `e` `i` `o` or arrows; Enter/Escape to leave) |
 | `Super`+`S` / `F` | Focus down / up (arrows work too) |

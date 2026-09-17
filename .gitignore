@@ -41,6 +41,8 @@ cmder/Cmder.exe
 !.config/xkb/**
 !.config/wlogout/
 !.config/wlogout/**
+!.config/kanshi/
+!.config/kanshi/**
 
 !README.md
 !KEYMAP.md

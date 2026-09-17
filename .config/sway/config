@@ -87,6 +87,12 @@ bindsym $mod+BackSpace exec --no-startup-id ~/bin/fuzzel-menu
 bindsym $mod+Shift+v exec --no-startup-id ~/bin/fuzzel-clipboard
 bindsym $mod+Tab exec --no-startup-id ~/bin/fuzzel-windows
 bindsym $mod+e exec --no-startup-id ~/bin/fuzzel-emoji
+# Re-show the last dismissed notification (dunst keeps a history; without a
+# binding a missed notification is simply gone).
+bindsym $mod+n exec --no-startup-id dunstctl history-pop
+bindsym $mod+Shift+n exec --no-startup-id dunstctl close-all
+# Pin a floating window across all workspaces - a video call, a timer.
+bindsym $mod+Shift+t sticky toggle
 # Screenshot menu. PrtSc is bound too, but it is an awkward reach on the
 # Glove80; Shift+P for "print".
 bindsym $mod+Shift+p exec --no-startup-id ~/bin/fuzzel-screenshot
@@ -410,6 +416,10 @@ exec --no-startup-id wl-paste --type text --watch cliphist store
 # Automount removable media. GNOME did this via gvfs; nothing does it under
 # sway, so a USB stick would just sit there.
 exec --no-startup-id udiskie --automount --notify --no-tray
+
+# Display profiles on hotplug. Config in ~/.config/kanshi/config; the manual
+# $mod+y layouts still override it until the next plug event.
+exec --no-startup-id kanshi
 
 # Lid: drop the internal panel when docked, lock when not. See ~/bin/sway-lid.
 bindswitch --reload --locked lid:on exec ~/bin/sway-lid close

@@ -14,10 +14,16 @@ entries=(
     "  Audio output"
     "  Clipboard history"
     "  Bluetooth"
+    "  VPN"
     "  Windows"
     "  Emoji / characters"
     "  Power profile"
     "  System monitor"
+    "  Calculator"
+    "  Record screen"
+    "  Colour picker"
+    "  Night light"
+    "  Notifications"
     "  Screenshot"
     "  Display layout"
     "  Keybindings"
@@ -31,10 +37,22 @@ case "$choice" in
     *"Wi-Fi")                "$BIN/fuzzel-wifi" ;;
     *"Audio output")         "$BIN/fuzzel-audio" ;;
     *"Clipboard history")    "$BIN/fuzzel-clipboard" ;;
+    *"VPN")                  "$BIN/fuzzel-vpn" ;;
     *"Windows")              "$BIN/fuzzel-windows" ;;
     *"Emoji / characters")   "$BIN/fuzzel-emoji" ;;
     *"Power profile")        "$BIN/fuzzel-power-profile" ;;
     *"System monitor")       foot -e btop & ;;
+    *"Calculator")           "$BIN/fuzzel-calc" ;;
+    *"Record screen")        "$BIN/fuzzel-record" ;;
+    *"Night light")          "$BIN/sway-nightlight" ;;
+    *"Notifications")        dunstctl history-pop ;;
+    *"Colour picker")
+        if command -v hyprpicker >/dev/null; then
+            hyprpicker -a   # -a copies straight to the clipboard
+        else
+            command -v notify-send >/dev/null &&
+                notify-send -a menu "hyprpicker not installed"
+        fi ;;
     *"Bluetooth")
         if command -v blueman-manager >/dev/null; then
             blueman-manager &

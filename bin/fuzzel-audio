@@ -12,8 +12,8 @@ set -uo pipefail
 # fuzzel would exit before you reach it. Escape still dismisses.
 FUZZEL=(fuzzel --dmenu --width 60 --no-exit-on-keyboard-focus-loss)
 
-list_sinks() {
-    pactl -f json list sinks 2>/dev/null | python3 -c '
+list_devices() {  # list_devices sinks|sources
+    pactl -f json list "$1" 2>/dev/null | python3 -c '
 import json, sys
 default = sys.argv[1]
 try:
@@ -22,6 +22,10 @@ except Exception:
     sys.exit(0)
 for s in sinks:
     name = s.get("name", "")
+    # Every sink has a ".monitor" source for loopback capture. Useless when
+    # choosing a microphone, and it doubles the list.
+    if name.endswith(".monitor"):
+        continue
     desc = s.get("description") or name
     vol = s.get("volume") or {}
     # Average the per-channel percentages, e.g. "86%" -> 86
@@ -34,10 +38,10 @@ for s in sinks:
     muted = " [muted]" if s.get("mute") else ""
     mark = "● " if name == default else "  "
     print(f"{mark}{desc} — {avg}%{muted}\t{name}")
-' "$(pactl get-default-sink 2>/dev/null)"
+' "$(pactl get-default-"${1%s}" 2>/dev/null)"
 }
 
-sinks=$(list_sinks)
+sinks=$(list_devices sinks)
 if [[ -z "$sinks" ]]; then
     command -v notify-send >/dev/null && notify-send -a audio "No audio sinks found"
     exit 1
@@ -58,6 +62,26 @@ case "$choice" in
         exit 0 ;;
     "Toggle mute")
         pactl set-sink-mute @DEFAULT_SINK@ toggle; exit 0 ;;
+    "Toggle mic mute")
+        pactl set-source-mute @DEFAULT_SOURCE@ toggle; exit 0 ;;
+    "Microphone...")
+        # Inputs get their own step rather than being mixed in with outputs:
+        # the list is usually short and picking the wrong one mid-call is worse
+        # than one extra keystroke.
+        sources=$(list_devices sources)
+        [[ -z "$sources" ]] && exit 0
+        pick=$(cut -f1 <<<"$sources" | "${FUZZEL[@]}" --prompt "mic> ") || exit 0
+        [[ -z "$pick" ]] && exit 0
+        src=$(awk -F'\t' -v c="$pick" '$1 == c {print $2; exit}' <<<"$sources")
+        [[ -z "$src" ]] && exit 0
+        pactl set-default-source "$src"
+        # Move live capture streams, or an in-progress call keeps the old mic.
+        pactl -f json list source-outputs 2>/dev/null |
+            python3 -c 'import json,sys;[print(i["index"]) for i in json.load(sys.stdin)]' 2>/dev/null |
+            while read -r idx; do pactl move-source-output "$idx" "$src"; done
+        command -v notify-send >/dev/null &&
+            notify-send -a audio "Microphone" "$(sed 's/^..//' <<<"$pick")"
+        exit 0 ;;
     "Open mixer (pavucontrol)")
         pavucontrol & exit 0 ;;
 esac

@@ -1,0 +1,34 @@
+#!/bin/bash
+# Calculator in the launcher, via qalc (units, currencies, percentages).
+#
+# Stays open after each answer so you can refine an expression, and puts the
+# result on the clipboard. Escape leaves.
+set -uo pipefail
+
+if ! command -v qalc >/dev/null; then
+    command -v notify-send >/dev/null && notify-send -a calc "qalc not installed" "sudo apt install qalc"
+    exit 1
+fi
+
+# First run downloads exchange rates; do it quietly rather than letting it
+# appear as a stray line in the first answer.
+qalc -e 1 >/dev/null 2>&1
+
+prompt="calc> "
+expr=""
+
+while :; do
+    expr=$(: | fuzzel --dmenu --width 60 --no-exit-on-keyboard-focus-loss \
+              --prompt-only "$prompt") || exit 0
+    [[ -z "$expr" ]] && exit 0
+
+    # -t: terse, just the result. qalc still explains errors on stderr.
+    result=$(qalc -t "$expr" 2>&1 | head -1)
+    [[ -z "$result" ]] && result="?"
+
+    printf '%s' "$result" | wl-copy 2>/dev/null
+
+    # Show the answer as the next prompt: it stays on screen, and it is copied
+    # already, so Escape at this point is a complete interaction.
+    prompt="$result   |  "
+done

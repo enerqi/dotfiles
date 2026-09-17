@@ -93,7 +93,8 @@ working `~/.config/sway/config` ported from the i3 one, so onboarding is:
 ```
 sudo apt install sway swaylock swayidle fuzzel grim slurp wl-clipboard \
     xdg-desktop-portal-wlr dunst wlogout brightnessctl playerctl \
-    cliphist blueman udiskie btop wtype
+    cliphist blueman udiskie btop wtype \
+    qalc wf-recorder wlsunset hyprpicker kanshi
 ```
 
 No compton (sway composites itself); `i3status-rs` drives swaybar unchanged.
@@ -186,6 +187,10 @@ like the launcher instead of like four unrelated tools:
 | `fuzzel-emoji` | emoji/symbol picker, copies **and** types | names come from python `unicodedata`, so there is no data file to go stale (~2300 chars) |
 | `fuzzel-power-profile` | performance / balanced / power-saver | `power-profiles-daemon` was already running with nothing exposing it |
 | `sway-lid` | lid close/open behaviour | drops the internal output when docked, locks when not |
+| `fuzzel-calc` | qalc in the launcher - units, currency, percentages | stays open after each answer and copies the result |
+| `fuzzel-record` | screen recording, one entry point that starts **and** stops | a separate stop you have to find is how you end up with a 40-minute file. SIGINT so the container is finalised |
+| `fuzzel-vpn` | work OpenVPN + Surfshark, with tunnel status | the work profile needs `sudo` **and** prompts for user/pass (inline certs + `auth-user-pass`), so it opens a terminal rather than pretending a menu can do it |
+| `sway-nightlight` | wlsunset toggle | a toggle, not an autostart: you want it off instantly when judging a colour. Coords via `WLSUNSET_LAT`/`WLSUNSET_LON` |
 | `fuzzel-screenshot` | region/window/screen → clipboard or file, 5s delay, annotate | `PrtSc` is an awkward reach on the Glove80, so `$mod+Shift+P` is the keyboard-first route. Saves to `~/Pictures/Screenshots` and copies too |
 | `fuzzel-menu` | the palette itself | calls the above rather than reimplementing them |
 
@@ -209,6 +214,9 @@ touchpad (unlike `type:keyboard`, which would catch its virtual keyboard).
 
 Other bindings added: `$mod+Tab` window switcher, `$mod+e` emoji,
 `$mod+Shift+p` screenshot menu, `$mod+u` / `$mod+Shift+u` scratchpad show/move.
+`$mod+n` / `$mod+Shift+n` re-show last notification / clear all (dunst keeps a
+history; unbound, a missed notification is just gone). `$mod+Shift+t` pins a
+floating window across workspaces.
 To take a window back **out** of the scratchpad there is no dedicated command:
 summon it with `$mod+u`, then `$mod+Shift+BackSpace` (floating toggle) tiles it
 into the current workspace. (Scratchpad is on `u` rather than the i3
@@ -224,6 +232,20 @@ a regex, so those cannot be collapsed into one alternation the way
 **Cursor:** `seat seat0 xcursor_theme Adwaita 24`. Unset by default, which
 means the fallback theme at the fallback size - small on a 4K output, and
 XWayland apps disagree with native ones until it is set here.
+
+**Displays:** `kanshi` applies a profile on hotplug, config in
+`~/.config/kanshi/config`. Match on `make model serial` rather than `DP-N` -
+connector numbering moves between docks and reboots, the monitor's identity
+does not. The manual `$mod+y` layouts still override it until the next plug
+event. The docked profiles are placeholders until filled in from
+`~/bin/sway-outputs`.
+
+**VPN indicator:** a `custom` block testing for a `tun`/`wg` interface, not
+i3status-rs's `vpn` block - that only drives nordvpn, mullvad and tailscale,
+and this machine runs Surfshark. Interface detection works whatever the
+provider, and the block hides when no tunnel is up. Clicking it opens
+`fuzzel-vpn`, which also drives the work OpenVPN profile via `~/vpn-gc.sh`
+(a symlink to a script outside this repo).
 
 **Removable media:** `udiskie --automount --notify --no-tray` from the sway
 config. GNOME did this through gvfs; under sway nothing does, so a USB stick

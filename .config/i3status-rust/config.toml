@@ -125,6 +125,18 @@ button = "left"
 cmd = "gsimplecal"
 
 # Do-not-disturb toggle. Driver must be dunst or swaync; mako is unsupported.
+# VPN. NOT the built-in `vpn` block: that only supports nordvpn, mullvad and
+# tailscale, and this machine runs Surfshark. Detecting the tunnel interface
+# works whatever the provider. Hidden entirely when no tunnel is up.
+[[block]]
+block = "custom"
+command = "ip -o link show 2>/dev/null | grep -qE ': (tun|wg|nordlynx|surfshark)[0-9]*:' && echo ' \uf023 VPN' || true"
+interval = 10
+hide_when_empty = true
+[[block.click]]
+button = "left"
+cmd = "~/bin/fuzzel-vpn"
+
 [[block]]
 block = "notify"
 driver = "dunst"

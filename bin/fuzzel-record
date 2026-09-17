@@ -1,0 +1,46 @@
+#!/bin/bash
+# Screen recording via wf-recorder. One entry point that starts or stops,
+# because a separate "stop" you have to find is the usual way to end up with a
+# 40-minute file.
+set -uo pipefail
+
+DIR="${XDG_VIDEOS_DIR:-$HOME/Videos}/Recordings"
+FUZZEL=(fuzzel --dmenu --width 42 --no-exit-on-keyboard-focus-loss)
+
+notify() { command -v notify-send >/dev/null && notify-send -a record "$@"; }
+
+if ! command -v wf-recorder >/dev/null; then
+    notify "wf-recorder not installed" "sudo apt install wf-recorder"
+    exit 1
+fi
+
+# Already recording? Then this invocation means stop. SIGINT so wf-recorder
+# finalises the container - SIGKILL leaves an unplayable file.
+if pgrep -x wf-recorder >/dev/null; then
+    pkill -INT -x wf-recorder
+    sleep 1
+    latest=$(ls -t "$DIR"/*.mp4 2>/dev/null | head -1)
+    notify "Recording stopped" "${latest/#$HOME/\~}"
+    exit 0
+fi
+
+choice=$(printf '%s\n' \
+    "Record region" \
+    "Record whole screen" \
+    "Record region with audio" \
+    | "${FUZZEL[@]}" --prompt "record> ") || exit 0
+[[ -z "$choice" ]] && exit 0
+
+mkdir -p "$DIR"
+out="$DIR/recording-$(date +%Y-%m-%d-%H%M%S).mp4"
+
+case "$choice" in
+    "Record region")            geom=$(slurp) || exit 0; args=(-g "$geom") ;;
+    "Record region with audio") geom=$(slurp) || exit 0; args=(-g "$geom" --audio) ;;
+    "Record whole screen")      args=() ;;
+    *) exit 0 ;;
+esac
+
+notify "Recording" "Run this again to stop"
+# setsid so the recorder outlives this script and the menu that launched it.
+setsid wf-recorder "${args[@]}" -f "$out" >/dev/null 2>&1 &

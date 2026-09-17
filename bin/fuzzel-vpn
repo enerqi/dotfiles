@@ -1,0 +1,68 @@
+#!/bin/bash
+# VPN menu.
+#
+# Two unrelated VPNs live here: Surfshark (personal, its own GUI) and a work
+# OpenVPN profile driven by ~/vpn-gc.sh, which is a symlink to a script
+# outside this repo - nothing about the employer belongs in dotfiles.
+#
+# The work one cannot be launched straight from a menu: it needs sudo *and*
+# openvpn prompts for a username and password (the profile carries inline
+# certs plus auth-user-pass). Both need a terminal, so this opens one rather
+# than pretending otherwise. openvpn then runs in the foreground there, and
+# closing that window drops the tunnel.
+set -uo pipefail
+
+FUZZEL=(fuzzel --dmenu --width 46 --no-exit-on-keyboard-focus-loss)
+TERM_CMD=(foot)
+WORK_SCRIPT="$HOME/vpn-gc.sh"
+
+notify() { command -v notify-send >/dev/null && notify-send -a vpn "$@"; }
+
+tunnel_iface() {
+    ip -o link show 2>/dev/null |
+        awk -F': ' '$2 ~ /^(tun|wg|nordlynx|surfshark)[0-9]*$/ {print $2; exit}'
+}
+
+iface=$(tunnel_iface)
+if [[ -n "$iface" ]]; then
+    status="● connected ($iface)"
+else
+    status="○ not connected"
+fi
+
+entries=("$status" "─────")
+if [[ -n "$iface" ]]; then
+    entries+=("Disconnect work VPN")
+else
+    entries+=("Connect work VPN")
+fi
+entries+=("Surfshark" "Show tunnel details")
+
+choice=$(printf '%s\n' "${entries[@]}" | "${FUZZEL[@]}" --prompt "vpn> ") || exit 0
+
+case "$choice" in
+    "Connect work VPN")
+        if [[ ! -e "$WORK_SCRIPT" ]]; then
+            notify "Not found" "${WORK_SCRIPT/#$HOME/\~}"
+            exit 1
+        fi
+        # Terminal stays open: openvpn runs in the foreground and its log is
+        # the only feedback that the handshake worked.
+        "${TERM_CMD[@]}" -e bash -c "$WORK_SCRIPT; echo; echo '[vpn exited - press enter]'; read -r" &
+        ;;
+    "Disconnect work VPN")
+        # sudo again, so again a terminal. SIGINT lets openvpn tear the route
+        # table down properly instead of leaving a stale default route.
+        "${TERM_CMD[@]}" -e bash -c "sudo pkill -INT openvpn; sleep 1; echo 'disconnected'; sleep 1" &
+        ;;
+    "Surfshark")
+        if command -v surfshark >/dev/null; then surfshark & else notify "surfshark not installed"; fi
+        ;;
+    "Show tunnel details")
+        if [[ -z "$iface" ]]; then
+            notify "No tunnel up"
+        else
+            "${TERM_CMD[@]}" -e bash -c "ip addr show '$iface'; echo; ip route | grep -E '$iface|default'; echo; read -rp 'enter to close '" &
+        fi
+        ;;
+esac
