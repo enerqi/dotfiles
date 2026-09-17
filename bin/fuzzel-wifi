@@ -1,0 +1,90 @@
+#!/bin/bash
+# Wi-Fi picker using fuzzel, so it matches the launcher instead of nmtui's
+# ncurses look. NetworkManager only (iwd is not in use here, which rules out
+# iwgtk/impala).
+set -uo pipefail
+
+# --no-exit-on-keyboard-focus-loss: sway defaults to focus_follows_mouse, so
+# moving the pointer towards the menu focuses whatever is underneath it and
+# fuzzel would exit before you reach it. Escape still dismisses.
+FUZZEL=(fuzzel --dmenu --width 46 --no-exit-on-keyboard-focus-loss)
+
+notify() { command -v notify-send >/dev/null && notify-send -a wifi "$@"; }
+
+# SSID is placed last in the field list on purpose: nmcli -t escapes embedded
+# colons as '\:', but rejoining trailing fields is still the least fragile way
+# to survive an SSID that contains one.
+scan() {
+    nmcli -t -f IN-USE,SIGNAL,SECURITY,SSID device wifi list --rescan auto 2>/dev/null |
+    awk -F: '
+        {
+            inuse = $1; sig = $2; sec = $3
+            ssid = $4; for (i = 5; i <= NF; i++) ssid = ssid ":" $i
+            gsub(/\\:/, ":", ssid)
+            if (ssid == "") next                      # hidden network
+            # Several APs often share an SSID; keep only the strongest.
+            if (!(ssid in best) || sig + 0 > best[ssid] + 0) {
+                best[ssid] = sig; secu[ssid] = sec; act[ssid] = inuse
+            }
+        }
+        END {
+            for (s in best) {
+                bars = best[s] >= 75 ? "▂▄▆█" : best[s] >= 50 ? "▂▄▆_" \
+                     : best[s] >= 25 ? "▂▄__" : "▂___"
+                lock = (secu[s] == "" ? "  " : "🔒")
+                mark = (act[s] == "*" ? "● " : "  ")
+                # No space before the tab: it would survive the cut and leave a
+                # trailing space on the recovered SSID.
+                printf "%s%s %s %s%s\n", mark, bars, lock, s, "\t" best[s]
+            }
+        }' |
+    sort -t$'\t' -k2 -rn | cut -f1
+}
+
+radio=$(nmcli radio wifi 2>/dev/null)
+
+if [[ "$radio" != "enabled" ]]; then
+    choice=$(printf '%s\n' "Turn Wi-Fi on" "Open connection editor" | "${FUZZEL[@]}" --prompt "wifi off> ")
+    case "$choice" in
+        "Turn Wi-Fi on")          nmcli radio wifi on ;;
+        "Open connection editor") nm-connection-editor & ;;
+    esac
+    exit 0
+fi
+
+choice=$(
+    { scan; printf '%s\n' "─────" "Disconnect" "Turn Wi-Fi off" "Open connection editor"; } |
+    "${FUZZEL[@]}" --prompt "wifi> "
+) || exit 0
+
+case "$choice" in
+    ""|"─────")               exit 0 ;;
+    "Disconnect")             nmcli device disconnect "$(nmcli -t -f DEVICE,TYPE device | awk -F: '$2=="wifi"{print $1; exit}')"; exit 0 ;;
+    "Turn Wi-Fi off")         nmcli radio wifi off; exit 0 ;;
+    "Open connection editor") nm-connection-editor & exit 0 ;;
+esac
+
+# Strip the marker/bars/lock prefix back off to recover the SSID.
+ssid=$(sed -E 's/^.{2}[▂▄▆█_]{4} (🔒|  ) //' <<<"$choice")
+[[ -z "$ssid" ]] && exit 0
+
+# A saved connection can be brought up without asking for anything.
+if nmcli -t -f NAME connection show | grep -qxF "$ssid"; then
+    nmcli connection up id "$ssid" && notify "Connected" "$ssid" || notify "Failed" "$ssid"
+    exit 0
+fi
+
+if out=$(nmcli device wifi connect "$ssid" 2>&1); then
+    notify "Connected" "$ssid"
+    exit 0
+fi
+
+# Open network failed, or it needs a passphrase.
+pw=$(: | fuzzel --dmenu --password --no-exit-on-keyboard-focus-loss \
+        --prompt-only "Password for $ssid: ") || exit 0
+[[ -z "$pw" ]] && exit 0
+if nmcli device wifi connect "$ssid" password "$pw" >/dev/null 2>&1; then
+    notify "Connected" "$ssid"
+else
+    notify "Failed" "$ssid"
+fi

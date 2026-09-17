@@ -1,0 +1,128 @@
+#!/usr/bin/env python3
+"""Searchable keybinding cheatsheet for sway.
+
+The sway config is the only source of truth for ~100 bindings, and there is no
+built-in way to see them. This parses it and pipes the result through fuzzel, so
+it is searchable rather than a static wall of text you have to scan.
+
+Selecting an entry copies its command to the clipboard (it does not run it -
+a cheatsheet that executes things on a mistyped search would be hostile).
+"""
+import os
+import re
+import shutil
+import subprocess
+import sys
+
+CONFIG = os.path.expanduser("~/.config/sway/config")
+
+# Pretty names for the modifiers, so the list reads like a keyboard.
+PRETTY = {
+    "Mod1": "Alt", "mod1": "Alt",
+    "Mod4": "Super", "mod4": "Super",
+    "Control": "Ctrl", "control": "Ctrl",
+    "Shift": "Shift",
+    "Return": "Enter",
+    "BackSpace": "Backspace",
+    "Print": "PrtSc",
+}
+
+
+def load(path, seen=None):
+    """Read a config, following `include` directives."""
+    seen = seen or set()
+    path = os.path.realpath(os.path.expanduser(path))
+    if path in seen or not os.path.isfile(path):
+        return []
+    seen.add(path)
+    lines = []
+    with open(path, encoding="utf-8", errors="replace") as fh:
+        for line in fh:
+            m = re.match(r"\s*include\s+(\S+)", line)
+            if m:
+                import glob
+                for inc in sorted(glob.glob(os.path.expanduser(m.group(1)))):
+                    lines += load(inc, seen)
+            else:
+                lines.append(line)
+    return lines
+
+
+def parse(lines):
+    variables, bindings, mode = {}, [], None
+    for raw in lines:
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+
+        m = re.match(r"set\s+(\$\w+)\s+(.*)", line)
+        if m:
+            variables[m.group(1)] = m.group(2).strip()
+            continue
+
+        m = re.match(r'mode\s+"([^"]+)"\s*\{', line)
+        if m:
+            mode = m.group(1)
+            continue
+        if line == "}" and mode:
+            mode = None
+            continue
+
+        m = re.match(r"bind(sym|code)\s+(.*)", line)
+        if not m:
+            continue
+        rest = m.group(2)
+        # Drop flags such as --locked / --no-repeat / --to-code.
+        while rest.startswith("--"):
+            rest = rest.split(None, 1)[1] if " " in rest else ""
+        if not rest:
+            continue
+        parts = rest.split(None, 1)
+        if len(parts) != 2:
+            continue
+        keys, command = parts
+
+        # Expand variables in both halves; longest name first so $mod does not
+        # clobber a longer name sharing its prefix.
+        for name in sorted(variables, key=len, reverse=True):
+            keys = keys.replace(name, variables[name])
+            command = command.replace(name, variables[name])
+
+        keys = "+".join(PRETTY.get(k, k) for k in keys.split("+"))
+        bindings.append((mode, keys, command.strip()))
+    return bindings
+
+
+def main():
+    bindings = parse(load(CONFIG))
+    if not bindings:
+        sys.stderr.write(f"no bindings parsed from {CONFIG}\n")
+        return 1
+
+    width = max(len(k) for _, k, _ in bindings)
+    rows = []
+    for mode, keys, command in sorted(bindings, key=lambda b: (b[0] or "", b[1])):
+        tag = f"[{mode}] " if mode else ""
+        rows.append(f"{tag}{keys.ljust(width)}  {command}")
+
+    # --list prints instead of opening the picker: useful in a terminal, and
+    # it makes this testable without spawning a window.
+    if "--list" in sys.argv or not shutil.which("fuzzel"):
+        print("\n".join(rows))
+        return 0
+
+    proc = subprocess.run(
+        ["fuzzel", "--dmenu", "--width", "100", "--lines", "20",
+         "--no-exit-on-keyboard-focus-loss", "--prompt", "keys> "],
+        input="\n".join(rows), capture_output=True, text=True,
+    )
+    choice = proc.stdout.strip()
+    if choice and shutil.which("wl-copy"):
+        command = re.split(r"\s{2,}", choice, maxsplit=1)
+        if len(command) == 2:
+            subprocess.run(["wl-copy", "--", command[1]], check=False)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

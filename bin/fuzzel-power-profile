@@ -1,0 +1,36 @@
+#!/bin/bash
+# Power profile switcher.
+#
+# power-profiles-daemon is already installed and running with three profiles,
+# but nothing exposes it. Worth having here: this laptop's firmware offers only
+# s2idle (no S3), so suspend still draws real power and the profile is the main
+# lever on battery life.
+set -uo pipefail
+
+FUZZEL=(fuzzel --dmenu --width 40 --no-exit-on-keyboard-focus-loss)
+
+if ! command -v powerprofilesctl >/dev/null; then
+    command -v notify-send >/dev/null && notify-send -a power "power-profiles-daemon not installed"
+    exit 1
+fi
+
+current=$(powerprofilesctl get 2>/dev/null)
+
+# `powerprofilesctl list` prints an indented, starred listing; pull out just the
+# profile names and mark the active one ourselves.
+choice=$(
+    powerprofilesctl list 2>/dev/null |
+    sed -n 's/^\s*\*\?\s*\([a-z-]\+\):$/\1/p' |
+    while read -r p; do
+        [[ "$p" == "$current" ]] && printf '● %s\n' "$p" || printf '  %s\n' "$p"
+    done | "${FUZZEL[@]}" --prompt "power> "
+) || exit 0
+
+profile=$(sed 's/^..//' <<<"$choice")
+[[ -z "$profile" ]] && exit 0
+
+if powerprofilesctl set "$profile" 2>/dev/null; then
+    command -v notify-send >/dev/null && notify-send -a power "Power profile" "$profile"
+else
+    command -v notify-send >/dev/null && notify-send -a power "Failed to set" "$profile"
+fi

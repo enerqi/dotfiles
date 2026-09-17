@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+"""Emoji / character picker.
+
+Names come from python's unicodedata rather than a bundled data file, so there
+is nothing to keep up to date. The selection is copied to the clipboard and
+typed into the focused window with wtype (typing alone is not enough - some
+apps ignore synthetic input - and copying alone means an extra paste).
+"""
+import shutil
+import subprocess
+import sys
+import unicodedata
+
+# Ranges worth offering: emoji proper, then the symbols people actually hunt
+# for (arrows, maths, punctuation, currency).
+RANGES = [
+    (0x1F300, 0x1F5FF),  # misc symbols and pictographs
+    (0x1F600, 0x1F64F),  # emoticons
+    (0x1F680, 0x1F6FF),  # transport and map
+    (0x1F900, 0x1F9FF),  # supplemental symbols
+    (0x1FA70, 0x1FAFF),  # extended-A
+    (0x2600, 0x26FF),    # misc symbols
+    (0x2700, 0x27BF),    # dingbats
+    (0x2190, 0x21FF),    # arrows
+    (0x2200, 0x22FF),    # mathematical operators
+    (0x2000, 0x206F),    # general punctuation
+    (0x20A0, 0x20BF),    # currency
+]
+
+
+def candidates():
+    for start, end in RANGES:
+        for cp in range(start, end + 1):
+            ch = chr(cp)
+            try:
+                name = unicodedata.name(ch)
+            except ValueError:
+                continue
+            # Skip combining marks and anything with no width of its own.
+            if unicodedata.combining(ch):
+                continue
+            yield f"{ch}  {name.lower()}"
+
+
+def main():
+    if not shutil.which("fuzzel"):
+        sys.stderr.write("fuzzel not found\n")
+        return 1
+
+    rows = "\n".join(candidates())
+    proc = subprocess.run(
+        ["fuzzel", "--dmenu", "--width", "60", "--lines", "16",
+         "--no-exit-on-keyboard-focus-loss", "--prompt", "emoji> "],
+        input=rows, capture_output=True, text=True,
+    )
+    choice = proc.stdout.strip()
+    if not choice:
+        return 0
+
+    char = choice.split(" ", 1)[0]
+    if shutil.which("wl-copy"):
+        subprocess.run(["wl-copy", "--", char], check=False)
+    if shutil.which("wtype"):
+        subprocess.run(["wtype", char], check=False)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

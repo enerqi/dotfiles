@@ -4,7 +4,11 @@ icons_format = "{icon} "  # spacing control to uncramp icons
 cpu = [
     "\uf2db"
 ]
-memory_mem = ["\uf538"]
+# U+F035B (nf-md-memory). NOT \uf538: that is a Font Awesome 5/6 codepoint,
+# and this Nerd Font maps Font Awesome at f000-f375 only, so it rendered as
+# tofu. awesome4's own default is \uf2db, which is the microchip already
+# used for cpu above - hence a Material Design glyph instead.
+memory_mem = ["\U000F035B"]
 
 [theme]
 theme = "srcery"
@@ -48,6 +52,16 @@ block = "net"
 # device = "wlp0s20f3"
 # device = "enp0s31f6"
 interval = 5
+# fuzzel-based picker rather than nmtui: ncurses in a terminal looks nothing
+# like the rest of the desktop. Path is explicit because i3status-rs inherits
+# sway's PATH, which has no ~/bin; `~` is fine, click commands go through a
+# shell (verified by driving the i3bar click protocol).
+[[block.click]]
+button = "left"
+cmd = "~/bin/fuzzel-wifi"
+[[block.click]]
+button = "right"
+cmd = "nm-connection-editor"
 
 [[block]]
 block = "cpu"
@@ -68,10 +82,38 @@ format = " $icon $max max "
 format_alt = " $icon $min min, $max max, $average avg "
 chip = "*-isa-*"
 
+# Shows an indicator when the mic/camera/screenshare is actually in use.
+# Worth having now that the portals work and screen sharing is possible.
+[[block]]
+block = "privacy"
+[[block.driver]]
+name = "v4l"
+# pipewire covers mic and screen-share; v4l covers the camera. Needs a binary
+# built with the `pipewire` cargo feature - the packaged/prebuilt ones are not,
+# and reject this driver as a config error.
+[[block.driver]]
+name = "pipewire"
+
+# gb on the built-in keyboard, us on injected input from the Windows server -
+# see the sway config. This says which is active.
+[[block]]
+block = "keyboard_layout"
+driver = "sway"
+format = " $layout "
+
 [[block]]
 block = "sound"
+# Volume lives on the scroll wheel, not in a menu: the block handles
+# WheelUp/WheelDown itself, so it is instant and nothing is drawn. Re-opening a
+# fuzzel menu per 5% step flashed the window each time.
+step_width = 5
+max_vol = 120
+# Left: output switcher in fuzzel. Right: full per-app mixer.
 [[block.click]]
 button = "left"
+cmd = "~/bin/fuzzel-audio"
+[[block.click]]
+button = "right"
 cmd = "pavucontrol"
 
 [[block]]
@@ -81,3 +123,28 @@ format = " $timestamp.datetime(f:'%a %d/%m %R') "
 [[block.click]]
 button = "left"
 cmd = "gsimplecal"
+
+# Do-not-disturb toggle. Driver must be dunst or swaync; mako is unsupported.
+[[block]]
+block = "notify"
+driver = "dunst"
+
+[[block]]
+block = "packages"
+interval = 1800
+package_manager = ["apt"]
+format = " $icon $total "
+format_singular = " $icon $total "
+format_up_to_date = ""
+
+# Power button -> wlogout (a real popup grid).
+# NOT the `menu` block: that shows one item at a time and requires
+# click-then-scroll-then-click to reach anything past the first entry, which is
+# undiscoverable. Verified by driving it over the i3bar click protocol.
+[[block]]
+block = "custom"
+command = "echo ' \uf011 '"
+interval = "once"
+[[block.click]]
+button = "left"
+cmd = "wlogout -b 3"

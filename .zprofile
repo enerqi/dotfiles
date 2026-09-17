@@ -36,7 +36,16 @@ typeset -gU cdpath fpath mailpath path
 # )
 
 # Set the list of directories that Zsh searches for programs.
+# $HOME/bin and $HOME/.local/bin used to arrive via ~/.profile, which the X
+# session script sourced under GDM+Xorg+i3. gdm-wayland-session does NOT source
+# ~/.profile, and zsh never reads it either, so under sway they vanished from
+# PATH - breaking `zoxide init` in .zshrc (and with it the z/zi commands).
+# Set them here instead: .zshenv sources this file for non-login shells too,
+# so every zsh gets them regardless of how the terminal was launched.
+# `typeset -gU path` above keeps this idempotent.
 path=(
+  $HOME/bin
+  $HOME/.local/bin
   /usr/local/{bin,sbin}
   $path
 )

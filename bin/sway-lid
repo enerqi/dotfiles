@@ -1,0 +1,35 @@
+#!/bin/bash
+# Lid open/close handling.
+#
+# Closing the lid with external monitors attached should not tear down the
+# session - it should just stop using the internal panel. With no external
+# monitor there is nothing to switch to, so lock instead and let logind's own
+# lid handling suspend as usual.
+#
+# Called from sway's `bindswitch lid:on|off`.
+set -uo pipefail
+
+INTERNAL=eDP-1
+
+active_outputs() {
+    swaymsg -t get_outputs | python3 -c '
+import json, sys
+print(sum(1 for o in json.load(sys.stdin) if o.get("active")))'
+}
+
+case "${1:-}" in
+    close)
+        if [[ "$(active_outputs)" -gt 1 ]]; then
+            # Docked: keep working on the externals.
+            swaymsg output "$INTERNAL" disable
+        else
+            # Laptop only: lock now so the screen is protected before logind
+            # suspends. swayidle's before-sleep hook also locks, but that races
+            # with a fast lid close on some hardware.
+            "$HOME/bin/sway-lock"
+        fi ;;
+    open)
+        swaymsg output "$INTERNAL" enable ;;
+    *)
+        echo "usage: ${0##*/} close|open" >&2; exit 2 ;;
+esac

@@ -1,0 +1,57 @@
+#!/bin/bash
+# Command palette - one keybind ($mod+space) reaching the things that otherwise
+# live in scattered bar clicks or keybinds nobody remembers.
+#
+# Each entry just calls the tool that already does the job, so there is one
+# implementation of each action, not two.
+set -uo pipefail
+
+FUZZEL=(fuzzel --dmenu --width 40 --lines 14 --no-exit-on-keyboard-focus-loss)
+BIN="$HOME/bin"
+
+entries=(
+    "  Wi-Fi"
+    "  Audio output"
+    "  Clipboard history"
+    "  Bluetooth"
+    "  Windows"
+    "  Emoji / characters"
+    "  Power profile"
+    "  System monitor"
+    "  Screenshot"
+    "  Display layout"
+    "  Keybindings"
+    "  Lock"
+    "  Power menu"
+)
+
+choice=$(printf '%s\n' "${entries[@]}" | "${FUZZEL[@]}" --prompt "> ") || exit 0
+
+case "$choice" in
+    *"Wi-Fi")                "$BIN/fuzzel-wifi" ;;
+    *"Audio output")         "$BIN/fuzzel-audio" ;;
+    *"Clipboard history")    "$BIN/fuzzel-clipboard" ;;
+    *"Windows")              "$BIN/fuzzel-windows" ;;
+    *"Emoji / characters")   "$BIN/fuzzel-emoji" ;;
+    *"Power profile")        "$BIN/fuzzel-power-profile" ;;
+    *"System monitor")       foot -e btop & ;;
+    *"Bluetooth")
+        if command -v blueman-manager >/dev/null; then
+            blueman-manager &
+        else
+            command -v notify-send >/dev/null &&
+                notify-send -a menu "Bluetooth" "blueman not installed"
+        fi ;;
+    *"Screenshot")           "$BIN/fuzzel-screenshot" ;;
+    *"Display layout")
+        layout=$(printf '%s\n' "3 monitors (main)" "2 monitors (dual)" "Laptop only (single)" |
+                 "${FUZZEL[@]}" --prompt "display> ") || exit 0
+        case "$layout" in
+            "3 monitors (main)")     "$HOME/.screenlayout/main.sh" ;;
+            "2 monitors (dual)")     "$HOME/.screenlayout/dual.sh" ;;
+            "Laptop only (single)")  "$HOME/.screenlayout/single.sh" ;;
+        esac ;;
+    *"Keybindings")          "$BIN/sway-keys" ;;
+    *"Lock")                 "$BIN/sway-lock" ;;
+    *"Power menu")           wlogout -b 3 ;;
+esac

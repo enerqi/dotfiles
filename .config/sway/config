@@ -34,6 +34,42 @@ floating_modifier $mod
 # `swaymsg -t get_inputs` lists identifiers.
 input "1:1:AT_Translated_Set_2_keyboard" xkb_layout gb
 
+# Touchpad. Sway applies no touchpad defaults at all, so without this there is
+# no tap-to-click, no natural scrolling and no disable-while-typing.
+# `type:touchpad` rather than the device id so it survives new hardware; unlike
+# `type:keyboard` this cannot catch waynergy's virtual device, which registers
+# as a pointer.
+input type:touchpad {
+    tap enabled
+    natural_scroll enabled
+    dwt enabled
+    middle_emulation enabled
+    click_method clickfinger
+    scroll_method two_finger
+}
+
+# Cursor. Nothing sets this by default, so you get the fallback theme at the
+# fallback size - noticeably small on a 4K output, and XWayland apps disagree
+# with native ones unless it is set explicitly here.
+seat seat0 xcursor_theme Adwaita 24
+
+# Window rules. There were none, so every settings dialog tiled into the
+# layout. `class` matches XWayland, `app_id` native wayland - hence both.
+for_window [app_id="pavucontrol"] floating enable, resize set 900 600
+for_window [app_id="blueman-manager"] floating enable, resize set 800 600
+for_window [app_id="nm-connection-editor"] floating enable, resize set 800 600
+for_window [app_id="gsimplecal"] floating enable
+for_window [app_id="org.gnome.Nautilus"] floating enable, resize set 1000 700
+for_window [class="Pavucontrol"] floating enable
+for_window [class="Blueman-manager"] floating enable
+for_window [class="Nm-connection-editor"] floating enable
+for_window [window_role="pop-up|bubble|dialog|menu|task_dialog"] floating enable
+# window_type takes an enum, not a regex (unlike window_role), so these
+# cannot be collapsed into one alternation.
+for_window [window_type="dialog"] floating enable
+for_window [window_type="menu"] floating enable
+for_window [window_type="splash"] floating enable
+
 # start a terminal
 bindsym $mod+g exec wezterm
 
@@ -43,7 +79,26 @@ bindsym $mod+Shift+Delete kill
 # launchers. dmenu_run still works via XWayland; wofi is the native one.
 bindsym $mod+t exec dmenu_run
 # i3-dmenu-desktop talks i3 IPC and does not work under sway -> wofi
-bindsym $mod+d exec --no-startup-id wofi --show drun
+bindsym $mod+d exec --no-startup-id fuzzel
+
+# Command palette: wifi / audio / clipboard / screenshots / displays / keys /
+# power, all behind one key instead of scattered bar clicks.
+bindsym $mod+BackSpace exec --no-startup-id ~/bin/fuzzel-menu
+bindsym $mod+Shift+v exec --no-startup-id ~/bin/fuzzel-clipboard
+bindsym $mod+Tab exec --no-startup-id ~/bin/fuzzel-windows
+bindsym $mod+e exec --no-startup-id ~/bin/fuzzel-emoji
+# Screenshot menu. PrtSc is bound too, but it is an awkward reach on the
+# Glove80; Shift+P for "print".
+bindsym $mod+Shift+p exec --no-startup-id ~/bin/fuzzel-screenshot
+
+# Scratchpad: a window parked off-layout that you summon and dismiss.
+# $mod+minus / $mod+Shift+minus is the i3 convention, but Shift+minus is
+# already volume-down here, so both live on u.
+bindsym $mod+u scratchpad show
+bindsym $mod+Shift+u move scratchpad
+# To take a window back OUT of the scratchpad: summon it with $mod+u, then
+# $mod+Shift+BackSpace (floating toggle) tiles it into the current workspace.
+# There is no separate "remove from scratchpad" command in sway.
 
 # change focus
 #bindsym $mod+n focus left
@@ -91,8 +146,10 @@ bindsym $mod+b layout toggle split
 # toggle tiling / floating
 bindsym $mod+Shift+BackSpace floating toggle
 
-# change focus between tiling / floating windows
-bindsym $mod+BackSpace focus mode_toggle
+# change focus between tiling / floating windows.
+# On $mod+space (the i3/sway default for this) rather than $mod+BackSpace:
+# BackSpace is easier to reach on the Glove80, so the command palette has it.
+bindsym $mod+space focus mode_toggle
 
 # focus the parent container
 bindsym $mod+a focus parent
@@ -146,10 +203,14 @@ bindsym Control+$mod+Shift+0 move container to workspace 20
 
 # reload the configuration file
 bindsym $mod+Shift+c reload
-# i3's "restart in place" has no sway equivalent; reload is the closest.
-bindsym $mod+Shift+z reload
+# i3's $mod+Shift+z "restart in place" is not ported: sway has no equivalent
+# (the compositor is the display server, so re-executing it would tear down
+# every client) and mapping it to reload just duplicated $mod+Shift+c.
 # exit sway
-bindsym $mod+Shift+x exec swaynag -t warning -m 'Exit sway? This ends your Wayland session.' -B 'Yes, exit sway' 'swaymsg exit'
+# Power menu overlay (lock/logout/suspend/reboot/shutdown). No hibernate entry:
+# `loginctl can-hibernate` is "no" here (4G swap vs 14G RAM), so it would fall
+# through to a plain shutdown and lose the session.
+bindsym $mod+Shift+x exec wlogout -b 3
 
 # resize window (you can also use the mouse for that)
 mode "resize" {
@@ -178,12 +239,19 @@ mode "resize" {
 bindsym $mod+j mode "resize"
 
 # lock computer ctrl alt l  (i3lock -> swaylock)
-bindsym Control+mod1+l exec swaylock -c 333333
-bindsym Control+Shift+mod1+l exec swaylock -f -c 333333 && systemctl suspend
+bindsym Control+mod1+l exec ~/bin/sway-lock
+bindsym Control+Shift+mod1+l exec ~/bin/sway-lock && systemctl suspend
 
 # screenshots (X11 had none; grim+slurp are the wayland pair)
 bindsym Print exec grim - | wl-copy
 bindsym Shift+Print exec grim -g "$(slurp)" - | wl-copy
+
+# Brightness and media keys (--locked so they work on the lock screen)
+bindsym --locked XF86MonBrightnessUp exec brightnessctl set 5%+
+bindsym --locked XF86MonBrightnessDown exec brightnessctl set 5%-
+bindsym --locked XF86AudioPlay exec playerctl play-pause
+bindsym --locked XF86AudioNext exec playerctl next
+bindsym --locked XF86AudioPrev exec playerctl previous
 
 
 # Colouring and Styling
@@ -248,9 +316,11 @@ bar {
     # fc-list | grep awesome
     font pango:"CaskaydiaCove Nerd Font Mono", Mono 12, FontAwesome
     position bottom
-    # build i3status-rs from source and put in ~/bin
-    # reads .config/i3status-rust/config.toml
-    status_command ~/bin/i3status-rs
+    # Installed with `cargo install i3status-rs --features pipewire` (it is not
+    # packaged for Ubuntu). The pipewire feature is what gives the privacy
+    # block its mic/screen-share indicator. Explicit path because sway's PATH
+    # has no ~/.cargo/bin. Reads .config/i3status-rust/config.toml
+    status_command ~/.cargo/bin/i3status-rs
     colors {
         separator #666666
         background #222222
@@ -322,7 +392,35 @@ bindsym Control+$mod+y exec --no-startup-id "${HOME}/.screenlayout/single.sh"
 #bindsym $mod+u exec true || notify-send noooo
 
 # Auto start programs. compton dropped: sway is its own compositor.
-exec --no-startup-id nm-applet
+# nm-applet removed: network-manager-applet is not installed, so this was a
+# dead exec inherited from the i3 config. Wifi is handled by a click action on
+# the swaybar net block (nmtui / nm-connection-editor) instead of a tray daemon.
+
+# Notification daemon. Nothing else provides org.freedesktop.Notifications
+# under sway, so without this every notify-send is silently dropped.
+# dunst rather than mako because i3status-rs's `notify` block (the DND toggle)
+# only supports dunst and swaync.
+exec --no-startup-id dunst
+
+# Clipboard history. wl-clipboard alone keeps only the current selection.
+# `--type text` so images are not stored; `cliphist wipe` (or
+# `fuzzel-clipboard --wipe`) clears it if something sensitive is copied.
+exec --no-startup-id wl-paste --type text --watch cliphist store
+
+# Automount removable media. GNOME did this via gvfs; nothing does it under
+# sway, so a USB stick would just sit there.
+exec --no-startup-id udiskie --automount --notify --no-tray
+
+# Lid: drop the internal panel when docked, lock when not. See ~/bin/sway-lid.
+bindswitch --reload --locked lid:on exec ~/bin/sway-lid close
+bindswitch --reload --locked lid:off exec ~/bin/sway-lid open
+
+# Idle: lock after 10 min, screens off after 15, lock before sleep.
+exec --no-startup-id swayidle -w \
+        timeout 600 '~/bin/sway-lock' \
+        timeout 900 'swaymsg "output * power off"' \
+        resume 'swaymsg "output * power on"' \
+        before-sleep '~/bin/sway-lock'
 exec --no-startup-id tresorit
 # deskflow cannot inject input under sway (no RemoteDesktop portal on wlroots),
 # so waynergy replaces it as the keyboard/mouse-sharing client. It drives

@@ -1,0 +1,84 @@
+#!/bin/bash
+# Screenshot menu.
+#
+# PrtSc is bound too, but it is an awkward reach on the Glove80, so this is the
+# keyboard-first route: $mod+Shift+P, or the command palette.
+set -uo pipefail
+
+FUZZEL=(fuzzel --dmenu --width 42 --lines 10 --no-exit-on-keyboard-focus-loss)
+DIR="${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots"
+STAMP=$(date +%Y-%m-%d-%H%M%S)
+
+notify() { command -v notify-send >/dev/null && notify-send -a screenshot "$@"; }
+
+# Geometry of the focused window, as grim wants it ("X,Y WxH").
+focused_geom() {
+    swaymsg -t get_tree | python3 -c '
+import json, sys
+
+def find(node):
+    if node.get("focused") and node.get("pid") is not None:
+        return node
+    for child in node.get("nodes", []) + node.get("floating_nodes", []):
+        hit = find(child)
+        if hit:
+            return hit
+    return None
+
+win = find(json.load(sys.stdin))
+if win:
+    r = win.get("rect", {})
+    # %-formatting, not an f-string: this block is inside bash single quotes,
+    # so escaped quotes inside an f-string expression would be a syntax error.
+    print("%d,%d %dx%d" % (r["x"], r["y"], r["width"], r["height"]))
+'
+}
+
+shot() {  # shot <geometry-or-empty> <destination: clip|file>
+    local geom="$1" dest="$2" out
+    if [[ "$dest" == clip ]]; then
+        if [[ -n "$geom" ]]; then grim -g "$geom" - | wl-copy; else grim - | wl-copy; fi
+        notify "Copied to clipboard"
+    else
+        mkdir -p "$DIR"
+        out="$DIR/screenshot-$STAMP.png"
+        if [[ -n "$geom" ]]; then grim -g "$geom" "$out"; else grim "$out"; fi
+        # Copy the PATH as text, not the image bytes: the "-> clipboard" entries
+        # already cover pasting the picture. A path can be pasted into a
+        # terminal or a Claude session, where an image/png clipboard offers no
+        # text/plain and so pastes as nothing at all.
+        printf '%s' "$out" | wl-copy
+        notify "Saved" "${out/#$HOME/\~}"
+    fi
+}
+
+choice=$(printf '%s\n' \
+    "Region → clipboard" \
+    "Region → file" \
+    "Window → clipboard" \
+    "Window → file" \
+    "Screen → clipboard" \
+    "Screen → file" \
+    "Region → annotate" \
+    "Screen after 5s → file" \
+    | "${FUZZEL[@]}" --prompt "screenshot> ") || exit 0
+
+case "$choice" in
+    "Region → clipboard")  geom=$(slurp) || exit 0; shot "$geom" clip ;;
+    "Region → file")       geom=$(slurp) || exit 0; shot "$geom" file ;;
+    "Window → clipboard")  shot "$(focused_geom)" clip ;;
+    "Window → file")       shot "$(focused_geom)" file ;;
+    "Screen → clipboard")  shot "" clip ;;
+    "Screen → file")       shot "" file ;;
+    "Screen after 5s → file")
+        notify "Screenshot in 5s"
+        sleep 5
+        shot "" file ;;
+    "Region → annotate")
+        if ! command -v swappy >/dev/null; then
+            notify "swappy not installed" "sudo apt install swappy"
+            exit 1
+        fi
+        geom=$(slurp) || exit 0
+        grim -g "$geom" - | swappy -f - ;;
+esac

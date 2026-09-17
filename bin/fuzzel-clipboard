@@ -1,0 +1,30 @@
+#!/bin/bash
+# Clipboard history picker.
+#
+# wl-clipboard alone keeps only the current selection - copy something else and
+# the previous one is gone. cliphist maintains the history; this picks from it.
+# The daemon side is `wl-paste --watch cliphist store`, started from the sway
+# config.
+set -uo pipefail
+
+FUZZEL=(fuzzel --dmenu --width 90 --lines 20 --no-exit-on-keyboard-focus-loss)
+
+if ! command -v cliphist >/dev/null; then
+    command -v notify-send >/dev/null && notify-send -a clipboard "cliphist not installed"
+    exit 1
+fi
+
+case "${1:-}" in
+    --wipe)
+        cliphist wipe
+        command -v notify-send >/dev/null && notify-send -a clipboard "History wiped"
+        exit 0 ;;
+esac
+
+# cliphist list emits "<id>\t<preview>". Selecting feeds the whole line back to
+# `cliphist decode`, which resolves the id to the full original content -
+# important for entries longer than the preview, and for images.
+choice=$(cliphist list | "${FUZZEL[@]}" --prompt "clipboard> ") || exit 0
+[[ -z "$choice" ]] && exit 0
+
+cliphist decode <<<"$choice" | wl-copy

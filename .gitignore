@@ -10,6 +10,8 @@
 
 !bin/
 !bin/**
+# 24MB build artefact - installed with `cargo install i3status-rs --features pipewire`
+bin/i3status-rs
 
 !cmder/
 !cmder/**
@@ -37,6 +39,11 @@ cmder/Cmder.exe
 .config/waynergy/tls/
 !.config/xkb/
 !.config/xkb/**
+!.config/wlogout/
+!.config/wlogout/**
+
+!README.md
+!KEYMAP.md
 !.config/wezterm/
 !.config/wezterm/**
 !.config/wezterm/wezterm-session-manager/

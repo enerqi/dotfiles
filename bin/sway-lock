@@ -1,0 +1,24 @@
+#!/bin/sh
+# Lock screen. Used by the lock keybinds AND by swayidle (idle + before-sleep),
+# so all paths look identical - hence a script rather than a sway $variable,
+# which does not reliably substitute inside swayidle's quoted arguments.
+#
+# --indicator-idle-visible is the important one: without it swaylock paints a
+# flat colour and draws nothing until a key is pressed, so a locked screen is
+# indistinguishable from a powered-off one. That is confusing on resume from
+# hibernate, where you have no reason to expect a lock screen at all.
+exec swaylock -f -k -F -l \
+    -c 1e1e1e \
+    --indicator-idle-visible \
+    --indicator-radius 110 \
+    --indicator-thickness 10 \
+    --ring-color 0088cc \
+    --key-hl-color d7ff00 \
+    --bs-hl-color d11931 \
+    --inside-color 1e1e1e \
+    --inside-ver-color 0088cc \
+    --inside-wrong-color d11931 \
+    --line-uses-ring \
+    --text-color cccccc \
+    --separator-color 00000000 \
+    "$@"
