@@ -263,6 +263,88 @@ provider, and the block hides when no tunnel is up. Clicking it opens
 config. GNOME did this through gvfs; under sway nothing does, so a USB stick
 would simply never appear.
 
+### SwayFX - tried, does NOT work here (2026-09)
+
+[SwayFX](https://github.com/WillPower3309/swayfx) is a sway fork adding rounded
+corners, shadows, blur and dim-inactive, with the same config syntax and IPC.
+
+**It builds and runs but renders nothing.** Window decorations and titlebars
+draw correctly; client buffers stay black. Unusable. Left here because
+everything needed for a retry is in place - do not assume it works.
+
+What was established, by controlled comparison rather than log-reading:
+
+| Nested, identical `foot` command | Result |
+| --- | --- |
+| stock sway 1.11 | renders correctly |
+| SwayFX 0.5.3, effects enabled | black |
+| SwayFX 0.5.3, no effects at all | black |
+
+So it is **not** the effects, and not the renderer. Two theories that looked
+right and were not: `WLR_RENDERER=gles2` (SceneFX is GLES2-only and Vulkan ICDs
+are installed, so wlroots may prefer Vulkan - forcing it changed nothing) and
+`corner_radius`/`default_dim_inactive` (they do produce real
+`pixman_region32_union_rect: Invalid rectangle passed` spam, but black windows
+happen without them too).
+
+Best remaining theory, untested: an ABI mismatch between Ubuntu's wlroots
+**0.19.2** point release and what SceneFX 0.4.1 expects - it compiles, links and
+starts cleanly, then composites nothing.
+
+#### How to retry
+
+The version pairing is the crux. SceneFX and SwayFX master both target wlroots
+0.20; Ubuntu 26.04 ships 0.19.2, which is what sway 1.11 is built against.
+`~/bin/build-swayfx.sh` pins the wlroots-0.19 pair (SceneFX 0.4.1 / SwayFX
+0.5.3) in two variables at the top.
+
+- **When Ubuntu ships wlroots 0.20**: bump those to SceneFX 0.5 / SwayFX 0.6,
+  rebuild, reinstall the session entry. Most likely to just work.
+- **Sooner**: build wlroots 0.20 into `~/.local` too, then SceneFX 0.5 and
+  SwayFX 0.6 against it. Self-contained, but needs `LD_LIBRARY_PATH` care so it
+  does not pick up the system wlroots. Judged a poor trade for rounded corners.
+
+Retest in 90 seconds without logging out - nested, and *look* at it rather than
+reading logs:
+
+```
+export LD_LIBRARY_PATH="$HOME/.local/lib/x86_64-linux-gnu"
+printf 'exec foot -e sh -c "echo RENDER-TEST; sleep 30"\n' > /tmp/fx.conf
+( timeout 14 ~/.local/bin/swayfx -c /tmp/fx.conf & ) ; sleep 7; grim /tmp/fx.png
+```
+
+If `RENDER-TEST` is visible in the nested window, it works.
+
+#### What is already in place
+
+- `~/bin/build-swayfx.sh` - builds SceneFX then SwayFX into `~/.local`,
+  pinned. Renames the binary to `swayfx` and deletes the `swaymsg`/`swaybar`/
+  `swaynag`/`swaybg` it installs, because `~/.local/bin` precedes `/usr/bin` on
+  PATH and those shadow the packaged tools for every shell - `sway --validate`
+  broke exactly that way.
+- `~/bin/swayfx-session` - session wrapper. Sets `LD_LIBRARY_PATH` (SceneFX
+  lands in `~/.local/lib/x86_64-linux-gnu`, not on the loader path), points at
+  `config.fx`, and logs to `/tmp/swayfx-session.log` **first**. GDM session
+  failures often leave nothing in the journal at all; that log was the only
+  reason two of these failures were diagnosable.
+- `~/.config/sway/config.fx` - effects, `include`ing the main config. They
+  cannot live in the main config: stock sway rejects all 11 and then refuses to
+  load, leaving no session. Note `animation_duration_ms` is in SwayFX master's
+  docs but not in 0.5.3, and an unknown directive is fatal.
+- Session entry (removed): `Exec` must point **outside** `$HOME` - GDM's
+  greeter runs as user `gdm` and cannot traverse `/home/kelvin` (0750), so an
+  `Exec` under home makes the session vanish with no logs. The working shape was
+  a two-line shim in `/usr/local/bin` exec'ing `~/bin/swayfx-session`, so
+  editing the tracked script never leaves the deployed copy stale.
+
+Build deps beyond the sway ones:
+
+```
+sudo apt install libwlroots-0.19-dev libpixman-1-dev libdrm-dev libinput-dev \
+    libjson-c-dev libpcre2-dev libevdev-dev libcairo2-dev libpango1.0-dev \
+    libgbm-dev libseat-dev libxcb1-dev scdoc
+```
+
 ### Hibernate
 
 Ubuntu ships hibernation disabled twice over, so both need undoing.

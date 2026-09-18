@@ -436,5 +436,10 @@ exec --no-startup-id tresorit
 # so waynergy replaces it as the keyboard/mouse-sharing client. It drives
 # wlr-virtual-pointer + virtual-keyboard directly and syncs the clipboard via
 # wl-clipboard. Config: ~/.config/waynergy/config.ini. See ~/README.md.
-exec --no-startup-id "${HOME}/.local/bin/waynergy"
+# PATH, not just the binary path: waynergy runs `wl-paste -w
+# waynergy-clip-update`, and wl-paste resolves that helper through PATH.
+# sway's PATH has no ~/.local/bin, so without this the helper is never
+# found ("Failed to spawn waynergy-clip-update") and clipboard changes
+# made here are never sent to the other machine.
+exec --no-startup-id env PATH="${HOME}/.local/bin:${PATH}" "${HOME}/.local/bin/waynergy"
 #exec --no-startup-id deskflow

@@ -1,0 +1,31 @@
+#!/bin/bash
+# Launch SwayFX from ~/.local.
+#
+# Two things the GDM session entry cannot do itself:
+#
+#  1. SceneFX installs to ~/.local/lib/x86_64-linux-gnu, which is not on the
+#     default loader path, so the binary dies with
+#     "libscenefx-0.4.so: cannot open shared object file". A .desktop Exec=
+#     line cannot set environment variables, hence this wrapper.
+#  2. Point sway at config.fx rather than the main config - the effects
+#     directives only exist in SwayFX.
+#
+# The binary is installed as ~/.local/bin/swayfx, NOT `sway`: ~/.local/bin is
+# first on PATH, so a binary called `sway` there shadows the system one for
+# every shell and script - and it cannot even start without the
+# LD_LIBRARY_PATH set below.
+# Log somewhere readable: when GDM fails to start a session it often leaves
+# nothing in the journal at all, which makes "black screen, back to the login
+# screen" undiagnosable. This file is the evidence.
+exec >>"/tmp/swayfx-session.log" 2>&1
+echo "=== $(date -Is) starting swayfx ==="
+
+# SceneFX is built GLES2-only (no Vulkan renderer). wlroots 0.19 prefers
+# Vulkan when an ICD is present - and intel_icd.json is - which leaves window
+# buffers uncomposited: you get titles and borders on a black screen, with no
+# error anywhere. Force the renderer SceneFX can actually use.
+export WLR_RENDERER=gles2
+
+export LD_LIBRARY_PATH="$HOME/.local/lib/x86_64-linux-gnu:$HOME/.local/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+
+exec "$HOME/.local/bin/swayfx" -c "$HOME/.config/sway/config.fx" "$@"
