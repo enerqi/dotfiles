@@ -233,6 +233,18 @@ a regex, so those cannot be collapsed into one alternation the way
 means the fallback theme at the fallback size - small on a 4K output, and
 XWayland apps disagree with native ones until it is set here.
 
+**Launcher:** `~/.config/fuzzel/fuzzel.ini` must set `terminal=foot -e`.
+Desktop entries with `Terminal=true` (btop++, Vim, Python, TeXInfo) are
+launched *inside* a terminal, and fuzzel's built-in default is `xterm -e` -
+not installed here, so those entries silently do nothing without it. The file
+also matches fuzzel's font and colours to the bar.
+
+**Terminal:** wezterm is the everyday one; `foot` is the throwaway used by the
+palette (btop), the Wi-Fi picker (`nmtui`) and the VPN menu. Its default is
+`monospace:size=8`, unreadable on a 1200p panel and worse on 4K, so
+`~/.config/foot/foot.ini` matches the swaybar font instead and sets
+`dpi-aware=yes` for the external display.
+
 **Displays:** `kanshi` applies a profile on hotplug, config in
 `~/.config/kanshi/config`. Match on `make model serial` rather than `DP-N` -
 connector numbering moves between docks and reboots, the monitor's identity

@@ -43,6 +43,10 @@ cmder/Cmder.exe
 !.config/wlogout/**
 !.config/kanshi/
 !.config/kanshi/**
+!.config/foot/
+!.config/foot/**
+!.config/fuzzel/
+!.config/fuzzel/**
 
 !README.md
 !KEYMAP.md
