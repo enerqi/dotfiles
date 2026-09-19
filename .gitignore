@@ -134,3 +134,5 @@ cmder/Cmder.exe
 .claude-work
 
 
+!.config/wallpapers/
+!.config/wallpapers/**

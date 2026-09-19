@@ -1,0 +1,14 @@
+# Wallpaper allowlist for ~/bin/random_background.sh
+# One entry per line. Blank lines and #-comments ignored.
+# Bare names resolve against /usr/share/backgrounds; entries starting with
+# ~/ or / are used as-is, so personal photos can live anywhere.
+# Delete this file (or empty it) to fall back to every image in the system dir.
+
+mendhak-Bluebells_Suspended_In_Time.jpg
+mendhak-Red_Acer.jpg
+mizuno-as-Big_Dipper.jpg
+mizuno-as-Winter_Grand_Triangle.jpg
+vale1ntin0omf-Electric_Veins_of_the_Storm.jpg
+
+# Add your own, e.g.:
+#~/Pictures/Wallpapers/fjord.jpg
