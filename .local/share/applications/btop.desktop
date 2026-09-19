@@ -1,0 +1,24 @@
+[Desktop Entry]
+# Overrides /usr/share/applications/btop.desktop (XDG_DATA_HOME wins).
+#
+# The packaged entry is `Exec=btop` with `Terminal=true`, so fuzzel runs it
+# through its `terminal=` setting - giving foot's default font and size, and an
+# app_id of "foot". That means the launcher produced a cramped btop (below its
+# 80x24 minimum) with none of the sway rules applying, while the command
+# palette produced a correct one. Same program, two behaviours.
+#
+# Terminal=false plus ~/bin/btop-term makes both paths identical: same app_id,
+# same font, same character grid. It points at a script rather than inlining
+# the foot command because .desktop Exec= splits on spaces, and the quoted font
+# name turned into four stray arguments - foot then failed and nothing appeared.
+#
+# `sh -c` so $HOME expands: .desktop does not expand it itself, but a shell
+# does, and the spec requires the $ be written \\$ inside quotes (that form
+# both passes desktop-file-validate and works). No hardcoded /home path.
+Type=Application
+Name=btop++
+Comment=Resource monitor
+Icon=btop
+Categories=System;Monitor;
+Terminal=false
+Exec=sh -c "exec \\$HOME/bin/btop-term"

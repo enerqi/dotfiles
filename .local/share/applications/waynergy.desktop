@@ -1,0 +1,10 @@
+[Desktop Entry]
+Comment=Barrier/Synergy keyboard+mouse sharing client for wayland (replaces deskflow under sway)
+Exec=sh -c "exec \\$HOME/.local/bin/waynergy"
+Icon=system-run
+Name=Waynergy
+StartupNotify=false
+Terminal=false
+Type=Application
+Categories=Utility;
+X-KDE-Wayland-Interfaces=org_kde_kwin_fake_input
