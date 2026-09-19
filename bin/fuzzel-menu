@@ -41,7 +41,10 @@ case "$choice" in
     *"Windows")              "$BIN/fuzzel-windows" ;;
     *"Emoji / characters")   "$BIN/fuzzel-emoji" ;;
     *"Power profile")        "$BIN/fuzzel-power-profile" ;;
-    *"System monitor")       foot -e btop & ;;
+    *"System monitor")
+        # Wrapper, not an inline foot command: the btop++ launcher entry
+        # calls the same script, so the two cannot drift apart.
+        "$BIN/btop-term" & ;;
     *"Calculator")           "$BIN/fuzzel-calc" ;;
     *"Record screen")        "$BIN/fuzzel-record" ;;
     *"Night light")          "$BIN/sway-nightlight" ;;

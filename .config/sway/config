@@ -59,6 +59,12 @@ for_window [app_id="pavucontrol"] floating enable, resize set 900 600
 for_window [app_id="blueman-manager"] floating enable, resize set 800 600
 for_window [app_id="nm-connection-editor"] floating enable, resize set 800 600
 for_window [app_id="gsimplecal"] floating enable
+# btop needs at least 80x24 CHARACTERS. Float it, but set no pixel size:
+# foot runs dpi-aware, so cells are ~16x34px on this panel and a window
+# that looks generous in pixels is only 67x21 chars. The launch uses
+# --window-size-chars, the DPI-independent unit; a `resize set` here
+# overrides it and is what broke this.
+for_window [app_id="btop"] floating enable
 for_window [app_id="org.gnome.Nautilus"] floating enable, resize set 1000 700
 for_window [class="Pavucontrol"] floating enable
 for_window [class="Blueman-manager"] floating enable

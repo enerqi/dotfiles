@@ -1,0 +1,19 @@
+#!/bin/sh
+# btop in a correctly-sized foot window.
+#
+# One place for this invocation, used by both the command palette and the
+# btop++ launcher entry, which otherwise drift apart and behave differently.
+#
+# Sizing is in CHARACTERS: btop refuses to draw below 80x24, and foot runs
+# dpi-aware here, so cells are ~16x34px at size 12 - 80 columns alone would
+# need 1280px and the window ends up nearly fullscreen. Size 9 fits the same
+# grid into about two thirds of the screen.
+#
+# app_id=btop so the sway rule (`for_window [app_id="btop"] floating enable`)
+# matches. Do NOT add a pixel `resize set` to that rule: it overrides the
+# character sizing and puts btop back under its minimum.
+exec foot \
+    --app-id=btop \
+    --font="CaskaydiaCove Nerd Font Mono:size=9" \
+    --window-size-chars=110x32 \
+    -e btop "$@"
