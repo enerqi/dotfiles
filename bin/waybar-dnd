@@ -1,0 +1,13 @@
+#!/bin/sh
+# Do-not-disturb state for waybar, as JSON so CSS can style the paused case.
+# dunst only: mako has no equivalent query/toggle pair.
+case "$1" in
+    toggle) dunstctl set-paused toggle >/dev/null 2>&1; exit 0 ;;
+esac
+if [ "$(dunstctl is-paused 2>/dev/null)" = "true" ]; then
+    count=$(dunstctl count waiting 2>/dev/null || echo 0)
+    printf '{"text":"  %s","class":"paused","tooltip":"Notifications paused (%s waiting)"}\n' \
+        "$count" "$count"
+else
+    printf '{"text":"","class":"active","tooltip":"Notifications enabled"}\n'
+fi

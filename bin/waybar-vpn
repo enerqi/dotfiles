@@ -1,0 +1,11 @@
+#!/bin/sh
+# VPN indicator for waybar. Prints nothing when no tunnel is up, which makes
+# waybar hide the module entirely.
+#
+# Detects the tunnel *interface* rather than asking a provider's CLI: the
+# built-in options only cover nordvpn/mullvad/tailscale and this machine runs
+# Surfshark. Interface detection works whatever the provider.
+ip -o link show 2>/dev/null \
+    | grep -qE ': (tun|wg|nordlynx|surfshark)[0-9]*:' \
+    && printf '  VPN\n'
+exit 0

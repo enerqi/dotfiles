@@ -1,0 +1,13 @@
+#!/bin/sh
+# Count of upgradable apt packages. Prints nothing when up to date so the
+# module disappears rather than sitting there showing a zero.
+#
+# Counts `apt list --upgradable`, NOT `apt-get --just-print upgrade | grep Inst`.
+# The two disagree: packages held back as a coordinated set (or phased) are
+# listed as upgradable but produce no Inst line, so the second method reported
+# 0 while 13 were waiting. This must agree with waybar-packages-list, which is
+# what the click opens - a badge that contradicts its own popup is worse than
+# no badge.
+n=$(apt list --upgradable 2>/dev/null | tail -n +2 | grep -c .) || exit 0
+[ "$n" -gt 0 ] && printf '  %s\n' "$n"
+exit 0

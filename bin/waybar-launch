@@ -1,0 +1,20 @@
+#!/bin/sh
+# Restart-safe waybar launcher, for `exec_always` in the sway config.
+#
+# exec_always re-runs on every `swaymsg reload`, and waybar has no single
+# instance guard - without this a reload leaves two bars stacked on the same
+# layer, which looks like the bar has simply broken.
+#
+# Kill first, then WAIT for it to actually go: starting the new instance while
+# the old layer surface is still mapped gives a visible double bar until the
+# old one finishes exiting. Bounded at ~2s so a wedged process cannot leave the
+# session with no bar at all.
+pkill -x waybar 2>/dev/null
+
+i=0
+while pgrep -x waybar >/dev/null 2>&1 && [ "$i" -lt 20 ]; do
+    sleep 0.1
+    i=$((i + 1))
+done
+
+exec waybar

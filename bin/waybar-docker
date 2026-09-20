@@ -1,0 +1,8 @@
+#!/bin/sh
+# Docker running/total container count. Silent (module hidden) when the daemon
+# is not up, rather than showing an error where a number belongs.
+command -v docker >/dev/null || exit 0
+running=$(docker ps -q 2>/dev/null | wc -l) || exit 0
+docker info >/dev/null 2>&1 || exit 0
+total=$(docker ps -aq 2>/dev/null | wc -l)
+printf '󰡨 %s/%s\n' "$running" "$total"

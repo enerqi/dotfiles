@@ -144,21 +144,146 @@ config calls them by absolute path. A bare `exec waynergy` fails silently.
 
 ### Bar, lock screen and idle
 
-swaybar + `~/.cargo/bin/i3status-rs`. Beyond the usual blocks the config adds
-`privacy` (camera in use), `keyboard_layout` (gb vs us at a glance), `notify`
-(DND toggle), `packages` (pending apt updates), a `net` click action
-(left = `nmtui`, right = `nm-connection-editor` - no tray applet needed), and a
-power button that launches `wlogout`.
+**waybar** (2026-09), replacing swaybar + `~/.cargo/bin/i3status-rs`. The
+swaybar block is still in the sway config, commented out, as the rollback:
+nothing was deleted and i3status-rust still works.
 
-The power button is a `custom` block, deliberately **not** i3status-rs's `menu`
-block: that shows one item at a time and needs click-then-scroll-then-click to
-reach anything past the first entry. `wlogout` gives a real popup grid;
-`~/.config/wlogout/layout` defines it, and `$mod+Shift+x` opens the same thing.
+The reason for the move is the box model. swaybar draws with cairo and exposes
+a fixed vocabulary - one font, a position, and colours for seven named
+elements. Padding, rounded corners, margins, hover states and per-module
+transitions are not expressible there *at any effort level*. waybar is a GTK3
+widget on a layer-shell surface, so appearance is real CSS. That split is the
+whole point: `~/.config/waybar/config.jsonc` is structure,
+`~/.config/waybar/style.css` is appearance.
 
-The `privacy` block uses two drivers: `v4l` for the camera and `pipewire` for
-mic and screen-share. `pipewire` is only accepted by a binary built with that
-cargo feature - prebuilt ones reject it as a config error, which is why the
-install above passes `--features pipewire`.
+The palette is srcery, matching the i3status-rust theme it replaced, so the
+switch was not also a colour change. Font size is set in exactly one place, in
+the `*` rule: **16px, which is pango 12pt at this panel's 96dpi** - what the
+old swaybar line asked for. The output is scale 1.0 and GTK
+`text-scaling-factor` is 1.0, so no further correction applies.
+
+21 modules, ported block-for-block from `.config/i3status-rust/config.toml`.
+Eleven map to native waybar modules; the rest need helpers in `~/bin`:
+
+| script | why it is not a native module |
+| --- | --- |
+| `waybar-docker` | no docker module exists |
+| `waybar-vpn` | the native `vpn` module covers only nordvpn/mullvad/tailscale; this detects the tunnel *interface*, so it works whatever the provider |
+| `waybar-dnd` | dunst pause state + toggle, in one script so the two cannot drift |
+| `waybar-packages` | no apt module |
+| `waybar-keyboard` | see the gotchas below |
+
+Every module that can do something on click now does, and the newly clickable
+ones reuse scripts that already existed: battery opens
+`~/bin/fuzzel-power-profile` (which nothing else exposed outside the command
+palette), and cpu/load/memory/temperature/disk all open `~/bin/btop-term`.
+Network is `fuzzel-wifi` (not `nmtui` - ncurses in a terminal looks nothing
+like the rest of the desktop), right-click `nm-connection-editor`. Volume
+scrolls in-module and opens `fuzzel-audio`, right-click `pavucontrol`.
+
+Because five bar modules open btop, `~/bin/btop-term` grew a single-instance
+guard - clicking two of them used to stack two identical windows. It focuses an
+existing btop via `swaymsg '[app_id="btop"] focus'`, whose **exit status is the
+test**: it exits 2 with "No matching node." when nothing matches, so no tree
+parsing is needed. The guard only applies with no arguments, so
+`btop-term --flag` still gets its own window. This deliberately changes the
+command palette and the `.desktop` launcher too, which is the point - one
+implementation, not three.
+
+The two popup scripts (`waybar-docker-ps`, `waybar-packages-list`) float via
+`for_window [app_id="waybar-popup"]`, with **no `resize set`** - the same trap
+documented for btop above. They size with `--window-size-chars`, and a pixel
+`resize set` overrides that and squashes the columns.
+
+waybar is launched by `~/bin/waybar-launch`, not directly. `exec_always`
+re-runs on every `swaymsg reload` and waybar has no single-instance guard, so a
+bare `exec_always waybar` stacks a second bar on the same layer on every
+reload - which reads as the bar being broken rather than as two bars. The
+wrapper kills the old one and waits for it to actually exit, bounded at ~2s so
+a wedged process cannot leave the session with no bar at all.
+
+`wlogout` is still the power button, still a real popup grid rather than a
+menu that needs click-then-scroll-then-click; `$mod+Shift+x` opens the same
+thing.
+
+#### Window decoration
+
+`default_border pixel 2` (no title bars) with `gaps inner 6` and
+`smart_gaps on`. Dropping title bars is affordable because waybar's centre
+module shows the focused window's title - the title bar had become chrome
+repeating what the bar already says. Sublime Text is the exception
+(`border normal 2`): with several windows open the title is the only thing
+telling them apart, and the bar only ever shows the *focused* one.
+
+**`client.<class>` takes five arguments, not three.** `<border> <background>
+<text> [<indicator> [<child_border>]]`, and `child_border` - the border around
+the window itself, which is what `default_border pixel` actually draws -
+**silently inherits `<background>` when omitted**. The three-argument form here
+therefore drew a black focused border (#000000, the old title bar background)
+and a #333333 unfocused one: invisible against a dark wallpaper, and
+indistinguishable from each other. That was fine while title bars carried the
+focus signal and became a real problem the moment they were removed. The
+focused colour is now #2c78bf, the same blue waybar uses for the focused
+workspace, so the two "this has focus" signals match. `<indicator>` (4th, which
+marks the edge where the next window opens in a tiled container) was never set
+either.
+
+Two behaviours that make decoration changes look broken on `swaymsg reload`:
+
+- `default_border` applies to **newly created windows only**. Existing ones
+  keep their border type; `swaymsg '[title=".*"] border pixel 2'` retrofits them.
+- `gaps` in the config applies to **newly created workspaces only**. Existing
+  workspaces keep whatever gap they had. Verified by resetting runtime gaps to
+  0 and creating a fresh workspace, which came up with the configured 6.
+  `swaymsg gaps inner all set 6` fixes the running session; a fresh login is
+  correct everywhere.
+
+Not available in sway 1.11 at any setting: rounded corners, gradients, shadows,
+animations, dim-inactive, and window icons (i3's `title_window_icon` has no
+sway equivalent - `man 5 sway` has no such directive). Those need a different
+compositor; see the SwayFX section below for why that route is closed here.
+
+#### waybar gotchas found the hard way
+
+- **GTK3 CSS is not web CSS, and a bad selector is fatal.** `:empty` does not
+  exist there, and waybar *refuses to start* on it rather than skipping the
+  rule. The centre island is therefore drawn by `#window`, which does expose an
+  `empty` class, so it disappears with its content.
+- **`sway/language` rendered as a bare `...`.** Not a format problem - a
+  literal string ellipsized identically. The label requests zero width and GTK
+  ellipsizes it; `min-length` is the fix. That module is no longer used, but
+  the same failure will hit any module whose content is short.
+- **`sway/language` also blanked intermittently**, which is why
+  `~/bin/waybar-keyboard` replaced it. It reports the layout of whichever
+  device last sent an input event, and sway registers **seven** keyboards here:
+  the ThinkPad (gb), the waynergy virtual keyboard (us), and five that never
+  type (Power_Button, Sleep_Button, Video_Bus, Intel_HID_events,
+  ThinkPad_Extra_Buttons). A pseudo-keyboard event resolved to an empty layout
+  and emptied the module. The script filters those out and only ever replaces
+  the layout with another genuine one, so it cannot go blank. Short codes come
+  from `/usr/share/X11/xkb/rules/evdev.xml`, not a hardcoded table.
+- **`apt list --upgradable` and `apt-get --just-print upgrade` disagree.** The
+  first reported 13 packages, the second 0, because a held-back coordinated set
+  (pipewire) is listed as upgradable but produces no `Inst` line. The badge
+  counted the second while its own click-popup listed the first, so the module
+  was invisible while 13 updates waited. Both now read the same source - a
+  badge that contradicts its own popup is worse than no badge.
+- **The `privacy` module is pipewire-only.** i3status-rust used two drivers,
+  `v4l` for the camera and `pipewire` for mic and screen-share; waybar's native
+  module has no v4l equivalent. Most cameras route through pipewire, so this is
+  probably not a loss, but **it has never been verified live** - it only
+  appears when something is actually using the mic, camera or screen-share.
+  The upside is that `cargo install i3status-rs --features pipewire` is no
+  longer needed for it; that feature was the only reason a cargo-built binary
+  had to be on `PATH`.
+
+`.config/i3status-rust/config.toml` is now dead weight - nothing reads it. It
+is kept because it is the rollback path, not because it runs. Note its
+`temperature` block could not have been working: it asks for `chip = "*-isa-*"`
+and lm-sensors is not installed. waybar reads
+`/sys/devices/platform/coretemp.0/hwmon` directly instead - an absolute
+platform path rather than `/sys/class/hwmon/hwmonN`, because the N moves
+between boots.
 
 Locking goes through `~/bin/sway-lock` from all four call sites (both keybinds,
 swayidle's idle timeout, and `before-sleep`) so they cannot drift apart. It
@@ -173,6 +298,18 @@ audio output, clipboard history, Bluetooth, screenshots, display layout,
 keybindings, lock and power. BackSpace rather than `$mod+space` because it is
 easier to reach on the Glove80; `focus mode_toggle` took `$mod+space` in
 exchange, which is i3/sway's own default for it.
+
+The palette matters more since the bar gained click actions, because **waybar
+cannot be driven from the keyboard at all** - it is a layer-shell surface with
+keyboard interactivity off, so it never takes focus and has no tab order. Bar
+clicks are a convenience for when a hand is already on the pointer; the palette
+is the keyboard path, and it calls the same scripts so the two cannot diverge.
+Four entries were added for bar actions that had no keyboard route: **Do not
+disturb** (a real toggle, and the only one that predates the bar work - the
+existing "Notifications" entry is `dunstctl history-pop`, a different thing),
+**Calendar**, **Containers** and **Updates**. Do not disturb shows its current
+state as `[on]`/`[off]` so the entry says what it will do, while keeping the
+words "Do not disturb" in both labels so typing them always matches.
 
 Everything is a small script in `~/bin` over `fuzzel --dmenu`, so it all looks
 like the launcher instead of like four unrelated tools:
@@ -192,6 +329,7 @@ like the launcher instead of like four unrelated tools:
 | `fuzzel-vpn` | work OpenVPN + Surfshark, with tunnel status | the work profile needs `sudo` **and** prompts for user/pass (inline certs + `auth-user-pass`), so it opens a terminal rather than pretending a menu can do it |
 | `sway-nightlight` | wlsunset toggle | a toggle, not an autostart: you want it off instantly when judging a colour. Coords via `WLSUNSET_LAT`/`WLSUNSET_LON` |
 | `fuzzel-screenshot` | region/window/screen → clipboard or file, 5s delay, annotate | `PrtSc` is an awkward reach on the Glove80, so `$mod+Shift+P` is the keyboard-first route. Saves to `~/Pictures/Screenshots` and copies too |
+| `fuzzel-media` | removable media: where it mounted, open, unmount **and** power off | udiskie runs `--no-tray`, so nothing else offered an eject affordance at all. Filters on `hotplug`+`type=part`, not the old `rm` bit, which misses USB enclosures - and that one condition also drops the internal nvme and ~39 snap loop devices. All via `udisksctl`, the layer udiskie itself drives, so the two agree and no root is needed. Unmount powers the disk off when it holds no other mount, which is what actually makes it safe to pull |
 | `fuzzel-menu` | the palette itself | calls the above rather than reimplementing them |
 
 Volume is **scroll-wheel on the swaybar sound block** (`step_width` there), not
@@ -239,6 +377,22 @@ launched *inside* a terminal, and fuzzel's built-in default is `xterm -e` -
 not installed here, so those entries silently do nothing without it. The file
 also matches fuzzel's font and colours to the bar.
 
+Its `[key-bindings]` section makes **Up/Down wrap around** - Up on the first
+entry jumps to the last - which is the shortest route to the bottom of a long
+menu. fuzzel has the wrapping actions already, just bound to Shift+Tab/Tab
+rather than the arrows, so this rebinds `prev-with-wrap`/`next-with-wrap` onto
+Up/Down. The non-wrapping defaults must be released first with `prev=none` /
+`next=none`: one key bound to two actions is a hard config error.
+
+Tab is deliberately left alone. `man 5 fuzzel.ini` documents it as the default
+for `next-with-wrap`, but in fuzzel 1.12 it is `execute-or-next`, and binding
+it breaks dmenu-style completion. **`fuzzel --check-config`** catches exactly
+this without launching anything, and is worth running after any edit here:
+
+```
+[key-bindings].next-with-wrap: Tab already mapped to 'execute-or-next'
+```
+
 **Terminal:** wezterm is the everyday one; `foot` is the throwaway used by the
 palette (btop), the Wi-Fi picker (`nmtui`) and the VPN menu. Its default is
 `monospace:size=8`, unreadable on a 1200p panel and worse on 4K, so
@@ -259,9 +413,42 @@ provider, and the block hides when no tunnel is up. Clicking it opens
 `fuzzel-vpn`, which also drives the work OpenVPN profile via `~/vpn-gc.sh`
 (a symlink to a script outside this repo).
 
+**Background apps - no XDG autostart:** nothing in this session processes
+`~/.config/autostart/` - that needs `dex` or a full desktop session, and sway
+launches neither. Anything that must start with the session therefore needs an
+`exec` line in the sway config, and a `.desktop` file there is silently inert.
+
+This bit twice, quietly. Tresorit and Surfshark each shipped an autostart
+entry and neither had ever run: Tresorit last started **2026-09-08**, and the
+journal logged `sh: 1: tresorit: not found` at every session start because the
+sway `exec` used a bare name and the binary is not on `PATH`. Surfshark had no
+`exec` at all. That is also why the VPN indicator above had never shown
+anything - it detects the tunnel correctly, but the client was never running
+to make one.
+
+Both `.desktop` files are now deleted and `~/.config/autostart/` with them, so
+each has exactly one launch path:
+
+```
+exec --no-startup-id ~/.local/share/tresorit/tresorit --hidden
+exec --no-startup-id /opt/Surfshark/surfshark
+```
+
+Note `exec`, not `exec_always`: these run once at session start and are not
+restarted by `swaymsg reload`. Worth remembering when testing - a reload will
+never reveal a broken one, which is part of why this went unnoticed for so
+long. `journalctl --user -b | grep "not found"` does reveal it.
+
 **Removable media:** `udiskie --automount --notify --no-tray` from the sway
 config. GNOME did this through gvfs; under sway nothing does, so a USB stick
 would simply never appear.
+
+`--no-tray` is deliberate, but it means automount is the *whole* interaction:
+the stick mounts at `/run/media/$USER/<LABEL>`, dunst says so once, and after
+that there is no way to find it again or eject it. `~/bin/fuzzel-media`
+(palette: **Removable media**) is that missing half - it lists what is plugged
+in with mount state, opens it, and unmounts *and powers off* the disk, which a
+bare `umount` does not do and is what makes it safe to physically pull.
 
 ### SwayFX - tried, does NOT work here (2026-09)
 

@@ -1,0 +1,88 @@
+#!/bin/bash
+# Removable media menu.
+#
+# udiskie --automount already mounts sticks on insert, so this is not a
+# mounter: it is the "where did that go, and how do I eject it" menu. udiskie
+# runs --no-tray here (deliberately - see the README), so nothing else in the
+# desktop offers an eject affordance at all.
+#
+# Everything goes through udisksctl rather than mount/umount: udiskie drives
+# udisks too, so using the same layer keeps the two in agreement and avoids
+# needing root.
+set -uo pipefail
+
+FUZZEL=(fuzzel --dmenu --width 56 --no-exit-on-keyboard-focus-loss)
+FILE_MANAGER=(nautilus)
+TERM_CMD=(foot)
+
+notify() { command -v notify-send >/dev/null && notify-send -a media "$@"; }
+
+# hotplug, not rm: `rm` is the old removable-media bit and misses plenty of
+# USB enclosures. Restricting to type=part also drops the internal nvme and
+# the ~39 snap loop devices in one go.
+list_parts() {
+    lsblk -J -o PATH,SIZE,FSTYPE,LABEL,MOUNTPOINT,HOTPLUG,TYPE 2>/dev/null |
+        python3 -c '
+import json, sys
+def walk(nodes):
+    for n in nodes:
+        if n.get("type") == "part" and n.get("hotplug"):
+            mp    = n.get("mountpoint") or ""
+            label = n.get("label") or "(no label)"
+            fs    = n.get("fstype") or "unknown"
+            mark  = "●" if mp else "○"
+            where = f"  ->  {mp}" if mp else "  (not mounted)"
+            size  = n.get("size") or "?"
+            path  = n.get("path") or ""
+            print(f"{mark} {label}  {size} {fs}{where}  {path}")
+        walk(n.get("children", []))
+walk(json.load(sys.stdin)["blockdevices"])'
+}
+
+entries=$(list_parts)
+if [[ -z "$entries" ]]; then
+    notify "Removable media" "Nothing plugged in"
+    exit 0
+fi
+
+choice=$(printf '%s\n' "$entries" | "${FUZZEL[@]}" --prompt "media> ") || exit 0
+dev=${choice##* }
+[[ -b "$dev" ]] || exit 0
+
+mountpoint=$(lsblk -no MOUNTPOINT "$dev" 2>/dev/null | head -1)
+
+if [[ -n "$mountpoint" ]]; then
+    action=$(printf '%s\n' "Open in files" "Open in terminal" "Copy path" "Unmount" |
+             "${FUZZEL[@]}" --prompt "$(basename "$dev")> ") || exit 0
+    case "$action" in
+        "Open in files")    "${FILE_MANAGER[@]}" "$mountpoint" & ;;
+        "Open in terminal") "${TERM_CMD[@]}" --working-directory="$mountpoint" & ;;
+        "Copy path")        printf '%s' "$mountpoint" | wl-copy
+                            notify "Removable media" "$mountpoint" ;;
+        "Unmount")
+            # Unmount, then power off the whole disk if every partition on it
+            # is now free - that is what makes it safe to physically pull,
+            # which a bare unmount does not.
+            if out=$(udisksctl unmount -b "$dev" 2>&1); then
+                parent=/dev/$(lsblk -no PKNAME "$dev" 2>/dev/null | head -1)
+                if [[ -b "$parent" ]] &&
+                   ! lsblk -no MOUNTPOINT "$parent" 2>/dev/null | grep -q .; then
+                    udisksctl power-off -b "$parent" >/dev/null 2>&1 &&
+                        notify "Safe to remove" "$parent" ||
+                        notify "Unmounted" "$dev (disk still powered)"
+                else
+                    notify "Unmounted" "$dev"
+                fi
+            else
+                notify -u critical "Unmount failed" "$out"
+            fi ;;
+    esac
+else
+    if out=$(udisksctl mount -b "$dev" 2>&1); then
+        notify "Mounted" "$out"
+        mountpoint=$(lsblk -no MOUNTPOINT "$dev" 2>/dev/null | head -1)
+        [[ -n "$mountpoint" ]] && "${FILE_MANAGER[@]}" "$mountpoint" &
+    else
+        notify -u critical "Mount failed" "$out"
+    fi
+fi

@@ -14,7 +14,15 @@ exec_always systemctl --user import-environment DISPLAY WAYLAND_DISPLAY SWAYSOCK
 exec_always hash dbus-update-activation-environment 2>/dev/null && \
         dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP
 
-font pango:"CaskaydiaCove Nerd Font Mono" Mono 12
+# Pango parses everything after `pango:` as one font description. Quotes are
+# not syntax there and a stray family word is taken as part of the name: the
+# previous value asked for '"CaskaydiaCove Nerd Font Mono" Mono', which does
+# not exist, so fontconfig silently fell back to Noto Sans. Verify any change
+# with `fc-match '<family>'`.
+#
+# Title bars only, since the swaybar block that shared this is now commented
+# out - waybar's font lives in its own style.css.
+font pango:CaskaydiaCove Nerd Font Mono 12
 
 # i3's `title_window_icon` has no sway equivalent (sway draws no window icons).
 #for_window [all] title_window_icon padding 1px
@@ -65,6 +73,21 @@ for_window [app_id="gsimplecal"] floating enable
 # --window-size-chars, the DPI-independent unit; a `resize set` here
 # overrides it and is what broke this.
 for_window [app_id="btop"] floating enable
+# waybar's click popups (docker ps, apt list). Same character-sizing rule as
+# btop above: they launch with --window-size-chars, so deliberately NO
+# `resize set` here - it would override the sizing and squash the columns.
+for_window [app_id="waybar-popup"] floating enable
+
+# Sublime Text keeps its title bar. With several windows open the title is the
+# only thing distinguishing them at a glance - waybar's centre module shows the
+# *focused* window's title, which is exactly the one you already know. The
+# explicit `2` matches default_border so the edge does not change thickness
+# when focus moves between a Sublime window and anything else.
+#
+# class= as well as app_id= in case it is ever run under XWayland, matching how
+# the floating rules above are paired.
+for_window [app_id="sublime_text"] border normal 2
+for_window [class="Sublime_text"] border normal 2
 for_window [app_id="org.gnome.Nautilus"] floating enable, resize set 1000 700
 for_window [class="Pavucontrol"] floating enable
 for_window [class="Blueman-manager"] floating enable
@@ -296,11 +319,40 @@ set $tx     #d7ff00
 set $ia     #666666
 set $gn     #88b090
 set $rd     #D11931
+# Window geometry.
+#
+# default_border pixel: no title bars, just a 2px edge. Affordable now that
+# waybar's centre module shows the focused window's title - the title bar had
+# become redundant chrome repeating what the bar already says.
+#
+# smart_gaps: a lone window on a workspace gets no gap, so a single maximised
+# terminal is not framed by dead space.
+default_border pixel 2
+# Floating windows match the tiled ones rather than keeping title bars. The
+# title bar was also the drag handle, but $mod+drag already moves a floating
+# window, so nothing is actually lost.
+default_floating_border pixel 2
+gaps inner 6
+smart_gaps on
+
 ##client.focused #7a5ada #7a5ada #ffff00
-client.focused #000000 #000000 #d7ff00
-client.unfocused #333333 #333333 #666666
-client.focused_inactive #45347b #45347b #aaaaaa
-client.urgent #D11931 #D11931 #ffffff
+# Five arguments, not three: <border> <background> <text> <indicator>
+# <child_border>. `child_border` is the border drawn around the window itself -
+# i.e. what you actually see with `default_border pixel` - and when omitted it
+# silently inherits <background>. With three arguments the focused window drew
+# a BLACK child_border (#000000, the old titlebar background) and the unfocused
+# one #333333, so once title bars were dropped there was no visible focus
+# indicator at all on a dark wallpaper.
+#
+# #2c78bf is the same blue waybar uses for the focused workspace, so the two
+# "this has focus" signals match rather than being two unrelated colours.
+#
+# <indicator> is the 4th and was never set either: it marks the edge where the
+# next window will open in a tiled container.
+client.focused #2c78bf #000000 #9f9f9f #2c78bf #2c78bf
+client.unfocused #333333 #333333 #666666 #333333 #333333
+client.focused_inactive #45347b #45347b #aaaaaa #45347b #45347b
+client.urgent #D11931 #D11931 #ffffff #D11931 #D11931
 
 # colours arch linux
 # Important that vert/horiz blue is still apparent.
@@ -323,33 +375,41 @@ client.urgent #D11931 #D11931 #ffffff
 
 
 # swaybar with the rust status bar
-bar {
-    # apt install fonts-font-awesome (https://fontawesome.com/v4.7.0/assets/font-awesome-4.7.0.zip)
-    # fc-list | grep awesome
-    font pango:"CaskaydiaCove Nerd Font Mono", Mono 12, FontAwesome
-    position bottom
-    # Installed with `cargo install i3status-rs --features pipewire` (it is not
-    # packaged for Ubuntu). The pipewire feature is what gives the privacy
-    # block its mic/screen-share indicator. Explicit path because sway's PATH
-    # has no ~/.cargo/bin. Reads .config/i3status-rust/config.toml
-    status_command ~/.cargo/bin/i3status-rs
-    colors {
-        separator #666666
-        background #222222
-        statusline #dddddd
-        focused_workspace #0088CC #0088CC #ffffff
-        active_workspace #333333 #333333 #ffffff
-        inactive_workspace #333333 #333333 #888888
-        urgent_workspace #2f343a #900000 #ffffff
-        #background          $bg
-        #statusline          $fg
-        #separator           $hi
-        #focused_workspace   $gn        $bg        $ac
-        #active_workspace    $gn        $ac        $tx
-        #inactive_workspace  $bg        $bg        $ia
-        #urgent_workspace    $rd        $bg        $ac
-    }
-}
+# Bar: waybar, not swaybar. The swaybar block below is kept, commented, as the
+# rollback - swaybar and i3status-rust both still work, nothing was deleted.
+#
+# Launched through a wrapper because exec_always re-runs on every reload and
+# waybar has no single-instance guard; the wrapper kills the old one and waits
+# for it to go before starting the new.
+exec_always --no-startup-id ~/bin/waybar-launch
+
+# bar {
+#     # apt install fonts-font-awesome (https://fontawesome.com/v4.7.0/assets/font-awesome-4.7.0.zip)
+#     # fc-list | grep awesome
+#     font pango:"CaskaydiaCove Nerd Font Mono", Mono 12, FontAwesome
+#     position bottom
+#     # Installed with `cargo install i3status-rs --features pipewire` (it is not
+#     # packaged for Ubuntu). The pipewire feature is what gives the privacy
+#     # block its mic/screen-share indicator. Explicit path because sway's PATH
+#     # has no ~/.cargo/bin. Reads .config/i3status-rust/config.toml
+#     status_command ~/.cargo/bin/i3status-rs
+#     colors {
+#         separator #666666
+#         background #222222
+#         statusline #dddddd
+#         focused_workspace #0088CC #0088CC #ffffff
+#         active_workspace #333333 #333333 #ffffff
+#         inactive_workspace #333333 #333333 #888888
+#         urgent_workspace #2f343a #900000 #ffffff
+#         #background          $bg
+#         #statusline          $fg
+#         #separator           $hi
+#         #focused_workspace   $gn        $bg        $ac
+#         #active_workspace    $gn        $ac        $tx
+#         #inactive_workspace  $bg        $bg        $ia
+#         #urgent_workspace    $rd        $bg        $ac
+#     }
+# }
 
 
 # Volume Control
@@ -437,7 +497,20 @@ exec --no-startup-id swayidle -w \
         timeout 900 'swaymsg "output * power off"' \
         resume 'swaymsg "output * power on"' \
         before-sleep '~/bin/sway-lock'
-exec --no-startup-id tresorit
+# Full path: `tresorit` is not on PATH, so the bare name failed silently at
+# every session start ("sh: 1: tresorit: not found" in the journal) and this
+# had not actually run since 2026-09-08. --hidden matches the autostart
+# .desktop - start to the tray, not to a window, since it is assigned to
+# workspace 8 below.
+exec --no-startup-id ~/.local/share/tresorit/tresorit --hidden
+
+# Surfshark had the same problem as tresorit above: its only launch path was
+# ~/.config/autostart/surfshark.desktop, and nothing in this session processes
+# XDG autostart (no dex, no gnome-session), so it simply never ran. That is
+# also why the bar's VPN module has always shown nothing - it detects the
+# tunnel interface, and there was never a tunnel because the client was not
+# running. Both .desktop files are deleted; this is now the only launch path.
+exec --no-startup-id /opt/Surfshark/surfshark
 # deskflow cannot inject input under sway (no RemoteDesktop portal on wlroots),
 # so waynergy replaces it as the keyboard/mouse-sharing client. It drives
 # wlr-virtual-pointer + virtual-keyboard directly and syncs the clipboard via

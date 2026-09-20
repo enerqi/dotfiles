@@ -1,0 +1,21 @@
+#!/bin/sh
+# Container list for the waybar docker module, in a correctly-sized foot window.
+#
+# Not plain `docker ps -a`: that is 187 columns here (CONTAINER ID, IMAGE,
+# COMMAND, CREATED, STATUS, PORTS, NAMES) and wraps three times in a tiled
+# window, which is unreadable regardless of font size. Name/status/image is
+# 86 columns and answers what the bar click is actually asking: what is
+# running and what is not.
+#
+# Sizing follows btop-term: foot is dpi-aware here, so at size 12 a cell is
+# ~16px wide and 96 columns alone would need most of the screen. Size 9 fits
+# the same grid into a sensible window.
+#
+# less -S rather than wrapping: a long image tag scrolls sideways instead of
+# destroying the column alignment for every row below it.
+exec foot \
+    --app-id=waybar-popup \
+    --title=containers \
+    --font="CaskaydiaCove Nerd Font Mono:size=9" \
+    --window-size-chars=96x30 \
+    -e sh -c 'docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Image}}" | less -S -~'

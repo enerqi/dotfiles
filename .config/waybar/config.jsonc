@@ -1,0 +1,219 @@
+// Waybar — replaces swaybar + i3status-rust.
+//
+// Ported block-for-block from .config/i3status-rust/config.toml; the sway
+// `bar {}` block is left intact so both can run at once (this one is at the
+// top, swaybar stays at the bottom) and rolling back is just not launching it.
+//
+// Structure lives here, appearance lives in style.css. That split is the whole
+// reason for the move: swaybar draws with cairo and has no box model, so
+// padding, rounded corners and hover states are not expressible there at all.
+//
+// $HOME rather than ~ in exec/on-click: these run through /bin/sh, which
+// expands $HOME reliably whether or not the string reached a tilde-expanding
+// context.
+{
+    "layer": "top",
+    "position": "bottom",
+    "height": 40,
+    "margin-bottom": 6,
+    "margin-left": 8,
+    "margin-right": 8,
+    "spacing": 4,
+
+    "modules-left": ["sway/workspaces", "sway/mode", "sway/scratchpad"],
+    "modules-center": ["sway/window"],
+    "modules-right": [
+        "battery", "disk", "memory", "custom/docker", "network",
+        "cpu", "cpu#load", "temperature", "privacy", "custom/keyboard",
+        "pulseaudio", "clock", "custom/vpn", "custom/dnd",
+        "custom/packages", "tray", "custom/power"
+    ],
+
+    "sway/workspaces": {
+        "disable-scroll": false,
+        "all-outputs": false,
+        "format": "{name}"
+    },
+
+    "sway/mode": {
+        "format": "<span style=\"italic\"> {}</span>"
+    },
+
+    // btop and friends live here, so a count is worth showing. Hidden at zero.
+    "sway/scratchpad": {
+        "format": " {count}",
+        "show-empty": false,
+        "tooltip": true,
+        "tooltip-format": "{app}: {title}"
+    },
+
+    // Not in the swaybar version — swaybar had no window title at all. Pure
+    // addition; delete the modules-center entry to get the old behaviour.
+    "sway/window": {
+        "format": "{title}",
+        "max-length": 60,
+        "separate-outputs": true
+    },
+
+    "battery": {
+        "interval": 10,
+        "states": { "warning": 20, "critical": 10 },
+        "format": " {capacity}% {time}",
+        "format-charging": " {capacity}% {time}",
+        "format-plugged": " {capacity}%",
+        "format-full": " {capacity}%",
+        "format-time": "{H}h{M}m",
+        "format-icons": ["", "", "", "", ""],
+        "tooltip-format": "{timeTo}\n{power}W",
+        "on-click": "$HOME/bin/fuzzel-power-profile"
+    },
+
+    "disk": {
+        "interval": 20,
+        "path": "/",
+        "format": "  {free}",
+        // i3status-rust alerted on absolute GB free (20/10); waybar states are
+        // percentage-used only, so these are the nearest equivalent.
+        "states": { "warning": 80, "critical": 90 },
+        "tooltip-format": "{used} / {total} used ({percentage_used}%)",
+        "on-click": "$HOME/bin/btop-term"
+    },
+
+    "memory": {
+        "interval": 5,
+        "format": "󰍛  {percentage}%",
+        "states": { "warning": 80, "critical": 92 },
+        "tooltip-format": "RAM {used:0.1f}G / {total:0.1f}G\nSwap {swapUsed:0.1f}G / {swapTotal:0.1f}G",
+        "on-click": "$HOME/bin/btop-term"
+    },
+
+    "custom/docker": {
+        "exec": "$HOME/bin/waybar-docker",
+        "interval": 5,
+        "tooltip": false,
+        "on-click": "$HOME/bin/waybar-docker-ps"
+    },
+
+    "network": {
+        "interval": 5,
+        "format-wifi": "  {essid} {signalStrength}%",
+        "format-ethernet": "  {ipaddr}",
+        "format-linked": "  {ifname}",
+        "format-disconnected": "  offline",
+        "tooltip-format": "{ifname} · {ipaddr}/{cidr}\n{bandwidthDownBits} down · {bandwidthUpBits} up",
+        // fuzzel rather than nmtui: ncurses in a terminal looks nothing like
+        // the rest of the desktop.
+        "on-click": "$HOME/bin/fuzzel-wifi",
+        "on-click-right": "nm-connection-editor"
+    },
+
+    "cpu": {
+        "interval": 2,
+        "format": " {usage}%",
+        "states": { "warning": 50, "critical": 90 },
+        "tooltip": true,
+        "on-click": "$HOME/bin/btop-term"
+    },
+
+    "cpu#load": {
+        "interval": 2,
+        "format": " 1min avg: {load}",
+        "tooltip": false,
+        "on-click": "$HOME/bin/btop-term"
+    },
+
+    // hwmon-path-abs, not a bare hwmonN: /sys/class/hwmon numbering moves
+    // between boots, the platform device path does not. temp1_input on
+    // coretemp.0 is "Package id 0". (lm-sensors is not installed here, which
+    // is why the i3status-rust `chip = "*-isa-*"` block could not have worked.)
+    "temperature": {
+        "interval": 10,
+        "hwmon-path-abs": "/sys/devices/platform/coretemp.0/hwmon",
+        "input-filename": "temp1_input",
+        "critical-threshold": 90,
+        "format": " {temperatureC}°C",
+        "tooltip": false,
+        "on-click": "$HOME/bin/btop-term"
+    },
+
+    // Native here, so the cargo-built i3status-rs with --features pipewire is
+    // no longer needed. Camera is via pipewire rather than v4l directly.
+    "privacy": {
+        "icon-spacing": 6,
+        "icon-size": 16,
+        "transition-duration": 250,
+        "modules": [
+            { "type": "screenshare", "tooltip": true },
+            { "type": "audio-in", "tooltip": true }
+        ]
+    },
+
+    // gb on the built-in keyboard, us on injected input from the Windows box.
+    // Not waybar's own sway/language: that tracks whichever device last sent
+    // an input event, and sway counts Power_Button/Video_Bus/etc as keyboards
+    // here, so it intermittently blanked. The script keeps the last real
+    // layout instead. Streams, so no interval.
+    "custom/keyboard": {
+        "format": "  {}",
+        "exec": "$HOME/bin/waybar-keyboard",
+        "return-type": "json",
+        "restart-interval": 5,
+        "min-length": 7
+    },
+
+    "pulseaudio": {
+        // Volume on the scroll wheel, handled in-module: instant, nothing drawn.
+        "scroll-step": 5,
+        "max-volume": 120,
+        "format": "{icon}  {volume}%",
+        "format-muted": "  muted",
+        "format-icons": {
+            "headphone": "",
+            "default": ["", "", ""]
+        },
+        "tooltip-format": "{desc}\n{volume}%",
+        "on-click": "$HOME/bin/fuzzel-audio",
+        "on-click-right": "pavucontrol"
+    },
+
+    "clock": {
+        "interval": 5,
+        "format": " {:%a %d/%m %R}",
+        "tooltip-format": "<tt>{calendar}</tt>",
+        "on-click": "gsimplecal"
+    },
+
+    "custom/vpn": {
+        "exec": "$HOME/bin/waybar-vpn",
+        "interval": 10,
+        "tooltip": false,
+        "on-click": "$HOME/bin/fuzzel-vpn"
+    },
+
+    "custom/dnd": {
+        "exec": "$HOME/bin/waybar-dnd",
+        "return-type": "json",
+        "interval": 5,
+        "on-click": "$HOME/bin/waybar-dnd toggle"
+    },
+
+    "custom/packages": {
+        "exec": "$HOME/bin/waybar-packages",
+        "interval": 1800,
+        "tooltip": false,
+        "on-click": "$HOME/bin/waybar-packages-list"
+    },
+
+    "tray": {
+        "icon-size": 18,
+        "spacing": 8
+    },
+
+    // wlogout's popup grid, not a menu block: one-item-at-a-time menus that
+    // need click-then-scroll-then-click are undiscoverable.
+    "custom/power": {
+        "format": "",
+        "tooltip": false,
+        "on-click": "wlogout -b 3"
+    }
+}

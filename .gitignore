@@ -136,3 +136,5 @@ cmder/Cmder.exe
 
 !.config/wallpapers/
 !.config/wallpapers/**
+!.config/waybar/
+!.config/waybar/**

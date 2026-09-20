@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+"""Active keyboard layout for waybar.
+
+Replaces waybar's own `sway/language` module, which renders blank here. That
+module shows the layout of whichever device last emitted an input event, and
+sway registers seven keyboards on this machine - the ThinkPad (gb), the
+waynergy virtual keyboard (us), and five button/HID pseudo-keyboards
+(Power_Button, Sleep_Button, Video_Bus, Intel_HID_events,
+ThinkPad_Extra_Buttons). When one of those fires, the layout resolves to
+nothing and the module empties out.
+
+This keeps the last *real* layout instead, so the indicator never goes blank:
+a pseudo-keyboard event cannot clear it, only another genuine layout can
+replace it.
+
+Long-running: prints one JSON line per change and streams, so waybar needs no
+polling interval.
+"""
+import json
+import subprocess
+import sys
+import xml.etree.ElementTree as ET
+
+XKB_RULES = "/usr/share/X11/xkb/rules/evdev.xml"
+
+# Devices that report as keyboards but never type. Their layout is whatever
+# xkb defaulted them to and says nothing about what the user is typing on.
+PSEUDO = ("Power_Button", "Sleep_Button", "Video_Bus", "Intel_HID_events",
+          "Extra_Buttons")
+
+
+def short_names():
+    """description -> short code, e.g. 'English (UK)' -> 'gb'."""
+    table = {}
+    try:
+        for layout in ET.parse(XKB_RULES).getroot().iter("layout"):
+            item = layout.find("configItem")
+            name = item.findtext("name")
+            desc = item.findtext("description")
+            if name and desc:
+                table[desc] = name
+    except Exception:
+        pass
+    return table
+
+
+NAMES = short_names()
+
+
+def to_short(desc):
+    if not desc:
+        return None
+    return NAMES.get(desc) or desc[:2].lower()
+
+
+def is_real(identifier):
+    return not any(p in (identifier or "") for p in PSEUDO)
+
+
+def emit(code, desc):
+    print(json.dumps({"text": code, "tooltip": desc or code}), flush=True)
+
+
+def initial():
+    """Seed from the built-in keyboard, so there is something before the
+    first event ever arrives."""
+    try:
+        raw = subprocess.run(["swaymsg", "-t", "get_inputs", "-r"],
+                             capture_output=True, text=True, timeout=5)
+        devices = json.loads(raw.stdout)
+    except Exception:
+        return None, None
+    for dev in devices:
+        if dev.get("type") == "keyboard" and is_real(dev.get("identifier")):
+            desc = dev.get("xkb_active_layout_name")
+            if desc:
+                return to_short(desc), desc
+    return None, None
+
+
+def main():
+    code, desc = initial()
+    if code:
+        emit(code, desc)
+
+    proc = subprocess.Popen(
+        ["swaymsg", "-t", "subscribe", "-m", '["input"]'],
+        stdout=subprocess.PIPE, text=True)
+
+    for line in proc.stdout:
+        try:
+            dev = json.loads(line).get("input", {})
+        except ValueError:
+            continue
+        if dev.get("type") != "keyboard" or not is_real(dev.get("identifier")):
+            continue
+        new_desc = dev.get("xkb_active_layout_name")
+        new_code = to_short(new_desc)
+        # Only a genuine layout replaces the current one - never blank it.
+        if new_code and new_code != code:
+            code, desc = new_code, new_desc
+            emit(code, desc)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit(0)

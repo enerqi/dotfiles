@@ -1,5 +1,5 @@
 #!/bin/bash
-# Command palette - one keybind ($mod+space) reaching the things that otherwise
+# Command palette - one keybind ($mod+BackSpace) reaching the things that otherwise
 # live in scattered bar clicks or keybinds nobody remembers.
 #
 # Each entry just calls the tool that already does the job, so there is one
@@ -9,10 +9,20 @@ set -uo pipefail
 FUZZEL=(fuzzel --dmenu --width 40 --lines 14 --no-exit-on-keyboard-focus-loss)
 BIN="$HOME/bin"
 
+# Do-not-disturb shows its current state rather than making you toggle it to
+# find out. The label keeps the words "Do not disturb" in both cases so typing
+# them always matches, whichever way it is currently set.
+if [ "$(dunstctl is-paused 2>/dev/null)" = "true" ]; then
+    dnd_state="[on]"
+else
+    dnd_state="[off]"
+fi
+
 entries=(
     "  Wi-Fi"
     "  Audio output"
     "  Clipboard history"
+    "  Removable media"
     "  Bluetooth"
     "  VPN"
     "  Windows"
@@ -24,6 +34,10 @@ entries=(
     "  Colour picker"
     "  Night light"
     "  Notifications"
+    "  Do not disturb  $dnd_state"
+    "  Calendar"
+    "  Containers"
+    "  Updates"
     "  Screenshot"
     "  Display layout"
     "  Keybindings"
@@ -37,6 +51,7 @@ case "$choice" in
     *"Wi-Fi")                "$BIN/fuzzel-wifi" ;;
     *"Audio output")         "$BIN/fuzzel-audio" ;;
     *"Clipboard history")    "$BIN/fuzzel-clipboard" ;;
+    *"Removable media")     "$BIN/fuzzel-media" ;;
     *"VPN")                  "$BIN/fuzzel-vpn" ;;
     *"Windows")              "$BIN/fuzzel-windows" ;;
     *"Emoji / characters")   "$BIN/fuzzel-emoji" ;;
@@ -49,6 +64,13 @@ case "$choice" in
     *"Record screen")        "$BIN/fuzzel-record" ;;
     *"Night light")          "$BIN/sway-nightlight" ;;
     *"Notifications")        dunstctl history-pop ;;
+    *"Do not disturb"*)      dunstctl set-paused toggle ;;
+    *"Calendar")             gsimplecal & ;;
+    *"Containers")
+        # Same scripts the bar's docker and packages modules open, so the
+        # palette and the bar cannot show different things.
+        "$BIN/waybar-docker-ps" & ;;
+    *"Updates")              "$BIN/waybar-packages-list" & ;;
     *"Colour picker")
         if command -v hyprpicker >/dev/null; then
             hyprpicker -a   # -a copies straight to the clipboard
