@@ -40,5 +40,5 @@ img="${candidates[RANDOM % ${#candidates[@]}]}"
 if [ -n "$SWAYSOCK" ] && command -v swaymsg >/dev/null; then
     swaymsg output '*' bg "$img" fill
 else
-    feh --bg-scale "$img"
+    feh --no-fehbg --bg-scale "$img"
 fi
