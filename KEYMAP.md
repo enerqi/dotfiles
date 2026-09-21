@@ -63,7 +63,8 @@ while `Super` is held.
 
 | Key | Does |
 | --- | --- |
-| `Super`+`Shift`+`Delete` | Close window |
+| `Super`+`Shift`+`Delete` | Close window (asks the app) |
+| `Ctrl`+`Super`+`Shift`+`Delete` | **Force quit** - for a hung app that ignores close |
 | `Super`+`P` | Fullscreen |
 | `Super`+`R` / `W` / `B` | Stacking / tabbed / toggle split |
 | `Super`+`H` / `V` | Split horizontal / vertical |
@@ -167,6 +168,14 @@ that never takes focus - so every one of these also has a palette entry.
 - **Power profile** is performance / balanced / power-saver. The main battery
   lever, because this firmware offers only s2idle - there is no deep S3.
 - **USB sticks** mount automatically with a notification.
+- **An app will not close?** `Super`+`Shift`+`Delete` only *asks*; a hung app
+  never reads the request. `Ctrl`+`Super`+`Shift`+`Delete` kills its process,
+  after a confirm. Read that prompt: if it says "closes ALL n windows", the
+  process owns more than the one in front of you - every wezterm window is one
+  process. XWayland windows are refused, since their PID cannot be trusted.
+- **Ignore an app's own minimise / maximise buttons.** Sway has no minimise,
+  and maximise can leave an app drawing a size it never gets - that hung the
+  firmware updater at 100% CPU. Use `Super`+`P` for fullscreen.
 - **Lost a shortcut?** Palette -> Keybindings, or `sway-keys --list`.
 
 Changes to `~/.config/sway/config` need `Super`+`Shift`+`C` to take effect.

@@ -104,6 +104,11 @@ bindsym $mod+g exec wezterm
 
 # kill focused window
 bindsym $mod+Shift+Delete kill
+# Force quit: `kill` above only ASKS the window to close, and a hung app never
+# reads the request. This signals the window's process instead (SIGTERM, then
+# SIGKILL), after a confirm that names every window the process owns - one
+# wezterm process owns all wezterm windows. Deliberately awkward to press.
+bindsym Control+$mod+Shift+Delete exec --no-startup-id ~/bin/sway-force-quit
 
 # App launcher. fuzzel rather than i3-dmenu-desktop, which talks i3 IPC and
 # does not work under sway.

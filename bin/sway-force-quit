@@ -1,0 +1,152 @@
+#!/usr/bin/env python3
+"""Force-quit the focused window's process - the sway equivalent of xkill.
+
+$mod+Shift+Delete (sway's `kill`) only *asks* a window to close. A working app
+complies; a hung one never reads the request, so nothing happens. That is what
+the firmware updater did in 2026-09: stuck in a layout loop at 100% CPU, it
+ignored every close. This goes one level down and signals the process sway
+reports for the focused window - SIGTERM, then SIGKILL if that is ignored too.
+
+Always asks first, through fuzzel, because the damage can be wider than the
+window you are looking at:
+
+  - One process can own many windows. wezterm runs every one of its windows in
+    a single process, so killing "this terminal" kills all of them. The prompt
+    counts the windows that share the PID and says so.
+  - XWayland windows report whatever PID the X client chose to advertise,
+    which can be 0 or Xwayland's own. Killing Xwayland takes down every X11 app
+    at once, so those are refused rather than guessed at.
+"""
+
+import json
+import os
+import shutil
+import signal
+import subprocess
+import sys
+import time
+
+# Processes that must never be the target, whatever sway reports.
+PROTECTED = {"sway", "Xwayland", "systemd", "waybar"}
+
+
+def notify(summary, body=""):
+    if shutil.which("notify-send"):
+        # check=False: a failed notification is not worth an exception.
+        subprocess.run(["notify-send", "-a", "force-quit", summary, body], check=False)
+
+
+def windows(node):
+    """Yield every real window: a node with a pid and an app_id or class."""
+    if node.get("pid") and (node.get("app_id") or node.get("window_properties")):
+        yield node
+    for child in node.get("nodes", []) + node.get("floating_nodes", []):
+        yield from windows(child)
+
+
+def comm(pid):
+    """Process name, or None if it has already gone."""
+    try:
+        with open(f"/proc/{pid}/comm") as f:
+            return f.read().strip()
+    except OSError:
+        return None
+
+
+def alive(pid):
+    """True while the process is actually running.
+
+    A zombie counts as dead. After a signal kills it, a process lingers as a
+    zombie until its parent reaps it, and kill(pid, 0) still succeeds on one -
+    so a bare kill-0 check reported "survived SIGKILL" for a process that had
+    died, and would have escalated to SIGKILL an app that exited cleanly on
+    SIGTERM but was not reaped yet. /proc/<pid>/stat field 3 is the state.
+    """
+    try:
+        with open(f"/proc/{pid}/stat") as f:
+            # comm (field 2) is parenthesised and may contain spaces, so split
+            # after its closing bracket rather than on whitespace from the start.
+            state = f.read().rsplit(")", 1)[1].split()[0]
+    except (OSError, IndexError):
+        return False
+    return state != "Z"
+
+
+def confirm(question):
+    """fuzzel yes/no, No first so a stray Enter cannot kill anything."""
+    # check=False: fuzzel exits non-zero on Escape, which means no.
+    proc = subprocess.run(
+        [
+            "fuzzel",
+            "--dmenu",
+            "--index",
+            "--width",
+            "60",
+            "--lines",
+            "2",
+            "--no-exit-on-keyboard-focus-loss",
+            "--prompt",
+            f"{question} ",
+        ],
+        input="No\nYes, force quit",
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return proc.returncode == 0 and proc.stdout.strip() == "1"
+
+
+def main():
+    tree = json.loads(
+        subprocess.run(
+            ["swaymsg", "-t", "get_tree"], capture_output=True, text=True, check=True
+        ).stdout
+    )
+    all_windows = list(windows(tree))
+    target = next((w for w in all_windows if w.get("focused")), None)
+    if target is None:
+        notify("Force quit", "No window is focused")
+        return 1
+
+    pid = target["pid"]
+    name = comm(pid)
+    app = target.get("app_id") or (target.get("window_properties") or {}).get(
+        "class", "?"
+    )
+
+    if target.get("shell") == "xwayland":
+        notify(
+            "Force quit refused",
+            f"{app} is an XWayland window; its PID cannot be trusted.\n"
+            "Use: pkill <program name>",
+        )
+        return 1
+    if pid <= 1 or name is None or name in PROTECTED or pid == os.getpid():
+        notify("Force quit refused", f"{app}: PID {pid} ({name}) is protected")
+        return 1
+
+    shared = sum(1 for w in all_windows if w.get("pid") == pid)
+    question = f"Force quit {app} (PID {pid})?"
+    if shared > 1:
+        question = f"Force quit {app} (PID {pid}) - closes ALL {shared} of its windows?"
+    if not confirm(question):
+        return 0
+
+    os.kill(pid, signal.SIGTERM)
+    for _ in range(20):  # 2s to exit cleanly
+        if not alive(pid):
+            notify("Force quit", f"{app} closed (SIGTERM)")
+            return 0
+        time.sleep(0.1)
+
+    os.kill(pid, signal.SIGKILL)
+    time.sleep(0.3)
+    if alive(pid):
+        notify("Force quit failed", f"{app} (PID {pid}) survived SIGKILL")
+        return 1
+    notify("Force quit", f"{app} ignored SIGTERM; killed (SIGKILL)")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

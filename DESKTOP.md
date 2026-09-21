@@ -211,6 +211,47 @@ are mutually exclusive by suffix for that last reason.
 `wlr/taskbar` is the other route: it renders desktop-entry icons too, but it is
 a different thing - a window list, not a marker on the focused title.
 
+#### Closing a window that will not close
+
+`$mod+Shift+Delete` is sway's `kill`, which only **asks** a window to close
+(`xdg_toplevel.close`). A working app complies. A hung one never reads the
+request, and nothing happens. `Ctrl+$mod+Shift+Delete` runs
+`~/bin/sway-force-quit`, which signals the process sway reports for the focused
+window instead: SIGTERM, then SIGKILL if that is ignored for 2s. It is the
+sway stand-in for `xkill`.
+
+It confirms first, through fuzzel with **No** as the default, because the
+damage can be wider than the window in front of you:
+
+- **One process can own many windows.** Every wezterm window is one process,
+  so force-quitting "this terminal" closes them all. The prompt counts the
+  windows sharing the PID and says so.
+- **XWayland windows are refused.** Their PID is whatever the X client chose to
+  advertise, possibly 0 or Xwayland's own, and killing Xwayland takes every X11
+  app with it. `pkill <name>` is the route for those.
+- sway, Xwayland, systemd and waybar are refused outright.
+
+Liveness is read from `/proc/<pid>/stat`, not `kill(pid, 0)`: a killed process
+lingers as a zombie until its parent reaps it, and `kill -0` succeeds on a
+zombie. The first version therefore reported "survived SIGKILL" for a process
+it had killed, and would have escalated to SIGKILL on an app that had already
+exited cleanly on SIGTERM.
+
+What prompted it: the snap **firmware updater**, after its own maximise button
+was clicked. Sway has no maximise for a tiled window, so it never granted the
+size; the app switched to its maximised layout anyway and never re-read the
+size it was actually given. Its right-hand half - including its own close
+button - was drawn off the edge of the window, and it sat at 100% CPU ignoring
+the close request. Fullscreen and floating round-trips did not reset it; only
+restarting the process does. Before killing a firmware tool, check the
+`fwupd` daemon is idle (`busctl get-property org.freedesktop.fwupd /
+org.freedesktop.fwupd Status` returns `1`): the daemon does the flashing and the
+GUI is only a front end, so killing the GUI is safe - never the daemon mid-update.
+
+**General rule: ignore apps' own minimise/maximise buttons under sway.** Sway
+has no minimise at all, and maximise is where the failure above starts.
+`$mod+p` is fullscreen, `$mod+Shift+t` sends a window to the scratchpad.
+
 #### waybar gotchas found the hard way
 
 - **GTK3 CSS is not web CSS, and a bad selector is fatal.** `:empty` does not
