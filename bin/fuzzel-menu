@@ -42,11 +42,18 @@ def notify(summary, body=""):
 
 
 def pick(items, prompt):
-    """Show fuzzel and return the chosen line, or None if cancelled."""
+    """Show fuzzel and return the chosen item's POSITION, or None if cancelled.
+
+    Position, via fuzzel --index, never the text. Matching text back is what
+    broke this palette when it was first ported: every label starts with two
+    spaces, and stripping fuzzel's output to lose the trailing newline also
+    lost those, so no label ever matched and all 26 entries silently did
+    nothing. An index cannot drift from the label it came from.
+    """
     # check=False is load-bearing: fuzzel exits non-zero when the menu is
     # dismissed with Escape, which is a normal outcome, not an error.
     proc = subprocess.run(
-        FUZZEL + ["--prompt", prompt],
+        FUZZEL + ["--index", "--prompt", prompt],
         input="\n".join(items),
         capture_output=True,
         text=True,
@@ -54,7 +61,13 @@ def pick(items, prompt):
     )
     if proc.returncode != 0:
         return None
-    return proc.stdout.strip() or None
+    try:
+        index = int(proc.stdout.strip())
+    except ValueError:
+        return None
+    # fuzzel prints -1 when Enter is pressed on typed text that matches no
+    # entry; treat that, and anything else out of range, as no selection.
+    return index if 0 <= index < len(items) else None
 
 
 def run(*cmd):
@@ -106,9 +119,10 @@ def display_layout():
         "2 monitors (dual)": f"{HOME}/.screenlayout/dual.sh",
         "Laptop only (single)": f"{HOME}/.screenlayout/single.sh",
     }
-    choice = pick(list(layouts), "display> ")
-    if choice in layouts:
-        subprocess.run([layouts[choice]], check=False)
+    names = list(layouts)
+    index = pick(names, "display> ")
+    if index is not None:
+        subprocess.run([layouts[names[index]]], check=False)
 
 
 def dnd_state():
@@ -192,18 +206,13 @@ def main():
         print("\n".join(shown))
         return 0
 
-    choice = pick(shown, "> ")
-    if choice is None:
+    # By position. The bash version matched with suffix globs like *"Files"),
+    # so a future label ending in the same words would have run the wrong
+    # thing; the first Python version matched the text and matched nothing.
+    index = pick(shown, "> ")
+    if index is None:
         return 0
-
-    # Index, not string matching: the bash version matched with globs like
-    # *"Files"), so a future label ending in the same words would have been
-    # caught by the wrong arm.
-    try:
-        action = ENTRIES[shown.index(choice)][1]
-    except ValueError:
-        return 0
-    action()
+    ENTRIES[index][1]()
     return 0
 
 

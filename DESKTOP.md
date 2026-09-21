@@ -317,6 +317,16 @@ the same words would have run the wrong thing. It is now one list of
 labels without opening anything, which is how the port was checked against the
 bash version.
 
+**That check was not enough, and the first port shipped with every entry
+dead.** It matched fuzzel's output text back to the label list, and stripped
+the output to lose the trailing newline - which also stripped the two leading
+spaces every label has, so nothing ever matched and the failure was swallowed
+silently. `--list` compares labels and never exercises selection, so it passed.
+Now `fuzzel --index` returns a position and there is no text to match; the
+dispatch path is tested by stubbing fuzzel to return each index in turn and
+asserting the matching action fires, 26/26, plus Escape, out-of-range and the
+`-1` fuzzel prints for typed text that matches nothing.
+
 | Script | Does | Why not the obvious thing |
 | --- | --- | --- |
 | `fuzzel-wifi` | nmcli picker, signal bars, saved-network connect | `nmtui` is ncurses and matches nothing; `iwgtk`/`impala` are iwd-only and this is NetworkManager |
@@ -329,7 +339,7 @@ bash version.
 | `sway-lid` | lid close/open behaviour | drops the internal output when docked, locks when not |
 | `fuzzel-calc` | qalc in the launcher - units, currency, percentages | stays open after each answer and copies the result |
 | `fuzzel-record` | screen recording, one entry point that starts **and** stops | a separate stop you have to find is how you end up with a 40-minute file. SIGINT so the container is finalised |
-| `fuzzel-vpn` | work OpenVPN + Surfshark, with tunnel status | the work profile needs `sudo` **and** prompts for user/pass (inline certs + `auth-user-pass`), so it opens a terminal rather than pretending a menu can do it |
+| `fuzzel-vpn` | work OpenVPN + Surfshark, with tunnel status, and the work VPN's log | the work profile needs `sudo` **and** prompts for user/pass (inline certs + `auth-user-pass`), so it opens a terminal rather than pretending a menu can do it - one that closes itself once connected (`vpn-work-connect`, below) |
 | `sway-nightlight` | wlsunset toggle | a toggle, not an autostart: you want it off instantly when judging a colour. Coords via `WLSUNSET_LAT`/`WLSUNSET_LON` |
 | `fuzzel-screenshot` | region/window/screen → clipboard or file, 5s delay, annotate | `PrtSc` is an awkward reach on the Glove80, so `$mod+Shift+P` is the keyboard-first route. Saves to `~/Pictures/Screenshots` and copies too |
 | `fuzzel-media` | removable media: where it mounted, open, unmount **and** power off | udiskie runs `--no-tray`, so nothing else offered an eject affordance at all. Filters on `hotplug`+`type=part`, not the old `rm` bit, which misses USB enclosures - and that one condition also drops the internal nvme and ~39 snap loop devices. All via `udisksctl`, the layer udiskie itself drives, so the two agree and no root is needed. Unmount powers the disk off when it holds no other mount, which is what actually makes it safe to pull |
@@ -521,6 +531,35 @@ and this machine runs Surfshark. Interface detection works whatever the
 provider, and the block hides when no tunnel is up. Clicking it opens
 `fuzzel-vpn`, which also drives the work OpenVPN profile via `~/vpn-gc.sh`
 (a symlink to a script outside this repo).
+
+**The work VPN tidies itself away.** `fuzzel-vpn` opens a terminal running
+`~/bin/vpn-work-connect`, which starts openvpn with `--daemon --log-append
+~/.local/state/vpn-work.log`. openvpn asks for the sudo password and the VPN
+credentials in that terminal - it queries passwords before daemonising - then
+detaches and writes its own log. The window follows the log and **closes itself**
+on `Initialization Sequence Completed`; on `AUTH_FAILED` or a fatal error, or
+after 60s without a verdict, it stays open with the reason on screen.
+**Show work VPN log** in the menu follows the file afterwards, and it goes on
+recording drops and reconnects with no window open. Disconnect is the menu
+entry, as before: it sends SIGINT, the signal openvpn tears routes down on.
+
+This needs the (private, out-of-repo) work script to forward `"$@"` to openvpn,
+which it does since 2026-09. The log is created by `vpn-work-connect` before
+openvpn starts, so it is the user's own `0600` file that root appends to - left
+to openvpn it would be root-owned and need sudo to read.
+
+How it got here matters, because the obvious fixes fail:
+
+- The window used to run openvpn in the foreground, and its comment claimed
+  closing it dropped the tunnel. **It did not**: sudo was reparented to PID 1
+  and `tun0` stayed up. Closing the window was the tidy-away all along - it
+  just lost the output.
+- Keeping that output by wrapping the launch in `script -f` was tried and
+  **breaks the tunnel**: `script` kills its child when its own terminal closes,
+  and cannot outlive the terminal even with SIGHUP ignored. Checked with a
+  stand-in that survives SIGHUP the way openvpn does: alive with a plain
+  terminal, dead under `script`.
+- `--daemon` sidesteps both, because nothing depends on the terminal at all.
 
 **Background apps - no XDG autostart:** nothing in this session processes
 `~/.config/autostart/` - that needs `dex` or a full desktop session, and sway

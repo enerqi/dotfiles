@@ -1,0 +1,74 @@
+#!/bin/bash
+# Bring up the work VPN, then get out of the way.
+#
+#   vpn-work-connect <work-script> <log-file>
+#
+# Runs inside the terminal fuzzel-vpn opens. The work script is a wrapper
+# around `sudo openvpn --config ...` that forwards "$@" to openvpn, so this
+# adds `--daemon --log-append <log>`. That changes three things:
+#
+#   - openvpn still asks for the sudo password and the VPN credentials HERE,
+#     in this terminal: it queries passwords before it daemonises.
+#   - it then detaches completely and writes its own log. Nothing depends on
+#     this terminal any more, so the window closes itself on success instead
+#     of being left open, or closed by hand, to keep the tunnel up.
+#   - the log survives: `fuzzel-vpn` -> Show work VPN log follows it later, and
+#     it goes on recording drops and reconnects with no window open.
+#
+# Why not wrap the old foreground openvpn in `script` to capture its output:
+# tried, and `script` kills its child when its own terminal closes, which took
+# the tunnel down with the window. openvpn writing its own log has no such tie.
+set -uo pipefail
+
+work_script=$1
+log=$2
+
+notify() { command -v notify-send >/dev/null && notify-send -a vpn "$@"; }
+
+# Fresh log per connection, created here first so it is the user's own 0600
+# file: openvpn runs as root and appends to it without changing the owner, so
+# it stays readable without sudo. Created by root, it would be root's.
+mkdir -p "$(dirname "$log")"
+(umask 077 && : >"$log")
+
+if ! "$work_script" --daemon --log-append "$log"; then
+    # sudo refused, or openvpn rejected its arguments before detaching.
+    echo
+    echo "[openvpn did not start - press enter]"
+    read -r
+    exit 1
+fi
+
+# openvpn has detached. Show its log while waiting for a verdict. Polling with
+# grep rather than piping `tail -f` into a reader, because a pipeline would
+# not finish until tail next wrote a line - and after success openvpn goes
+# quiet, which would hold this window open.
+tail -n +1 -f "$log" &
+tail_pid=$!
+
+result=timeout
+for _ in $(seq 120); do # 60s
+    if grep -q "Initialization Sequence Completed" "$log"; then
+        result=connected
+        break
+    fi
+    if grep -qE "AUTH_FAILED|Exiting due to fatal error|process exiting" "$log"; then
+        result=failed
+        break
+    fi
+    sleep 0.5
+done
+
+kill "$tail_pid" 2>/dev/null
+
+if [ "$result" = connected ]; then
+    notify "Work VPN connected" "Log: fuzzel-vpn -> Show work VPN log"
+    sleep 1.5 # long enough to see the line that said so
+    exit 0
+fi
+
+# Failed or still not up after 60s: keep the window, since the reason is on it.
+notify "Work VPN not connected" "$result"
+echo
+echo "[work VPN $result - press enter to close]"
+read -r

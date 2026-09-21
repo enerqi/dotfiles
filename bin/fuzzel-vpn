@@ -8,13 +8,28 @@
 # The work one cannot be launched straight from a menu: it needs sudo *and*
 # openvpn prompts for a username and password (the profile carries inline
 # certs plus auth-user-pass). Both need a terminal, so this opens one rather
-# than pretending otherwise. openvpn then runs in the foreground there, and
-# closing that window drops the tunnel.
+# than pretending otherwise.
+#
+# That terminal runs ~/bin/vpn-work-connect, which starts openvpn with
+# `--daemon --log-append`: it asks for credentials, detaches, and logs to a
+# file itself. The window closes on its own once connected and stays open,
+# showing why, if not. "Show work VPN log" follows the file afterwards - it
+# keeps recording drops and reconnects with no window open. This needs the
+# work script to forward "$@" to openvpn; it does as of 2026-09.
+#
+# **Closing a window never disconnects.** Before the daemon change openvpn ran
+# in the foreground, and closing its window still left tun0 up (sudo was
+# reparented to PID 1) - an earlier version of this comment claimed the
+# opposite. Disconnect from this menu, which appears whenever a tunnel is up;
+# the bar's VPN module shows the tunnel either way.
 set -uo pipefail
 
 FUZZEL=(fuzzel --dmenu --width 46 --no-exit-on-keyboard-focus-loss)
 TERM_CMD=(foot)
 WORK_SCRIPT="$HOME/vpn-gc.sh"
+# openvpn writes this itself, as root, into a file vpn-work-connect creates
+# first so it stays the user's own and readable without sudo.
+WORK_LOG="${XDG_STATE_HOME:-$HOME/.local/state}/vpn-work.log"
 
 notify() { command -v notify-send >/dev/null && notify-send -a vpn "$@"; }
 
@@ -37,6 +52,9 @@ else
     entries+=("Connect work VPN")
 fi
 entries+=("Surfshark" "Show tunnel details")
+# Offered whenever there is a log, connected or not - after a drop is exactly
+# when it is wanted.
+[[ -s "$WORK_LOG" ]] && entries+=("Show work VPN log")
 
 choice=$(printf '%s\n' "${entries[@]}" | "${FUZZEL[@]}" --prompt "vpn> ") || exit 0
 
@@ -46,9 +64,10 @@ case "$choice" in
             notify "Not found" "${WORK_SCRIPT/#$HOME/\~}"
             exit 1
         fi
-        # Terminal stays open: openvpn runs in the foreground and its log is
-        # the only feedback that the handshake worked.
-        "${TERM_CMD[@]}" -e bash -c "$WORK_SCRIPT; echo; echo '[vpn exited - press enter]'; read -r" &
+        # Positional arguments rather than interpolating into a bash -c string:
+        # nothing here gets re-parsed by a shell.
+        "${TERM_CMD[@]}" --app-id=vpn-work --title="work VPN" \
+            -e "$HOME/bin/vpn-work-connect" "$WORK_SCRIPT" "$WORK_LOG" &
         ;;
     "Disconnect work VPN")
         # sudo again, so again a terminal. SIGINT lets openvpn tear the route
@@ -57,6 +76,10 @@ case "$choice" in
         ;;
     "Surfshark")
         if command -v surfshark >/dev/null; then surfshark & else notify "surfshark not installed"; fi
+        ;;
+    "Show work VPN log")
+        "${TERM_CMD[@]}" --app-id=vpn-log --title="work VPN log" \
+            -e tail -n 200 -f "$WORK_LOG" &
         ;;
     "Show tunnel details")
         if [[ -z "$iface" ]]; then
