@@ -5,6 +5,7 @@ Alt-tab only cycles within the current workspace, which is useless with 20 of
 them. This lists every window from `swaymsg -t get_tree` and focuses the chosen
 one by con_id (not by title, which is neither unique nor stable).
 """
+
 import json
 import shutil
 import subprocess
@@ -17,9 +18,17 @@ def walk(node, workspace=None):
         workspace = node.get("name")
     # A window is a node with no children of its own that has an app_id or
     # window_properties. Scratchpad contents show up as __i3_scratch.
-    is_window = node.get("pid") is not None or node.get("app_id") or node.get("window_properties")
+    is_window = (
+        node.get("pid") is not None
+        or node.get("app_id")
+        or node.get("window_properties")
+    )
     if is_window and node.get("name"):
-        app = node.get("app_id") or (node.get("window_properties") or {}).get("class") or "?"
+        app = (
+            node.get("app_id")
+            or (node.get("window_properties") or {}).get("class")
+            or "?"
+        )
         yield (workspace or "?", node["id"], app, node["name"])
     for child in node.get("nodes", []) + node.get("floating_nodes", []):
         yield from walk(child, workspace)
@@ -30,8 +39,11 @@ def main():
         sys.stderr.write("fuzzel not found\n")
         return 1
 
-    tree = json.loads(subprocess.run(
-        ["swaymsg", "-t", "get_tree"], capture_output=True, text=True, check=True).stdout)
+    tree = json.loads(
+        subprocess.run(
+            ["swaymsg", "-t", "get_tree"], capture_output=True, text=True, check=True
+        ).stdout
+    )
 
     windows = list(walk(tree))
     if not windows:
@@ -44,10 +56,25 @@ def main():
         rows.append(f"{ws.ljust(wswidth)}  {app[:appwidth].ljust(appwidth)}  {title}")
         ids.append(con_id)
 
+    # check=False: fuzzel exits non-zero when the menu is dismissed
+    # with Escape, which is a normal outcome rather than an error.
     proc = subprocess.run(
-        ["fuzzel", "--dmenu", "--width", "100", "--lines", "16", "--index",
-         "--no-exit-on-keyboard-focus-loss", "--prompt", "window> "],
-        input="\n".join(rows), capture_output=True, text=True,
+        [
+            "fuzzel",
+            "--dmenu",
+            "--width",
+            "100",
+            "--lines",
+            "16",
+            "--index",
+            "--no-exit-on-keyboard-focus-loss",
+            "--prompt",
+            "window> ",
+        ],
+        input="\n".join(rows),
+        capture_output=True,
+        text=True,
+        check=False,
     )
     out = proc.stdout.strip()
     if not out:
@@ -60,8 +87,11 @@ def main():
     except (ValueError, IndexError):
         return 1
 
-    subprocess.run(["swaymsg", f'[con_id={con_id}]', "focus"], check=False,
-                   stdout=subprocess.DEVNULL)
+    subprocess.run(
+        ["swaymsg", f"[con_id={con_id}]", "focus"],
+        check=False,
+        stdout=subprocess.DEVNULL,
+    )
     return 0
 
 

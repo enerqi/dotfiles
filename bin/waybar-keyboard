@@ -16,6 +16,7 @@ replace it.
 Long-running: prints one JSON line per change and streams, so waybar needs no
 polling interval.
 """
+
 import json
 import subprocess
 import sys
@@ -25,8 +26,13 @@ XKB_RULES = "/usr/share/X11/xkb/rules/evdev.xml"
 
 # Devices that report as keyboards but never type. Their layout is whatever
 # xkb defaulted them to and says nothing about what the user is typing on.
-PSEUDO = ("Power_Button", "Sleep_Button", "Video_Bus", "Intel_HID_events",
-          "Extra_Buttons")
+PSEUDO = (
+    "Power_Button",
+    "Sleep_Button",
+    "Video_Bus",
+    "Intel_HID_events",
+    "Extra_Buttons",
+)
 
 
 def short_names():
@@ -39,8 +45,12 @@ def short_names():
             desc = item.findtext("description")
             if name and desc:
                 table[desc] = name
-    except Exception:
-        pass
+    except (OSError, ET.ParseError) as err:
+        # Missing or malformed evdev.xml. Not fatal - to_short() falls back to
+        # the first two letters of the description - but it silently degrades
+        # the codes, so say so. STDERR only: stdout is waybar's JSON stream and
+        # anything else written there corrupts the module.
+        print(f"waybar-keyboard: {XKB_RULES}: {err}", file=sys.stderr)
     return table
 
 
@@ -65,10 +75,21 @@ def initial():
     """Seed from the built-in keyboard, so there is something before the
     first event ever arrives."""
     try:
-        raw = subprocess.run(["swaymsg", "-t", "get_inputs", "-r"],
-                             capture_output=True, text=True, timeout=5)
+        raw = subprocess.run(
+            ["swaymsg", "-t", "get_inputs", "-r"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=False,
+        )
         devices = json.loads(raw.stdout)
-    except Exception:
+    except (OSError, subprocess.SubprocessError, ValueError) as err:
+        # swaymsg absent, hung past the timeout, or output that is not JSON.
+        # Seeding is best-effort: the subscribe loop in main() will emit as
+        # soon as a real key is pressed, so carry on without a seed.
+        # check=False because a non-zero swaymsg still leaves stdout to parse,
+        # and the JSONDecodeError below is the real test of whether it worked.
+        print(f"waybar-keyboard: no initial layout: {err}", file=sys.stderr)
         return None, None
     for dev in devices:
         if dev.get("type") == "keyboard" and is_real(dev.get("identifier")):
@@ -85,7 +106,9 @@ def main():
 
     proc = subprocess.Popen(
         ["swaymsg", "-t", "subscribe", "-m", '["input"]'],
-        stdout=subprocess.PIPE, text=True)
+        stdout=subprocess.PIPE,
+        text=True,
+    )
 
     for line in proc.stdout:
         try:

@@ -1,111 +1,211 @@
-#!/bin/bash
-# Command palette - one keybind ($mod+BackSpace) reaching the things that otherwise
-# live in scattered bar clicks or keybinds nobody remembers.
+#!/usr/bin/env python3
+"""Command palette - one keybind ($mod+BackSpace) reaching the things that
+otherwise live in scattered bar clicks or keybinds nobody remembers.
+
+Each entry calls the tool that already does the job, so there is one
+implementation of each action rather than two. The bar's click actions and the
+keybinds go through these same scripts.
+
+Ported from bash in 2026-09. The bash version kept every entry twice - once as
+a label in an `entries=()` array and once as a glob in a `case` block - and the
+two had to be edited together. A label with no arm silently did nothing when
+selected; an arm with no label was dead code. Here an entry is one object that
+carries its own action, so the two cannot disagree.
+
+Python rather than shell for the same reason the other ~/bin scripts that
+needed a data structure are Python: the startup cost (~19ms against bash's
+~2ms) is invisible on a keypress, and fuzzel takes longer than that to draw.
+The waybar pollers stay in shell because they run every few seconds forever.
+"""
+
+import shutil
+import subprocess
+import sys
+
+HOME = __import__("os").path.expanduser("~")
+BIN = f"{HOME}/bin"
+FUZZEL = [
+    "fuzzel",
+    "--dmenu",
+    "--width",
+    "40",
+    "--lines",
+    "14",
+    "--no-exit-on-keyboard-focus-loss",
+]
+
+
+def notify(summary, body=""):
+    if shutil.which("notify-send"):
+        # check=False: a notification that fails is not worth an exception.
+        subprocess.run(["notify-send", "-a", "menu", summary, body], check=False)
+
+
+def pick(items, prompt):
+    """Show fuzzel and return the chosen line, or None if cancelled."""
+    # check=False is load-bearing: fuzzel exits non-zero when the menu is
+    # dismissed with Escape, which is a normal outcome, not an error.
+    proc = subprocess.run(
+        FUZZEL + ["--prompt", prompt],
+        input="\n".join(items),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        return None
+    return proc.stdout.strip() or None
+
+
+def run(*cmd):
+    """Run and wait. For tools that draw their own menu - the palette should
+    not return until they are finished with the screen."""
+    # check=False: these tools exit non-zero for ordinary reasons - a menu
+    # dismissed, nothing selected - and the palette has already gone.
+    return lambda: subprocess.run(list(cmd), check=False)
+
+
+def spawn(*cmd):
+    """Start detached and return immediately, for anything that opens a window.
+
+    start_new_session is what `&` gave us in bash: the child gets its own
+    session, so it is not tied to this process and does not receive signals
+    aimed at the palette. Without it a spawned window can die with its parent.
+    """
+    return lambda: subprocess.Popen(
+        list(cmd),
+        start_new_session=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+
+def optional(binary, *cmd, missing=""):
+    """Spawn a tool that may not be installed, saying so rather than failing
+    silently."""
+
+    def action():
+        if not shutil.which(binary):
+            notify(missing or f"{binary} not installed")
+            return
+        subprocess.Popen(
+            list(cmd) or [binary],
+            start_new_session=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
+    return action
+
+
+def display_layout():
+    """Submenu: the three ~/.screenlayout scripts, which are swaymsg
+    reimplementations of the old xrandr ones."""
+    layouts = {
+        "3 monitors (main)": f"{HOME}/.screenlayout/main.sh",
+        "2 monitors (dual)": f"{HOME}/.screenlayout/dual.sh",
+        "Laptop only (single)": f"{HOME}/.screenlayout/single.sh",
+    }
+    choice = pick(list(layouts), "display> ")
+    if choice in layouts:
+        subprocess.run([layouts[choice]], check=False)
+
+
+def dnd_state():
+    """[on] / [off] so the entry says what it will do. Both labels keep the
+    words "Do not disturb" so typing them always matches."""
+    # check=False so a missing or unhappy dunstctl degrades to "[off]"
+    # rather than stopping the whole palette from opening.
+    proc = subprocess.run(
+        ["dunstctl", "is-paused"], capture_output=True, text=True, check=False
+    )
+    return "[on]" if proc.stdout.strip() == "true" else "[off]"
+
+
+# The palette, in display order - deliberately not alphabetical.
 #
-# Each entry just calls the tool that already does the job, so there is one
-# implementation of each action, not two.
-set -uo pipefail
+# Labels are two spaces then text, with no icon: fuzzel's own font would have
+# to carry the glyph and the list reads as a column of words without them.
+# (Two entries briefly had Nerd Font glyphs; they were the odd ones out.)
+#
+# Where an entry calls a ~/bin wrapper rather than the tool directly, that is
+# deliberate and the comment says why - those wrappers exist so the palette and
+# the bar cannot drift apart.
+ENTRIES = [
+    ("  Wi-Fi", run(f"{BIN}/fuzzel-wifi")),
+    ("  Audio output", run(f"{BIN}/fuzzel-audio")),
+    ("  Clipboard history", run(f"{BIN}/fuzzel-clipboard")),
+    # Saves the clipboard image and leaves its PATH on the clipboard, for
+    # Claude Code and friends, which take a path rather than pixels. --pick so
+    # an image copied a while ago is still reachable.
+    ("  Image to file (copies path)", spawn(f"{BIN}/clip-image-path", "--pick")),
+    ("  Removable media", run(f"{BIN}/fuzzel-media")),
+    # Wrapper, not an inline foot command: $mod+Shift+e uses the same one, and
+    # its single-instance guard only works if both go through it.
+    ("  Files", spawn(f"{BIN}/yazi-term")),
+    ("  Bluetooth", optional("blueman-manager", missing="blueman not installed")),
+    ("  VPN", run(f"{BIN}/fuzzel-vpn")),
+    ("  Windows", run(f"{BIN}/fuzzel-windows")),
+    ("  Emoji / characters", run(f"{BIN}/fuzzel-emoji")),
+    ("  Power profile", run(f"{BIN}/fuzzel-power-profile")),
+    # Wrapper, not an inline foot command: the btop++ launcher entry calls the
+    # same script, so the two cannot drift apart.
+    ("  System monitor", spawn(f"{BIN}/btop-term")),
+    ("  Calculator", run(f"{BIN}/fuzzel-calc")),
+    ("  Record screen", run(f"{BIN}/fuzzel-record")),
+    # -a copies straight to the clipboard.
+    ("  Colour picker", optional("hyprpicker", "hyprpicker", "-a")),
+    ("  Night light", run(f"{BIN}/sway-nightlight")),
+    ("  Notifications", run("dunstctl", "history-pop")),
+    ("  Do not disturb", run("dunstctl", "set-paused", "toggle")),
+    ("  Calendar", spawn("gsimplecal")),
+    # Same scripts the bar's docker and packages modules open, so the palette
+    # and the bar cannot show different things.
+    ("  Containers", spawn(f"{BIN}/waybar-docker-ps")),
+    ("  Updates", spawn(f"{BIN}/waybar-packages-list")),
+    ("  Screenshot", run(f"{BIN}/fuzzel-screenshot")),
+    ("  Display layout", display_layout),
+    ("  Keybindings", run(f"{BIN}/sway-keys")),
+    ("  Lock", run(f"{BIN}/sway-lock")),
+    ("  Power menu", spawn("wlogout", "-b", "3")),
+]
 
-FUZZEL=(fuzzel --dmenu --width 40 --lines 14 --no-exit-on-keyboard-focus-loss)
-BIN="$HOME/bin"
 
-# Do-not-disturb shows its current state rather than making you toggle it to
-# find out. The label keeps the words "Do not disturb" in both cases so typing
-# them always matches, whichever way it is currently set.
-if [ "$(dunstctl is-paused 2>/dev/null)" = "true" ]; then
-    dnd_state="[on]"
-else
-    dnd_state="[off]"
-fi
+def labels():
+    """Display labels, with the DND state appended to its entry only."""
+    out = []
+    for label, _ in ENTRIES:
+        if label.strip() == "Do not disturb":
+            label = f"{label}  {dnd_state()}"
+        out.append(label)
+    return out
 
-entries=(
-    "  Wi-Fi"
-    "  Audio output"
-    "  Clipboard history"
-    "  Image to file (copies path)"
-    "  Removable media"
-    "  Files"
-    "  Bluetooth"
-    "  VPN"
-    "  Windows"
-    "  Emoji / characters"
-    "  Power profile"
-    "  System monitor"
-    "  Calculator"
-    "  Record screen"
-    "  Colour picker"
-    "  Night light"
-    "  Notifications"
-    "  Do not disturb  $dnd_state"
-    "  Calendar"
-    "  Containers"
-    "  Updates"
-    "  Screenshot"
-    "  Display layout"
-    "  Keybindings"
-    "  Lock"
-    "  Power menu"
-)
 
-choice=$(printf '%s\n' "${entries[@]}" | "${FUZZEL[@]}" --prompt "> ") || exit 0
+def main():
+    if not shutil.which("fuzzel"):
+        sys.stderr.write("fuzzel not found\n")
+        return 1
 
-case "$choice" in
-    *"Wi-Fi")                "$BIN/fuzzel-wifi" ;;
-    *"Audio output")         "$BIN/fuzzel-audio" ;;
-    *"Clipboard history")    "$BIN/fuzzel-clipboard" ;;
-    *"Image to file"*)
-        # Saves the clipboard image and leaves its PATH on the clipboard, for
-        # Claude Code and friends, which take a path rather than pixels.
-        # --pick so an image copied a while ago is still reachable.
-        "$BIN/clip-image-path" --pick & ;;
-    *"Removable media")     "$BIN/fuzzel-media" ;;
-    *"Files")
-        # Wrapper, not an inline foot command: $mod+Shift+e uses the same one,
-        # and its single-instance guard only works if both go through it.
-        "$BIN/yazi-term" & ;;
-    *"VPN")                  "$BIN/fuzzel-vpn" ;;
-    *"Windows")              "$BIN/fuzzel-windows" ;;
-    *"Emoji / characters")   "$BIN/fuzzel-emoji" ;;
-    *"Power profile")        "$BIN/fuzzel-power-profile" ;;
-    *"System monitor")
-        # Wrapper, not an inline foot command: the btop++ launcher entry
-        # calls the same script, so the two cannot drift apart.
-        "$BIN/btop-term" & ;;
-    *"Calculator")           "$BIN/fuzzel-calc" ;;
-    *"Record screen")        "$BIN/fuzzel-record" ;;
-    *"Night light")          "$BIN/sway-nightlight" ;;
-    *"Notifications")        dunstctl history-pop ;;
-    *"Do not disturb"*)      dunstctl set-paused toggle ;;
-    *"Calendar")             gsimplecal & ;;
-    *"Containers")
-        # Same scripts the bar's docker and packages modules open, so the
-        # palette and the bar cannot show different things.
-        "$BIN/waybar-docker-ps" & ;;
-    *"Updates")              "$BIN/waybar-packages-list" & ;;
-    *"Colour picker")
-        if command -v hyprpicker >/dev/null; then
-            hyprpicker -a   # -a copies straight to the clipboard
-        else
-            command -v notify-send >/dev/null &&
-                notify-send -a menu "hyprpicker not installed"
-        fi ;;
-    *"Bluetooth")
-        if command -v blueman-manager >/dev/null; then
-            blueman-manager &
-        else
-            command -v notify-send >/dev/null &&
-                notify-send -a menu "Bluetooth" "blueman not installed"
-        fi ;;
-    *"Screenshot")           "$BIN/fuzzel-screenshot" ;;
-    *"Display layout")
-        layout=$(printf '%s\n' "3 monitors (main)" "2 monitors (dual)" "Laptop only (single)" |
-                 "${FUZZEL[@]}" --prompt "display> ") || exit 0
-        case "$layout" in
-            "3 monitors (main)")     "$HOME/.screenlayout/main.sh" ;;
-            "2 monitors (dual)")     "$HOME/.screenlayout/dual.sh" ;;
-            "Laptop only (single)")  "$HOME/.screenlayout/single.sh" ;;
-        esac ;;
-    *"Keybindings")          "$BIN/sway-keys" ;;
-    *"Lock")                 "$BIN/sway-lock" ;;
-    *"Power menu")           wlogout -b 3 ;;
-esac
+    shown = labels()
+
+    if "--list" in sys.argv[1:]:
+        print("\n".join(shown))
+        return 0
+
+    choice = pick(shown, "> ")
+    if choice is None:
+        return 0
+
+    # Index, not string matching: the bash version matched with globs like
+    # *"Files"), so a future label ending in the same words would have been
+    # caught by the wrong arm.
+    try:
+        action = ENTRIES[shown.index(choice)][1]
+    except ValueError:
+        return 0
+    action()
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

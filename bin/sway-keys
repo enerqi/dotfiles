@@ -8,6 +8,7 @@ it is searchable rather than a static wall of text you have to scan.
 Selecting an entry copies its command to the clipboard (it does not run it -
 a cheatsheet that executes things on a mistyped search would be hostile).
 """
+
 import os
 import re
 import shutil
@@ -18,9 +19,12 @@ CONFIG = os.path.expanduser("~/.config/sway/config")
 
 # Pretty names for the modifiers, so the list reads like a keyboard.
 PRETTY = {
-    "Mod1": "Alt", "mod1": "Alt",
-    "Mod4": "Super", "mod4": "Super",
-    "Control": "Ctrl", "control": "Ctrl",
+    "Mod1": "Alt",
+    "mod1": "Alt",
+    "Mod4": "Super",
+    "mod4": "Super",
+    "Control": "Ctrl",
+    "control": "Ctrl",
     "Shift": "Shift",
     "Return": "Enter",
     "BackSpace": "Backspace",
@@ -41,6 +45,7 @@ def load(path, seen=None):
             m = re.match(r"\s*include\s+(\S+)", line)
             if m:
                 import glob
+
                 for inc in sorted(glob.glob(os.path.expanduser(m.group(1)))):
                     lines += load(inc, seen)
             else:
@@ -111,10 +116,24 @@ def main():
         print("\n".join(rows))
         return 0
 
+    # check=False: fuzzel exits non-zero when the menu is dismissed
+    # with Escape, which is a normal outcome rather than an error.
     proc = subprocess.run(
-        ["fuzzel", "--dmenu", "--width", "100", "--lines", "20",
-         "--no-exit-on-keyboard-focus-loss", "--prompt", "keys> "],
-        input="\n".join(rows), capture_output=True, text=True,
+        [
+            "fuzzel",
+            "--dmenu",
+            "--width",
+            "100",
+            "--lines",
+            "20",
+            "--no-exit-on-keyboard-focus-loss",
+            "--prompt",
+            "keys> ",
+        ],
+        input="\n".join(rows),
+        capture_output=True,
+        text=True,
+        check=False,
     )
     choice = proc.stdout.strip()
     if choice and shutil.which("wl-copy"):

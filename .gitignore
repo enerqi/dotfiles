@@ -12,6 +12,10 @@
 !bin/**
 # 24MB build artefact - installed with `cargo install i3status-rs --features pipewire`
 bin/i3status-rs
+# Bytecode from the Python scripts in here. `!bin/**` above re-includes
+# everything, so without this a stray __pycache__ (from `py_compile`, or from
+# importing one of them) would be committed.
+bin/__pycache__/
 
 !cmder/
 !cmder/**

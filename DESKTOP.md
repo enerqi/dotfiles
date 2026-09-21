@@ -282,6 +282,41 @@ words "Do not disturb" in both labels so typing them always matches.
 Everything is a small script in `~/bin` over `fuzzel --dmenu`, so it all looks
 like the launcher instead of like four unrelated tools:
 
+#### Which language, and why it is mostly shell
+
+Shell for the glue, Python once a data structure is involved, compiled for
+nothing here. That is not a preference, it is where each stops being the
+obvious tool:
+
+- **Shell** wins at running programs and joining them with pipes.
+  `grim -g "$(slurp)" - | wl-copy` is a whole screenshot tool on one line, and
+  nothing else expresses it more clearly.
+- **Python** takes over the moment something has to be *parsed* - in practice,
+  always `swaymsg -t get_tree` JSON. That is why `fuzzel-windows`, `sway-keys`,
+  `waybar-keyboard` and `fuzzel-emoji` are Python, and why a handful of bash
+  scripts embed a `python3 -c` block mid-pipeline.
+- **Compiled** is what the tools themselves are - of the desktop programs
+  installed here, 20 of 22 are C/C++/Rust/Go and only `udiskie` and `blueman`
+  are Python. None of them is shell. But a compiled helper in a *dotfiles* repo
+  means a build step and a binary to ship, and that has already gone wrong once
+  here: the 24MB `i3status-rs` committed to `~/bin` was two versions stale and
+  built without the feature it was needed for.
+
+Startup cost, measured on this machine: `sh` 0.9ms, a compiled binary 1.4ms,
+`bash` 1.8ms, `python3` 12.9ms, and 19ms once `json` is imported. Invisible for
+anything a keypress triggers - fuzzel takes longer to draw - which is why the
+palette can afford Python. It is not invisible for the `waybar-*` modules that
+run every few seconds forever, which is why those stay in shell.
+
+`fuzzel-menu` was ported from bash in 2026-09 on exactly that line. It had
+grown to 26 entries held in two parallel lists - labels in an `entries=()`
+array, actions in a `case` block - that had to be edited together, and matched
+between them with suffix globs like `*"Files")`, so a future label ending in
+the same words would have run the wrong thing. It is now one list of
+`(label, action)` pairs dispatched by index. `fuzzel-menu --list` prints the
+labels without opening anything, which is how the port was checked against the
+bash version.
+
 | Script | Does | Why not the obvious thing |
 | --- | --- | --- |
 | `fuzzel-wifi` | nmcli picker, signal bars, saved-network connect | `nmtui` is ncurses and matches nothing; `iwgtk`/`impala` are iwd-only and this is NetworkManager |

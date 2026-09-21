@@ -6,6 +6,7 @@ is nothing to keep up to date. The selection is copied to the clipboard and
 typed into the focused window with wtype (typing alone is not enough - some
 apps ignore synthetic input - and copying alone means an extra paste).
 """
+
 import shutil
 import subprocess
 import sys
@@ -19,12 +20,12 @@ RANGES = [
     (0x1F680, 0x1F6FF),  # transport and map
     (0x1F900, 0x1F9FF),  # supplemental symbols
     (0x1FA70, 0x1FAFF),  # extended-A
-    (0x2600, 0x26FF),    # misc symbols
-    (0x2700, 0x27BF),    # dingbats
-    (0x2190, 0x21FF),    # arrows
-    (0x2200, 0x22FF),    # mathematical operators
-    (0x2000, 0x206F),    # general punctuation
-    (0x20A0, 0x20BF),    # currency
+    (0x2600, 0x26FF),  # misc symbols
+    (0x2700, 0x27BF),  # dingbats
+    (0x2190, 0x21FF),  # arrows
+    (0x2200, 0x22FF),  # mathematical operators
+    (0x2000, 0x206F),  # general punctuation
+    (0x20A0, 0x20BF),  # currency
 ]
 
 
@@ -48,10 +49,24 @@ def main():
         return 1
 
     rows = "\n".join(candidates())
+    # check=False: fuzzel exits non-zero when the menu is dismissed
+    # with Escape, which is a normal outcome rather than an error.
     proc = subprocess.run(
-        ["fuzzel", "--dmenu", "--width", "60", "--lines", "16",
-         "--no-exit-on-keyboard-focus-loss", "--prompt", "emoji> "],
-        input=rows, capture_output=True, text=True,
+        [
+            "fuzzel",
+            "--dmenu",
+            "--width",
+            "60",
+            "--lines",
+            "16",
+            "--no-exit-on-keyboard-focus-loss",
+            "--prompt",
+            "emoji> ",
+        ],
+        input=rows,
+        capture_output=True,
+        text=True,
+        check=False,
     )
     choice = proc.stdout.strip()
     if not choice:
