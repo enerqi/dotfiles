@@ -22,7 +22,9 @@ entries=(
     "  Wi-Fi"
     "  Audio output"
     "  Clipboard history"
+    "  Image to file (copies path)"
     "  Removable media"
+    "  Files"
     "  Bluetooth"
     "  VPN"
     "  Windows"
@@ -51,7 +53,16 @@ case "$choice" in
     *"Wi-Fi")                "$BIN/fuzzel-wifi" ;;
     *"Audio output")         "$BIN/fuzzel-audio" ;;
     *"Clipboard history")    "$BIN/fuzzel-clipboard" ;;
+    *"Image to file"*)
+        # Saves the clipboard image and leaves its PATH on the clipboard, for
+        # Claude Code and friends, which take a path rather than pixels.
+        # --pick so an image copied a while ago is still reachable.
+        "$BIN/clip-image-path" --pick & ;;
     *"Removable media")     "$BIN/fuzzel-media" ;;
+    *"Files")
+        # Wrapper, not an inline foot command: $mod+Shift+e uses the same one,
+        # and its single-instance guard only works if both go through it.
+        "$BIN/yazi-term" & ;;
     *"VPN")                  "$BIN/fuzzel-vpn" ;;
     *"Windows")              "$BIN/fuzzel-windows" ;;
     *"Emoji / characters")   "$BIN/fuzzel-emoji" ;;

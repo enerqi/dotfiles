@@ -1,0 +1,70 @@
+#!/bin/bash
+# Clipboard image -> file on disk -> its PATH back on the clipboard as text.
+#
+# This exists for Claude Code, which takes images as file paths: its Ctrl+V
+# clipboard-image handler is guarded to macOS, so on Linux pasting an image
+# into it does nothing at all (anthropics/claude-code#48402). The same applies
+# to any CLI that wants a path rather than a pixel buffer.
+#
+# The swap is the point. After this runs the clipboard holds TEXT - the path -
+# so a normal terminal paste works. The image itself is on disk, not lost.
+#
+# --pick chooses from cliphist's image history instead of the current
+# clipboard, for when the image has already been copied over.
+set -uo pipefail
+
+DIR="${XDG_PICTURES_DIR:-$HOME/Pictures}/Clipboard"
+notify() { command -v notify-send >/dev/null && notify-send -a clipboard "$@"; }
+
+if [ "${1:-}" = "--pick" ]; then
+    # Reuse the same filter as `fuzzel-clipboard --images`: cliphist renders
+    # images as "[[ binary data 47 KiB png 1920x60 ]]".
+    list=$(cliphist list | grep "binary data")
+    if [ -z "$list" ]; then
+        notify "No images in clipboard history"
+        exit 0
+    fi
+    choice=$(printf '%s\n' "$list" |
+        fuzzel --dmenu --width 90 --lines 20 --no-exit-on-keyboard-focus-loss \
+               --prompt "image> ") || exit 0
+    [ -z "$choice" ] && exit 0
+    cliphist decode <<<"$choice" | wl-copy
+    # wl-copy forks a server to own the selection; give it a moment before the
+    # wl-paste below asks for the type, or the read can race an empty clipboard.
+    sleep 0.3
+fi
+
+# Extension from the actual MIME type, not a guess: a browser copy is as
+# likely to be jpeg or webp as png, and Claude Code reads the file by content
+# but the wrong extension makes the path confusing to a human.
+mime=$(wl-paste --list-types 2>/dev/null | grep -m1 '^image/')
+if [ -z "$mime" ]; then
+    notify "No image on the clipboard" "Copy an image first, or use --pick"
+    exit 1
+fi
+case "$mime" in
+    image/png)  ext=png ;;
+    image/jpeg) ext=jpg ;;
+    image/webp) ext=webp ;;
+    image/gif)  ext=gif ;;
+    *)          ext="${mime#image/}" ;;
+esac
+
+mkdir -p "$DIR" || exit 1
+file="$DIR/clip-$(date +%Y%m%d-%H%M%S).$ext"
+
+if ! wl-paste --type "$mime" > "$file"; then
+    notify "Could not read the clipboard image"
+    rm -f "$file"
+    exit 1
+fi
+if [ ! -s "$file" ]; then
+    notify "Clipboard image was empty"
+    rm -f "$file"
+    exit 1
+fi
+
+# The path replaces the image on the clipboard. printf, not echo, so no
+# trailing newline lands in the terminal with the path.
+printf '%s' "$file" | wl-copy
+notify "Path copied" "$file"

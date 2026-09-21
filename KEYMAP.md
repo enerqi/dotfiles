@@ -13,10 +13,11 @@ stale. This file is the readable version.
 reachable from it, so it is the only shortcut worth memorising - the rest are
 accelerators. Type to filter, Enter to run, Escape to dismiss.
 
-It contains: Wi-Fi · Audio output · Clipboard history · Bluetooth · Windows ·
-Emoji / characters · Power profile · System monitor · Calculator · Record
-screen · Colour picker · Night light · Notifications · Screenshot · Display
-layout · Keybindings · Lock · Power menu.
+It contains: Wi-Fi · Audio output · Clipboard history · Removable media ·
+Files · Bluetooth · VPN · Windows · Emoji / characters · Power profile ·
+System monitor · Calculator · Record screen · Colour picker · Night light ·
+Notifications · Do not disturb · Calendar · Containers · Updates ·
+Screenshot · Display layout · Keybindings · Lock · Power menu.
 
 On `Backspace` rather than `Space` because it is the easier reach on the
 Glove80. `focus mode_toggle` took `Super`+`Space` in exchange, which is sway's
@@ -28,27 +29,35 @@ own default for it.
 | --- | --- |
 | `Super`+`Backspace` | Command palette |
 | `Super`+`Tab` | Window switcher - every window, every workspace |
-| `Super`+`Shift`+`V` | Clipboard history |
+| `Super`+`Shift`+`V` | Clipboard history (text) |
+| `Super`+`U` | Clipboard history, images only |
+| `Ctrl`+`Super`+`U` | Clipboard image -> file, path copied (for Claude Code) |
 | `Super`+`E` | Emoji and symbols |
+| `Super`+`Shift`+`E` | File manager (yazi, in a foot window) |
 | `Super`+`N` | Re-show last notification |
 | `Super`+`Shift`+`N` | Clear all notifications |
 | `Super`+`D` | App launcher (fuzzel) |
 | `Super`+`G` | Terminal (wezterm) |
-| `Super`+`T` | `dmenu_run`, via XWayland |
 
 ## Scratchpad
 
 | Key | Does |
 | --- | --- |
-| `Super`+`U` | Show / hide |
-| `Super`+`Shift`+`U` | Send focused window there |
+| `Super`+`T` | Show / hide |
+| `Super`+`Shift`+`T` | Send focused window there |
 | `Super`+`Shift`+`Backspace` | **Take it back out** |
+
+`Super`+`Shift`+`U` still sends a window there. `Super`+`U` no longer summons
+it - that key is the image clipboard now.
 
 Sway has no "remove from scratchpad" command. Summon the window first, then
 float-toggle tiles it into the current workspace.
 
-Scratchpad is on `U` rather than the i3 convention `$mod`+`minus`, because
-`$mod`+`Shift`+`minus` is already volume-down here.
+Not the i3 convention `$mod`+`minus`: `$mod`+`Shift`+`minus` is already
+volume-down here. `T` is the left-hand home-row index key under the Glove80's
+Colemak Mod-DH firmware - the best position on the board - and the scratchpad
+was the most-used thing sitting on the right hand, which is an awkward reach
+while `Super` is held.
 
 ## Windows and layout
 
@@ -59,7 +68,7 @@ Scratchpad is on `U` rather than the i3 convention `$mod`+`minus`, because
 | `Super`+`R` / `W` / `B` | Stacking / tabbed / toggle split |
 | `Super`+`H` / `V` | Split horizontal / vertical |
 | `Super`+`Shift`+`Backspace` | Float toggle |
-| `Super`+`Shift`+`T` | Sticky - pin a floating window across workspaces |
+| `Super`+`Shift`+`Z` | Sticky - pin a floating window across workspaces |
 | `Super`+`Space` | Focus tiling <-> floating |
 | `Super`+`J` | Resize mode (`n` `e` `i` `o` or arrows; Enter/Escape to leave) |
 | `Super`+`S` / `F` | Focus down / up (arrows work too) |
@@ -88,7 +97,7 @@ Scratchpad is on `U` rather than the i3 convention `$mod`+`minus`, because
 | `XF86AudioPlay` / `Next` / `Prev` | Media control (playerctl) |
 | `XF86MonBrightnessUp` / `Down` | Backlight ±5% |
 
-Volume is also **scroll-wheel on the swaybar sound block** - instant, nothing
+Volume is also **scroll-wheel on the bar's sound module** - instant, nothing
 drawn. That is the intended route; a menu was tried and flashed on every step.
 
 ## Screen, session, displays
@@ -117,18 +126,36 @@ tear down every client - and pointing it at `reload` only duplicated
 
 ## The status bar is clickable
 
-- **Sound block** - scroll to change volume; left-click picks the output
-  device, right-click opens the per-app mixer.
-- **Network block** - left-click for the Wi-Fi picker, right-click for the full
+- **Sound** - scroll to change volume; left-click picks the output device,
+  right-click opens the per-app mixer.
+- **Network** - left-click for the Wi-Fi picker, right-click for the full
   connection editor.
+- **CPU, load, memory, temperature, disk** - any of them opens btop, and they
+  share one window rather than stacking five.
+- **Battery** - power profile picker.
+- **Docker** - running container count; click lists them.
+- **Updates** - pending apt packages; click lists them.
+- **Bell** - do not disturb, a real toggle.
+- **Clock** - opens the calendar.
 - **Power icon** - the same wlogout grid as `Super`+`Shift`+`X`.
+
+The bar cannot be driven from the keyboard at all - it is a layer-shell surface
+that never takes focus - so every one of these also has a palette entry.
 
 ## Behaviour worth knowing
 
-- **Clipboard history** starts collecting at reload; it cannot show what you
-  copied before that. Text only, images deliberately excluded. Copies made on
-  the Windows machine arrive here too, over waynergy. `fuzzel-clipboard --wipe`
-  clears it.
+- **Pasting an image into Claude Code** needs a *path*, not a paste: its
+  Ctrl+V clipboard-image handler is macOS-only, so on Linux pasting an image
+  into it does nothing. `Ctrl`+`Super`+`U` writes the clipboard image to
+  `~/Pictures/Clipboard/` and puts that path on the clipboard as text, so an
+  ordinary paste then works. The palette entry (**Image to file**) does the
+  same but lets you pick an older image out of the history first.
+- **Clipboard history** starts collecting at login; it cannot show what you
+  copied before that. Text **and images** since 2026-09 - `Super`+`U` lists
+  just the images, because a screenshot is impossible to spot in the mixed
+  list (no thumbnail, just `[[ binary data 47 KiB png 1920x60 ]]`). Copies made
+  on the Windows machine arrive here too, over waynergy, though that link
+  carries text only. `fuzzel-clipboard --wipe` clears everything.
 - **Emoji picker** copies *and* types the character. Typing alone fails in apps
   that ignore synthetic input; copying alone would need an extra paste.
 - **Window switcher** focuses by `con_id`, not title - titles repeat and change

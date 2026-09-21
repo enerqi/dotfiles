@@ -52,7 +52,46 @@
     "sway/window": {
         "format": "{title}",
         "max-length": 60,
-        "separate-outputs": true
+        "separate-outputs": true,
+
+        // The real desktop-entry icon, which sway cannot draw in a title bar:
+        // `title_window_icon` is an i3 directive with no sway equivalent,
+        // because it reads _NET_WM_ICON, an X11 property Wayland has no
+        // analogue for. waybar is not bound by that - it resolves app_id ->
+        // .desktop -> Icon= -> the PNG under hicolor.
+        //
+        // Only the *image* route is closed in sway. A text glyph in a title
+        // bar does work, via `title_format` plus pango markup, and was tried
+        // here - it looked bad at title-bar size, and with default_border
+        // pixel it would have shown on Sublime Text alone anyway, since that
+        // is the only window with a title bar.
+        //
+        // It is a separate GTK image widget packed beside the label, NOT a
+        // format placeholder: putting `{icon}` in "format" renders an empty
+        // label and the title disappears entirely, for every window.
+        //
+        // Covers every app with a desktop entry, including the ones no rewrite
+        // rule below matches (wezterm, nautilus, foot). An app_id with no
+        // matching entry - foot's --app-id one-offs - simply gets no icon.
+        "icon": true,
+        "icon-size": 18,
+
+        // Suffix stripping only; the icon above does the identifying. With a
+        // 60-char max-length, " - Sublime Text" on every title is 15 chars
+        // repeating what the icon already said.
+        //
+        // Three rules of waybar's `rewrite` that are easy to get wrong:
+        //   - the regex must match the WHOLE title, not a substring, so every
+        //     pattern here is anchored by construction with a leading `(.*)`;
+        //   - matching is case-insensitive, always, and cannot be turned off;
+        //   - EVERY matching rule is applied in sequence, so overlapping rules
+        //     compound. These are mutually exclusive by suffix instead.
+        "rewrite": {
+            "(.*) - Sublime Text": "$1",
+            "(.*) - Sublime Merge( .*)?": "$1",
+            "(.*) — Mozilla Firefox( Private Browsing)?": "$1",
+            "(.*) - Mozilla Thunderbird": "$1"
+        }
     },
 
     "battery": {

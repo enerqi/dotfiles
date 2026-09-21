@@ -14,17 +14,37 @@ if ! command -v cliphist >/dev/null; then
     exit 1
 fi
 
+mode=all
 case "${1:-}" in
     --wipe)
         cliphist wipe
         command -v notify-send >/dev/null && notify-send -a clipboard "History wiped"
         exit 0 ;;
+    --images) mode=images ;;
 esac
 
 # cliphist list emits "<id>\t<preview>". Selecting feeds the whole line back to
 # `cliphist decode`, which resolves the id to the full original content -
 # important for entries longer than the preview, and for images.
-choice=$(cliphist list | "${FUZZEL[@]}" --prompt "clipboard> ") || exit 0
+#
+# Images have no textual preview, so cliphist renders them as
+# "[[ binary data 234 KiB png 1920x1080 ]]" - which is why --images can filter
+# on "binary data" rather than needing to ask cliphist for a type. fuzzel
+# cannot draw a thumbnail in a dmenu list, so the dimensions and size in that
+# line are the only way to tell two screenshots apart; they are enough in
+# practice because the newest is first.
+prompt="clipboard> "
+list=$(cliphist list)
+if [[ $mode == images ]]; then
+    prompt="image> "
+    list=$(grep "binary data" <<<"$list")
+    if [[ -z "$list" ]]; then
+        command -v notify-send >/dev/null && notify-send -a clipboard "No images in clipboard history"
+        exit 0
+    fi
+fi
+
+choice=$("${FUZZEL[@]}" --prompt "$prompt" <<<"$list") || exit 0
 [[ -z "$choice" ]] && exit 0
 
 cliphist decode <<<"$choice" | wl-copy

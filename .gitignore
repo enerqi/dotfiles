@@ -58,9 +58,11 @@ cmder/Cmder.exe
 !.local/share/applications/
 !.local/share/applications/btop.desktop
 !.local/share/applications/waynergy.desktop
+!.local/share/applications/yazi.desktop
 
 !README.md
 !KEYMAP.md
+!DESKTOP.md
 !.config/wezterm/
 !.config/wezterm/**
 !.config/wezterm/wezterm-session-manager/

@@ -1,0 +1,41 @@
+#!/bin/sh
+# yazi in a foot window.
+#
+# Same shape as btop-term: one invocation, shared by the keybind and the
+# command palette, so the two cannot drift apart.
+#
+# Absolute path to the binary. cargo installs yazi to ~/.cargo/bin, which is
+# added to PATH by ~/.zshenv - and sway's `exec` runs through /bin/sh, which
+# never reads that file. A bare `yazi` here works from a terminal and fails
+# silently from the keybind, which is the same trap the waynergy exec hit.
+YAZI="$HOME/.cargo/bin/yazi"
+[ -x "$YAZI" ] || YAZI=yazi
+# Single instance, matching btop-term. A file manager has tabs of its own
+# (`t` opens one), so a second window is nearly always an accident rather
+# than a second thing you wanted.
+#
+# `swaymsg ... focus` exits non-zero with "No matching node." when nothing
+# matches, so the exit status is the test - no tree parsing needed.
+#
+# Only with no arguments: `yazi-term /some/path` is asking to look at a
+# specific directory, so it gets its own window.
+if [ $# -eq 0 ] && command -v swaymsg >/dev/null 2>&1; then
+    if swaymsg '[app_id="yazi"] focus' >/dev/null 2>&1; then
+        exit 0
+    fi
+fi
+
+# --title is separate from --app-id and both are needed: app_id is what the
+# sway criteria match on, title is what waybar's window module shows. yazi
+# then overwrites the title with the current directory as you navigate.
+#
+# No --window-size-chars and no floating rule, unlike btop: this one tiles.
+# A file manager is something you work alongside, not a readout you glance at
+# and dismiss, and sway sizes tiled windows itself so the flag would be inert.
+#
+# No --font override either. foot.ini is already CaskaydiaCove 12 and yazi is
+# a full-screen TUI with no minimum grid to satisfy.
+exec foot \
+    --app-id=yazi \
+    --title=yazi \
+    -e "$YAZI" "$@"

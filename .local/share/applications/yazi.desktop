@@ -1,0 +1,27 @@
+[Desktop Entry]
+# Exists mainly so waybar has an icon to draw. `icon: true` on sway/window
+# resolves app_id -> .desktop -> Icon=, and yazi ships no entry of its own, so
+# the bar showed "Yazi: kelvin" with an empty icon slot next to it.
+#
+# The filename must match the app_id that ~/bin/yazi-term sets (--app-id=yazi);
+# StartupWMClass repeats it for anything that looks there instead.
+#
+# Same shape as btop.desktop for the same reasons: Terminal=false plus a
+# wrapper, so the launcher and $mod+Shift+e produce one identical window rather
+# than fuzzel running a bare `yazi` through its own `terminal=` setting and
+# getting app_id "foot" with none of the sway rules applying.
+#
+# `sh -c` so $HOME expands: .desktop does not expand it itself, but a shell
+# does, and the spec requires the $ be written \\$ inside quotes. No hardcoded
+# /home path.
+#
+# Icon is the stock system-file-manager rather than a yazi logo: yazi installs
+# no icon, and this one is present in Yaru, which is the active theme.
+Type=Application
+Name=Yazi
+Comment=Terminal file manager
+Icon=system-file-manager
+Categories=System;FileTools;FileManager;
+Terminal=false
+StartupWMClass=yazi
+Exec=sh -c "exec \\$HOME/bin/yazi-term"
