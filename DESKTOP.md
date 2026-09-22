@@ -563,8 +563,44 @@ palette (btop), the Wi-Fi picker (`nmtui`) and the VPN menu. Its default is
 `~/.config/kanshi/config`. Match on `make model serial` rather than `DP-N` -
 connector numbering moves between docks and reboots, the monitor's identity
 does not. The manual `$mod+y` layouts still override it until the next plug
-event. The docked profiles are placeholders until filled in from
-`~/bin/sway-outputs`.
+event.
+
+**Arranging monitors visually: wdisplays, then save to kanshi.** Palette ->
+Display layout has **Arrange...**, which opens `wdisplays`: drag the monitor
+rectangles, set mode, scale and rotation, press Apply. It speaks wlroots'
+output-management protocol, so unlike GNOME Settings' Displays panel (which
+shows no monitors at all here, because it talks to mutter) it sees the real
+outputs, with a live thumbnail of each.
+
+wdisplays changes last only for the session. **Save current layout** runs
+`~/bin/sway-save-layout`, which writes what is on screen as a kanshi profile,
+so kanshi re-applies it every time that same set of monitors appears. The
+loop is: dock, Arrange, Apply, Save - once per monitor combination.
+
+What the save does, and why:
+
+- The built-in panel is written by name (`eDP-1`), external monitors by
+  `"make model serial"`. The panel's EDID is too vague to key on (make
+  "California Institute of Technology", serial "Unknown") but its name never
+  moves; external `DP-N` numbers do move, their identity does not.
+- If a profile for the **same set of monitors** exists it is replaced in place,
+  keeping its name. kanshi uses the first matching profile, so appending a
+  second copy would be silently ignored rather than applied.
+- The new config is checked by **kanshi's own parser** before it replaces the
+  old one. kanshi 1.9 has no `--check` flag, but it parses before connecting
+  to the compositor, so running it against a display that does not exist is a
+  pure syntax check. A save kanshi would reject is refused and the old config
+  kept.
+- kanshi is sent SIGHUP, which makes it reread the config in place - same PID,
+  no restart, screens undisturbed.
+- `sway-save-layout --print` shows the profile without writing anything.
+
+The hand-written docked profiles in the config were placeholders with guessed
+names, and so are the names in `~/.screenlayout/sway-outputs.env` that the
+three presets use. Neither has been tested on a real dock. **If the dock is
+DisplayLink** - the old xrandr names like `DVI-I-3-2` suggest it - that needs the
+`evdi` driver and is a known weak spot under wlroots; expect that to be the
+first docked problem, before any layout question.
 
 **VPN indicator:** a `custom` block testing for a `tun`/`wg` interface, not
 i3status-rs's `vpn` block - that only drives nordvpn, mullvad and tailscale,

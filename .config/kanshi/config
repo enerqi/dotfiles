@@ -9,10 +9,18 @@
 # override whatever kanshi last applied, until the next hotplug.
 
 profile laptop {
-    output eDP-1 enable mode 1920x1200 position 0,0
+    output eDP-1 enable mode 1920x1200@60.003Hz position 0,0 scale 1 transform normal
 }
 
-# Fill these in once docked - the names below are placeholders.
+# Docked profiles: do not hand-write these. Dock, arrange the monitors in
+# wdisplays (palette -> Display layout -> Arrange...), press Apply, then
+# Display layout -> Save current layout. ~/bin/sway-save-layout writes the
+# profile below, keyed on each monitor's make/model/serial, validates it with
+# kanshi's own parser first, and makes kanshi reload. It replaces an existing
+# profile for the same monitors rather than adding a second copy.
+#
+# The commented examples below are the old hand-written placeholders, kept for
+# reference only - the names in them were guesses.
 #
 # profile docked-three {
 #     output eDP-1 enable position 3840,2160

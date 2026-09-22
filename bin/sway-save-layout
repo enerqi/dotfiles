@@ -1,0 +1,231 @@
+#!/usr/bin/env python3
+"""Save the live monitor layout as a kanshi profile.
+
+    sway-save-layout [NAME]      save, then have kanshi reload
+    sway-save-layout --print     show the profile, change nothing
+
+The other half of wdisplays. wdisplays arranges monitors visually but only for
+the running session - the next hotplug or reboot forgets it. This writes what
+is on screen *now* into ~/.config/kanshi/config, and kanshi then re-applies it
+by itself whenever that same set of monitors appears. So the loop is: arrange
+in wdisplays, Apply, run this.
+
+How outputs are identified:
+
+  - The built-in panel by NAME (eDP-1). Its EDID is vague - here it reports
+    make "California Institute of Technology", serial "Unknown" - while the
+    name never changes.
+  - External monitors by "make model serial". Their DP-N / HDMI-A-N numbers
+    move between docks and reboots; the monitor's identity does not. This is
+    also why ~/.screenlayout/sway-outputs.env, which holds guessed DP-N names,
+    stops mattering once a real profile exists.
+
+If a profile for the same set of monitors already exists it is replaced in
+place, keeping its name; otherwise one is appended. kanshi uses the first
+profile that matches, so a second copy would be silently ignored rather than
+updated. The previous config is kept as config.bak.
+"""
+
+import json
+import os
+import re
+import signal
+import subprocess
+import sys
+
+CONFIG = os.path.join(
+    os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config")),
+    "kanshi",
+    "config",
+)
+
+
+def outputs():
+    return json.loads(
+        subprocess.run(
+            ["swaymsg", "-t", "get_outputs"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout
+    )
+
+
+def description(o):
+    return f"{o.get('make', '')} {o.get('model', '')} {o.get('serial', '')}".strip()
+
+
+def criterion(o):
+    """How this output is named in the profile - see the module docstring."""
+    if o["name"].startswith("eDP"):
+        return o["name"]
+    return f'"{description(o)}"'
+
+
+def output_line(o):
+    if not o.get("active"):
+        return f"    output {criterion(o)} disable"
+    mode = o["current_mode"]
+    rect = o["rect"]
+    # Refresh as sway reports it (mHz), to three places: kanshi picks the
+    # nearest mode, and 60.003Hz and 59.951Hz can both exist on one panel.
+    return (
+        f"    output {criterion(o)} enable"
+        f" mode {mode['width']}x{mode['height']}@{mode['refresh'] / 1000:.3f}Hz"
+        f" position {rect['x']},{rect['y']}"
+        f" scale {o.get('scale', 1.0):g}"
+        f" transform {o.get('transform', 'normal')}"
+    )
+
+
+def default_name(outs):
+    if len(outs) == 1 and outs[0]["name"].startswith("eDP"):
+        return "laptop"
+    parts = []
+    for o in sorted(outs, key=lambda o: o["name"]):
+        label = "laptop" if o["name"].startswith("eDP") else o.get("model") or o["name"]
+        parts.append(re.sub(r"[^A-Za-z0-9]+", "-", label).strip("-").lower())
+    return "+".join(parts)
+
+
+def blocks(text):
+    """Yield (start, end, name, criteria) for each top-level profile block.
+
+    Line-based with brace counting, skipping comment lines, so the commented
+    placeholder profiles in the stock config are never mistaken for real ones.
+    """
+    lines = text.splitlines(keepends=True)
+    offset = 0
+    i = 0
+    starts = []
+    for line in lines:
+        starts.append(offset)
+        offset += len(line)
+    starts.append(offset)
+    while i < len(lines):
+        m = re.match(r"\s*profile\s+(\S+)?\s*\{\s*$", lines[i])
+        if m and not lines[i].lstrip().startswith("#"):
+            depth, j, crit = 1, i + 1, []
+            while j < len(lines) and depth:
+                stripped = lines[j].strip()
+                if not stripped.startswith("#"):
+                    depth += stripped.count("{") - stripped.count("}")
+                    om = re.match(r'output\s+("[^"]*"|\S+)', stripped)
+                    if om:
+                        crit.append(om.group(1).strip('"'))
+                j += 1
+            yield starts[i], starts[j], m.group(1), crit
+            i = j
+        else:
+            i += 1
+
+
+def same_monitors(criteria, outs):
+    """True if the criteria pick out exactly the connected outputs, one each."""
+    if len(criteria) != len(outs):
+        return False
+    unused = list(outs)
+    for c in criteria:
+        hit = next((o for o in unused if c in (o["name"], description(o), "*")), None)
+        if hit is None:
+            return False
+        unused.remove(hit)
+    return True
+
+
+def save(outs, config_path, name=None):
+    """Write the profile. Returns (profile_text, 'replaced'|'added', name)."""
+    try:
+        with open(config_path) as f:
+            text = f.read()
+    except FileNotFoundError:
+        text = ""
+
+    existing = next((b for b in blocks(text) if same_monitors(b[3], outs)), None)
+    name = name or (existing[2] if existing and existing[2] else default_name(outs))
+    body = "\n".join(output_line(o) for o in sorted(outs, key=lambda o: o["name"]))
+    profile = f"profile {name} {{\n{body}\n}}\n"
+
+    if existing:
+        start, end, _, _ = existing
+        new_text = text[:start] + profile + text[end:]
+        action = "replaced"
+    else:
+        sep = (
+            ""
+            if not text or text.endswith("\n\n")
+            else ("\n" if text.endswith("\n") else "\n\n")
+        )
+        new_text = text + sep + profile
+        action = "added"
+
+    os.makedirs(os.path.dirname(config_path), exist_ok=True)
+    tmp = config_path + ".tmp"
+    with open(tmp, "w") as f:
+        f.write(new_text)
+    problem = kanshi_rejects(tmp)
+    if problem:
+        os.remove(tmp)
+        raise ValueError(f"kanshi rejected the new config, old one kept:\n{problem}")
+    if text:
+        with open(config_path + ".bak", "w") as f:
+            f.write(text)
+    os.replace(tmp, config_path)  # atomic: kanshi never sees half a file
+    return profile, action, name
+
+
+def kanshi_rejects(path):
+    """Parse-check a config with kanshi itself; return its complaint, or None.
+
+    kanshi parses its config before connecting to the compositor, so pointing
+    it at a display that does not exist checks the file without letting it
+    touch a single output. Reaching "failed to connect to display" means the
+    parse succeeded. Anything else is the parse error. There is no --check
+    flag in kanshi 1.9; this was confirmed against a deliberately broken file.
+    """
+    env = dict(os.environ, WAYLAND_DISPLAY="kanshi-parse-check-no-such-display")
+    proc = subprocess.run(
+        ["kanshi", "-c", path],
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=5,
+        check=False,
+    )
+    out = (proc.stdout + proc.stderr).strip()
+    return None if "failed to connect to display" in out else out or "unknown error"
+
+
+def notify(summary, body=""):
+    # check=False: a failed notification is not worth an exception.
+    subprocess.run(["notify-send", "-a", "display", summary, body], check=False)
+
+
+def main():
+    args = sys.argv[1:]
+    outs = outputs()
+    if "--print" in args:
+        name = next((a for a in args if not a.startswith("-")), None)
+        body = "\n".join(output_line(o) for o in sorted(outs, key=lambda o: o["name"]))
+        print(f"profile {name or default_name(outs)} {{\n{body}\n}}")
+        return 0
+
+    name = next((a for a in args if not a.startswith("-")), None)
+    try:
+        profile, action, name = save(outs, CONFIG, name)
+    except ValueError as err:
+        print(err, file=sys.stderr)
+        notify("Display profile NOT saved", str(err))
+        return 1
+    print(profile, end="")
+
+    # kanshi rereads its config on SIGHUP and applies the matching profile.
+    reloaded = subprocess.run(["pkill", "-HUP", "-x", "kanshi"], check=False)
+    note = "kanshi reloaded" if reloaded.returncode == 0 else "kanshi not running"
+    notify(f"Display profile {action}: {name}", f"{len(outs)} output(s); {note}")
+    return 0
+
+
+if __name__ == "__main__":
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)  # clean exit when piped to head
+    sys.exit(main())

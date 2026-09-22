@@ -112,17 +112,26 @@ def optional(binary, *cmd, missing=""):
 
 
 def display_layout():
-    """Submenu: the three ~/.screenlayout scripts, which are swaymsg
-    reimplementations of the old xrandr ones."""
+    """Submenu: arrange visually, save what is on screen, or a fixed preset.
+
+    Arrange opens wdisplays, which drags monitors around live but only for
+    this session. Save writes the result as a kanshi profile, after which
+    kanshi re-applies it on every hotplug of that monitor set - so the usual
+    order is Arrange, Apply, then Save. The three presets are the older
+    swaymsg reimplementations of the xrandr scripts; they run once and are
+    overridden by kanshi at the next plug event.
+    """
     layouts = {
-        "3 monitors (main)": f"{HOME}/.screenlayout/main.sh",
-        "2 monitors (dual)": f"{HOME}/.screenlayout/dual.sh",
-        "Laptop only (single)": f"{HOME}/.screenlayout/single.sh",
+        "Arrange... (visual)": spawn("wdisplays"),
+        "Save current layout": run(f"{BIN}/sway-save-layout"),
+        "3 monitors (main)": run(f"{HOME}/.screenlayout/main.sh"),
+        "2 monitors (dual)": run(f"{HOME}/.screenlayout/dual.sh"),
+        "Laptop only (single)": run(f"{HOME}/.screenlayout/single.sh"),
     }
     names = list(layouts)
     index = pick(names, "display> ")
     if index is not None:
-        subprocess.run([layouts[names[index]]], check=False)
+        layouts[names[index]]()
 
 
 def dnd_state():

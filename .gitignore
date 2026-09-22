@@ -47,6 +47,11 @@ cmder/Cmder.exe
 !.config/wlogout/**
 !.config/kanshi/
 !.config/kanshi/**
+# sway-save-layout's safety copies. The config itself is tracked, so git is the
+# real history; these only matter between saves. After the re-include above,
+# because the last matching pattern wins.
+.config/kanshi/*.bak
+.config/kanshi/*.tmp
 !.config/foot/
 !.config/foot/**
 !.config/fuzzel/
